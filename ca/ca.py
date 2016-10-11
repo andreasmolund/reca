@@ -1,6 +1,7 @@
 import util
 import scipy as sp
 import numpy as np
+import pylab as pl
 
 
 class CA:
@@ -15,12 +16,19 @@ class CA:
         self.n = n
         self.radius = (n - 1) / 2
         self.visual = visual
+        self.time = 0
 
         print "Initialized with dimension", dim, \
             "and rule", rule,\
             "for", steps, "steps."
 
-    def _step(self):
+    def draw(self):
+        pl.cla()
+        pl.pcolor(np.reshape(self.config, (-1, 1)), vmin = 0, vmax = 1, cmap = pl.cm.binary)
+        pl.axis('image')
+        pl.title("t = " + str(self.time))
+
+    def step(self):
         next_config = sp.zeros([self.size], dtype=np.dtype(int))
 
         for c in xrange(self.size):
@@ -34,12 +42,13 @@ class CA:
             next_config[c] = next_state
 
         self.config = next_config
+        self.time += 1
 
     def start(self):
         print self.config
 
         for i in xrange(self.steps):
-            self._step()
+            self.step()
             print self.config
 
 

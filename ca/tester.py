@@ -1,17 +1,33 @@
 from ca import CA
 import numpy as np
-import time
 import util
+import pylab as pl
+
 
 def test():
-    """ Internal test for the CA """
-    init_config = util.rand_init_config(11)
-    rule = 250
-    start = int(round(time.time() * 1000))
-    automation = CA(1, rule, np.asarray(init_config), 5)
-    automation.start()
-    print "Time to generate and enum:", (int(round(time.time() * 1000)) - start)
+    """Internal test for the CA"""
+    size = 21
+    init_config = util.rand_init_config(size)
+    rule = 90
+
+    automation = CA(1, rule, np.asarray(init_config), size)
+    # automation.start()
+
+    for t in xrange(size):
+        automation.step()
+
+        pl.ion()
+        modelfigure = pl.figure()
+        automation.draw()
+        modelfigure.canvas.manager.window.update()
+        pl.show()
+
+
+def init_gui():
+
+
 
 if __name__ == '__main__':
+    init_gui()
     test()
 
