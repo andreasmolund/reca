@@ -3,6 +3,10 @@ import math
 
 
 def print_config_1dim(config):
+    """Prints the configuration by blocks of characters
+
+    :param config: a 1D list of states to print
+    """
     line = ""
     on = "  "
     off = unichr(0x2588) + unichr(0x2588)
@@ -11,7 +15,13 @@ def print_config_1dim(config):
     print line
 
 
-def init_config_simple(size=21, k=2):
+def config_simple(size=21):
+    """ Sets all states to 0b0, except for the center most one that is set to 0b1
+
+    :param size: size or length of the wanted 1D configuration
+    :param k:
+    :return: configuration
+    """
     config = []
     for i in xrange(size):
         config.append(0b0)
@@ -19,16 +29,28 @@ def init_config_simple(size=21, k=2):
     return config
 
 
-def init_config_rand(size=20, k=2):
-    # [0b0, 0b0, 0b0, 0b0, 0b0, 0b1, 0b0, 0b0, 0b0, 0b0, 0b0]
+def config_rand(size=20, k=2):
+    """Generates a random configuration
+
+    :param size:
+    :param k:
+    :return:
+    """
     config = []
+    ones = 0
+    zeros = 0
     for i in xrange(size):
-        config.append(rn.randint(0, k - 1))
-    return config
+        state = rn.randint(0, k - 1)
+        if state == 1:
+            ones += 1
+        else:
+            zeros += 1
+        config.append(state)
+    return config, 1 if ones > zeros else 0
 
 
 def get_all_rules(k, n):
-    """Many iterations.
+    """Traverses the whole rule space
 
     :param k: number of states
     :param n: number of neighbors
@@ -46,7 +68,7 @@ def get_all_rules(k, n):
 
 
 def get_rule(rule=0, k=2, n=3):
-    """Uses "brute force" to find the transition function for the rule number
+    """Gets the transition function for the rule number
 
     :param rule: the rule
     :param k: number of states

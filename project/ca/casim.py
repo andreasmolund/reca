@@ -6,13 +6,13 @@ import util
 import math
 
 
-def test(raw_args):
+def sim(raw_args):
     """Internal test for the CA"""
 
     length = 21
     rule = 90
     simple = True
-    steps = 0
+    iterations = 0
 
     if len(raw_args) > 1:
         # length, simple, rule
@@ -25,19 +25,19 @@ def test(raw_args):
             elif o == '-r':
                 rule = int(a)
             elif o == '-i':
-                steps = int(a)
+                iterations = int(a)
 
-    if steps == 0:
-        steps = int(math.ceil((length + 1) / 2))
-    init_config = util.init_config_simple(length) if simple else util.init_config_rand(length)
-    automation = CA(1, rule, np.asarray(init_config), steps)
+    if iterations == 0:
+        iterations = int(math.ceil((length + 1) / 2))
+    init_config = util.config_simple(length) if simple else util.config_rand(length)
+    automation = CA(1, rule, np.asarray(init_config), iterations)
 
-    for t in xrange(steps):
+    for t in xrange(iterations):
         util.print_config_1dim(automation.config)
         automation.step()
         #time.sleep(0.05)
 
 
 if __name__ == '__main__':
-    test(sys.argv)
+    sim(sys.argv)
 
