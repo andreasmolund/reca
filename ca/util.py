@@ -11,7 +11,7 @@ def print_config_1dim(config):
     print line
 
 
-def simple_init_config(size=21, k=2):
+def init_config_simple(size=21, k=2):
     config = []
     for i in xrange(size):
         config.append(0b0)
@@ -19,7 +19,7 @@ def simple_init_config(size=21, k=2):
     return config
 
 
-def rand_init_config(size=20, k=2):
+def init_config_rand(size=20, k=2):
     # [0b0, 0b0, 0b0, 0b0, 0b0, 0b1, 0b0, 0b0, 0b0, 0b0, 0b0]
     config = []
     for i in xrange(size):
