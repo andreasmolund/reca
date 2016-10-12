@@ -16,9 +16,9 @@ class CA:
         self.visual = visual
         self.time = 0
 
-        print "Initialized CA with dimension", dim, \
-            "and rule", rule,\
-            "for", iterations, "steps."
+        # print "Initialized CA with dimension", dim, \
+        #     "and rule", rule,\
+        #     "for", iterations, "steps."
 
     def set_config(self, config):
         self.config = config
