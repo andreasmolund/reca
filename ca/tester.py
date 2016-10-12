@@ -6,23 +6,23 @@ import util
 import math
 
 
-length = 21
-rule = 90
-simple = True
-
-
 def test(raw_args):
     """Internal test for the CA"""
 
-    # length, simple, rule
-    opts, args = getopt.getopt(raw_args[1:], "l:s:r:")
-    for o, a in opts:
-        if o == '-l':
-            length = int(a)
-        elif o == '-s':
-            simple = a in ['True', 'true', 'y']
-        elif o == '-r':
-            rule = int(a)
+    length = 21
+    rule = 90
+    simple = True
+
+    if len(raw_args) > 1:
+        # length, simple, rule
+        opts, args = getopt.getopt(raw_args[1:], "l:s:r:")
+        for o, a in opts:
+            if o == '-l':
+                length = int(a)
+            elif o == '-s':
+                simple = a in ['True', 'true', 'y']
+            elif o == '-r':
+                rule = int(a)
 
     steps = int(math.ceil(length / 2))
     init_config = util.init_config_simple(length) if simple else util.init_config_rand(length)
