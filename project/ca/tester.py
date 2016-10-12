@@ -12,10 +12,11 @@ def test(raw_args):
     length = 21
     rule = 90
     simple = True
+    steps = 0
 
     if len(raw_args) > 1:
         # length, simple, rule
-        opts, args = getopt.getopt(raw_args[1:], "l:s:r:")
+        opts, args = getopt.getopt(raw_args[1:], "l:s:r:i:")
         for o, a in opts:
             if o == '-l':
                 length = int(a)
@@ -23,8 +24,11 @@ def test(raw_args):
                 simple = a in ['True', 'true', 'y']
             elif o == '-r':
                 rule = int(a)
+            elif o == '-i':
+                steps = int(a)
 
-    steps = int(math.ceil(length / 2))
+    if steps == 0:
+        steps = int(math.ceil((length + 1) / 2))
     init_config = util.init_config_simple(length) if simple else util.init_config_rand(length)
     automation = CA(1, rule, np.asarray(init_config), steps)
 
