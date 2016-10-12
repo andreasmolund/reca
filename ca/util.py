@@ -1,4 +1,22 @@
 import random as rn
+import math
+
+
+def print_config_1dim(config):
+    line = ""
+    on = "  "
+    off = unichr(0x2588) + unichr(0x2588)
+    for i in xrange(config.size):
+        line += on if config[i] == 0b1 else off
+    print line
+
+
+def simple_init_config(size=21, k=2):
+    config = []
+    for i in xrange(size):
+        config.append(0b0)
+    config[int(math.ceil(size/2))] = 0b1
+    return config
 
 
 def rand_init_config(size=20, k=2):

@@ -1,7 +1,6 @@
 import util
 import scipy as sp
 import numpy as np
-import pylab as pl
 
 
 class CA:
@@ -21,12 +20,6 @@ class CA:
         print "Initialized with dimension", dim, \
             "and rule", rule,\
             "for", steps, "steps."
-
-    def draw(self):
-        pl.cla()
-        pl.pcolor(np.reshape(self.config, (-1, 1)), vmin = 0, vmax = 1, cmap = pl.cm.binary)
-        pl.axis('image')
-        pl.title("t = " + str(self.time))
 
     def step(self):
         next_config = sp.zeros([self.size], dtype=np.dtype(int))
