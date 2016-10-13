@@ -1,4 +1,4 @@
-import random as rn
+# Utility functions for CA related stuff
 import math
 
 
@@ -27,26 +27,6 @@ def config_simple(size=21):
         config.append(0b0)
     config[int(math.ceil(size/2))] = 0b1
     return config
-
-
-def config_rand(size=20, k=2):
-    """Generates a random configuration
-
-    :param size:
-    :param k:
-    :return:
-    """
-    config = []
-    ones = 0
-    zeros = 0
-    for i in xrange(size):
-        state = rn.randint(0, k - 1)
-        if state == 1:
-            ones += 1
-        else:
-            zeros += 1
-        config.append(state)
-    return config, 1 if ones > zeros else 0
 
 
 def get_all_rules(k, n):

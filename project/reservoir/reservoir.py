@@ -1,6 +1,4 @@
-import scipy as sp
 import numpy as np
-
 
 
 def compute(reservoir):

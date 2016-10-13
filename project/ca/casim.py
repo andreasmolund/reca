@@ -1,3 +1,5 @@
+# Module for simulating the CA as a stand-alone
+# CASim = CA simulation
 import sys
 import getopt
 from ca import CA
@@ -9,7 +11,7 @@ import math
 def sim(raw_args):
     """Internal test for the CA"""
 
-    length = 21
+    length = 5
     rule = 90
     simple = True
     iterations = 0

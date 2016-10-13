@@ -6,6 +6,7 @@ import sys
 import getopt
 import math
 import ca.util as util
+import problems
 import numpy as np
 import reservoir.reservoir as reservoir
 from sklearn import linear_model
@@ -13,9 +14,9 @@ from sklearn.metrics import mean_squared_error
 
 
 def main(raw_args):
-    length = 20
+    length = 5
     rule = 90
-    iterations = 0
+    iterations = 14
 
     if len(raw_args) > 1:
         # length, simple, rule
@@ -35,8 +36,8 @@ def main(raw_args):
     train_inputs = []
     train_outputs = []
     train_labels = []
-    for i in xrange(300):
-        config, majority = util.config_rand(length)
+    for i in xrange(80):
+        config, majority = problems.density(length, on_probability=0.5)
         train_inputs.append(config)
         automation = CA(1, rule, np.asarray(train_inputs[i]), iterations)
         train_labels.append(majority)
@@ -49,7 +50,7 @@ def main(raw_args):
     test_outputs = []
     y_true = []
     for i in xrange(10):
-        config, majority = util.config_rand(length)
+        config, majority = problems.density(length, on_probability=0.5)
         test_inputs.append(config)
         automation = CA(1, rule, np.asarray(test_inputs[i]), iterations)
         y_true.append(majority)
