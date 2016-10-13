@@ -23,7 +23,7 @@ def sim(raw_args):
             if o == '-l':
                 length = int(a)
             elif o == '-s':
-                simple = a in ['True', 'true', 'y']
+                simple = a in ['True', 'true', 'y', 'yes', 'seff']
             elif o == '-r':
                 rule = int(a)
             elif o == '-i':
@@ -37,7 +37,6 @@ def sim(raw_args):
     for t in xrange(iterations):
         util.print_config_1dim(automation.config)
         automation.step()
-        #time.sleep(0.05)
 
 
 if __name__ == '__main__':
