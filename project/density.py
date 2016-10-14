@@ -6,7 +6,7 @@ from sklearn import linear_model
 from sklearn.metrics import mean_squared_error
 import problemgenerator as problems
 from ca.ca import CA
-import reservoir.reservoir as reservoir
+from reservoir.reservoir import Reservoir
 import reservoir.util as rutil
 
 
@@ -16,14 +16,13 @@ def main(raw_args):
     if iterations == 0:
         iterations = int(math.ceil((length + 1) / 2))
 
+    automation = CA(rule, k=2, n=3, visual=False)
+    reservoir = Reservoir(automation, iterations, 1)
+
     # Training
     train_inputs, train_labels = problems.density(80, length, on_probability=0.5)
-    train_outputs = []
-    for config in train_inputs:
-        automation = CA(1, rule, np.asarray(config), iterations)
-        train_outputs.append(reservoir.compute(automation))
     regr = linear_model.LinearRegression()
-    regr.fit(train_outputs, train_labels)
+    reservoir.fit(train_inputs, train_labels, regr)
 
     # Testing
     test_inputs, y_true = problems.density(20, length, on_probability=0.5)
