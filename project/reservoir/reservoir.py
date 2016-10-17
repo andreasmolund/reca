@@ -1,55 +1,71 @@
 import numpy as np
 import random as rn
 import scipy as sp
-from ca.ca import CA
+import ca.util as cutil
 
 
 class Reservoir:
     # TODO maybe make it capable of delay (?) like Bye did
 
-    def __init__(self, reservoir, iterations,  random_mappings, input_area, size):
-        self.reservoirs = []
+    def __init__(self, reservoir, iterations,  random_mappings, input_size, input_area, size):
+        """
+
+        :param reservoir: the CA object
+        :param iterations: the number of iterations
+        :param random_mappings: the number of random mappings (0 is none)
+        :param input_size: the size that the configurations come in
+        :param input_area: the area/size that the inputs are to be mapped to
+        :param size: the whole size of the CA
+        """
+        self.reservoir = reservoir
         self.iterations = iterations
+        self.size = size
+        self.random_mappings = []
         if random_mappings > 0:
-            for i in xrange(random_mappings):
-                self.reservoirs.append(make_reservoir(size, reservoir, input_area, input_offset=0))
+            for _ in xrange(random_mappings):
+                self.random_mappings.append(make_random_mapping(input_size, input_area))
         else:
-            self.reservoirs = [reservoir]
+            self.random_mappings.append([i for i in xrange(size)])
         self.input_area = input_area
 
     def transform(self, configs):
-        """Fitting the regression model to the labels and what the reservoir outputs.
-        Calls regression_model.fit().
+        """Lets the reservoir digest each of the configurations.
+        No training here.
 
-        :param configs:
-        :param labels:
-        :param regression_model: a sklearn regression model
-        :return: void
+        :param configs: a list of initial configurations
+        :return: a list in which each element is the output of a configuration
         """
         outputs = []
-        for r in self.reservoirs:
-            for i in xrange(len(configs)):
-                state_vector = []
-                config = configs[i]
+        for ci in xrange(len(configs)):
+            # For every initial configuration
+
+            config = configs[ci]
+            concat = []
+
+            for r in self.random_mappings:
+                # For every random mapping, map the initial configuration ...
+                mapped_config = sp.zeros([self.size], dtype=np.dtype(int))
+                for ri in xrange(len(r)):
+                    mapped_config[r[ri]] = config[ri]
+
+                cutil.print_config_1dim(mapped_config)
+                # ... and iterate
                 for step in xrange(self.iterations):
-                    new_state = r.step(config)
-                    state_vector.extend(new_state)
-                    config = new_state
-                outputs.append(state_vector)
+                    new_config = self.reservoir.step(mapped_config)
+                    concat.extend(new_config)
+                    mapped_config = new_config
+            outputs.append(concat)
         return outputs
 
 
-def make_reservoir(length, raw_init_config, input_area, input_offset=0):
+def make_random_mapping(input_size, input_area, input_offset=0):
     input_indexes = []
-    for i in xrange(length):
+    for i in xrange(input_size):
         # Going through all states in the reservoir
         # Might be possible to improve
-        index = rn.randint(0, input_area)
+        index = rn.randint(0, input_area - 1)
         while index in input_indexes:
-            index = rn.randint(0, input_area)
+            index = rn.randint(0, input_area - 1)
         input_indexes.append(index)
-    init_config = sp.zeros([length], dtype=np.dtype(int))
-    for i in xrange(len(raw_init_config)):
-        init_config[input_indexes[i] + input_offset] = raw_init_config[i]
-    return init_config
+    return [i + input_offset for i in input_indexes]
 

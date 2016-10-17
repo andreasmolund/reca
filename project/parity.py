@@ -17,7 +17,7 @@ def main(raw_args):
         iterations = int(math.ceil((length + 1) / 2))
 
     automation = CA(rule, k=2, n=3, visual=False)
-    reservoir = Reservoir(automation, iterations, 0, length, length)
+    reservoir = Reservoir(automation, iterations, 2, length, length, length)
 
     # Training
     train_inputs, train_labels = problems.parity(2, length)
@@ -39,4 +39,4 @@ def main(raw_args):
 
 
 if __name__ == '__main__':
-    main(sys.argv if len(sys.argv) > 1 else ['', '-l', 2, '-r', 90, '-i', 2])
+    main(sys.argv if len(sys.argv) > 1 else ['', '-l', 4, '-r', 90, '-i', 2])
