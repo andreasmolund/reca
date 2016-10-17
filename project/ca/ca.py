@@ -21,7 +21,7 @@ class CA:
             neighborhood = 0b0
             power = self.n - 1
             for d in xrange(-self.radius, self.radius + 1):
-                state = self.config[(c + d) % size]
+                state = config[(c + d) % size]
                 neighborhood += 2**power * state
                 power -= 1
             next_state = self.transition[neighborhood]

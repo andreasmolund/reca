@@ -11,7 +11,7 @@ def print_config_1dim(config):
     line = ""
     on = "  "
     off = unichr(0x2588) + unichr(0x2588)
-    for i in xrange(config.size):
+    for i in xrange(len(config)):
         line += on if config[i] == 0b1 else off
     print line
 

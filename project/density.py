@@ -17,15 +17,16 @@ def main(raw_args):
         iterations = int(math.ceil((length + 1) / 2))
 
     automation = CA(rule, k=2, n=3, visual=False)
-    reservoir = Reservoir(automation, iterations, 1)
+    reservoir = Reservoir(automation, iterations, 1, length, length)
 
-    # Training
+    # Training/fitting
     train_inputs, train_labels = problems.density(80, length, on_probability=0.5)
+    train_outputs = reservoir.compute(automation)
     regr = linear_model.LinearRegression()
-    reservoir.fit(train_inputs, train_labels, regr)
+    regr.fit(train_outputs, train_labels)
 
     # Testing
-    test_inputs, y_true = problems.density(20, length, on_probability=0.5)
+    test_inputs, y_true = problems.density(1, length, on_probability=0.5)
     test_outputs = []
     for config in test_inputs:
         automation = CA(1, rule, np.asarray(config), iterations)

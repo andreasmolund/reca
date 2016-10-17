@@ -1,5 +1,4 @@
 import sys
-import getopt
 import math
 import numpy as np
 from sklearn import linear_model
@@ -7,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 from density import digest_args
 import problemgenerator as problems
 from ca.ca import CA
-import reservoir.reservoir as reservoir
+from reservoir.reservoir import Reservoir
 import reservoir.util as rutil
 
 
@@ -17,21 +16,18 @@ def main(raw_args):
     if iterations == 0:
         iterations = int(math.ceil((length + 1) / 2))
 
+    automation = CA(rule, k=2, n=3, visual=False)
+    reservoir = Reservoir(automation, iterations, 0, length, length)
+
     # Training
-    train_inputs, train_labels = problems.parity(80, length)
-    train_outputs = []
-    for config in train_inputs:
-        automation = CA(1, rule, np.asarray(config), iterations)
-        train_outputs.append(reservoir.compute(automation))
+    train_inputs, train_labels = problems.parity(2, length)
+    train_outputs = reservoir.transform(train_inputs)
     regr = linear_model.LinearRegression()
     regr.fit(train_outputs, train_labels)
 
     # Testing
-    test_inputs, y_true = problems.parity(20, length)
-    test_outputs = []
-    for config in test_inputs:
-        automation = CA(1, rule, np.asarray(config), iterations)
-        test_outputs.append(reservoir.compute(automation))
+    test_inputs, y_true = problems.parity(1, length)
+    test_outputs = reservoir.transform(test_inputs)
     y_pred = regr.predict(test_outputs)
     error = mean_squared_error(y_true, y_pred)
 
@@ -43,4 +39,4 @@ def main(raw_args):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv if len(sys.argv) > 1 else ['', '-l', 2, '-r', 90, '-i', 2])
