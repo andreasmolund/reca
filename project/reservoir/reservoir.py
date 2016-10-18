@@ -42,23 +42,47 @@ class Reservoir:
             config = configs[ci]
             concat = []
 
+            print ""
+            print "NEW CONFIG:"
+            cutil.print_config_1dim(config)
+            print ""
+
             for r in self.random_mappings:
                 # For every random mapping, map the initial configuration ...
                 mapped_config = sp.zeros([self.size], dtype=np.dtype(int))
                 for ri in xrange(len(r)):
                     mapped_config[r[ri]] = config[ri]
 
+                print "New random mapping:", r
                 cutil.print_config_1dim(mapped_config)
+
                 # ... and iterate
+                concat.extend(mapped_config)
                 for step in xrange(self.iterations):
                     new_config = self.reservoir.step(mapped_config)
+                    cutil.print_config_1dim(new_config)
+                    # Concating this new configuration to the vector
                     concat.extend(new_config)
                     mapped_config = new_config
             outputs.append(concat)
+        print "OUTPUT VECTORS"
+        for o in outputs:
+            cutil.print_config_1dim(o)
         return outputs
+
+    def set_seed(self, seed):
+        rn.seed(seed)
 
 
 def make_random_mapping(input_size, input_area, input_offset=0):
+    """Generates a pseudo-random mapping from inputs to outputs.
+    The encoding stage.
+
+    :param input_size: the size that the inputs come in
+    :param input_area: the area/size that the inputs are to be mapped to
+    :param input_offset: a number if an offset is wanted, default 0
+    :return: an array of mapped indexes
+    """
     input_indexes = []
     for i in xrange(input_size):
         # Going through all states in the reservoir
