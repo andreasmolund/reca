@@ -26,16 +26,16 @@ def main(raw_args):
     regr.fit(train_outputs, train_labels)
 
     # Testing
-    # test_inputs, y_true = problems.parity(1, length)
-    # test_outputs = reservoir.transform(test_inputs)
-    # y_pred = regr.predict(test_outputs)
-    # error = mean_squared_error(y_true, y_pred)
-    #
-    # print "TEST RESULTS"
-    # print "Raw:\t\t", y_pred
-    # print "Predicted:\t", rutil.classify_output(y_pred), "(2 means out of bounds)"
-    # print "Actual:\t\t", y_true
-    # print "Mean squared error is", error
+    test_inputs, y_true = problems.parity(1, length)
+    test_outputs = reservoir.transform(test_inputs)
+    y_pred = regr.predict(test_outputs)
+    error = mean_squared_error(y_true, y_pred)
+
+    print "TEST RESULTS"
+    print "Raw:\t\t", y_pred
+    print "Predicted:\t", rutil.classify_output(y_pred), "(2 means out of bounds)"
+    print "Actual:\t\t", y_true
+    print "Mean squared error is", error
 
 
 if __name__ == '__main__':

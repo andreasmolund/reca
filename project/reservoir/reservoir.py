@@ -1,7 +1,6 @@
 import numpy as np
 import random as rn
 import scipy as sp
-import ca.util as cutil
 
 
 class Reservoir:
@@ -42,32 +41,20 @@ class Reservoir:
             config = configs[ci]
             concat = []
 
-            print ""
-            print "NEW CONFIG:"
-            cutil.print_config_1dim(config)
-            print ""
-
             for r in self.random_mappings:
                 # For every random mapping, map the initial configuration ...
                 mapped_config = sp.zeros([self.size], dtype=np.dtype(int))
                 for ri in xrange(len(r)):
                     mapped_config[r[ri]] = config[ri]
 
-                print "New random mapping:", r
-                cutil.print_config_1dim(mapped_config)
-
                 # ... and iterate
                 concat.extend(mapped_config)
                 for step in xrange(self.iterations):
                     new_config = self.reservoir.step(mapped_config)
-                    cutil.print_config_1dim(new_config)
                     # Concating this new configuration to the vector
                     concat.extend(new_config)
                     mapped_config = new_config
             outputs.append(concat)
-        print "OUTPUT VECTORS"
-        for o in outputs:
-            cutil.print_config_1dim(o)
         return outputs
 
     def set_seed(self, seed):
