@@ -9,6 +9,8 @@ from ca.ca import CA
 from reservoir.reservoir import Reservoir
 import reservoir.util as rutil
 
+# NB! THIS MODULE IS NOT COMPLETE.
+# I WENT OVER TO IMPLEMENT PARITY BECAUSE THAT IS EASIER, APPARENTLY
 
 def main(raw_args):
     length, rule, iterations = digest_args(raw_args)

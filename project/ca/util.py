@@ -3,17 +3,19 @@ import random as rn
 import math
 
 
-def print_config_1dim(config):
+def print_config_1dim(config, prefix="", postfix=""):
     """Prints the configuration by blocks of characters
 
     :param config: a 1D list of states to print
+    :param prefix:
+    :param postfix:
     """
     line = ""
     on = "  "
     off = unichr(0x2588) + unichr(0x2588)
     for i in xrange(len(config)):
         line += on if config[i] == 0b1 else off
-    print line
+    print prefix + line + postfix
 
 
 def config_simple(size=21):
