@@ -7,7 +7,7 @@ import ca.util as cutil
 class Reservoir:
     # TODO maybe make it capable of delay (?) like Bye did
 
-    def __init__(self, reservoir, iterations,  random_mappings, input_size, input_area, atomaton_area, verbose=False):
+    def __init__(self, reservoir, iterations,  random_mappings, input_size, input_area, automaton_area, verbose=False):
         """
 
         :param reservoir: the CA object
@@ -15,20 +15,18 @@ class Reservoir:
         :param random_mappings: the number of random mappings (0 is none)
         :param input_size: the size that the configurations come in
         :param input_area: the area/size that the inputs are to be mapped to
-        :param size: the whole size of the CA
+        :param automaton_area: the size of the whole automaton
         """
         self.reservoir = reservoir
         self.iterations = iterations
         self.random_mappings = []
-        self.size = atomaton_area
-        self.input_area = input_area
+        self.input_area = max([input_size, input_area])
+        self.automaton_area = max([input_size, automaton_area])
         self.verbose = verbose
         if random_mappings > 0:
             for _ in xrange(random_mappings):
-                self.random_mappings.append(make_random_mapping(input_size, input_area))
+                self.random_mappings.append(make_random_mapping(input_size, self.input_area))
         else:
-            self.input_area = input_size
-            self.size = input_size
             self.random_mappings.append([i for i in xrange(input_size)])
 
     def transform(self, configs):
@@ -54,12 +52,12 @@ class Reservoir:
 
             for r in self.random_mappings:
                 # For every random mapping, map the initial configuration ...
-                mapped_config = sp.zeros([self.size], dtype=np.dtype(int))
+                mapped_config = sp.zeros([self.automaton_area], dtype=np.dtype(int))
                 for ri in xrange(len(r)):
                     mapped_config[r[ri]] = config[ri]
 
                 if self.verbose:
-                    print "Random mapping:", r
+                    print "Mapping:", r
                     cutil.print_config_1dim(mapped_config)
 
                 # ... and iterate

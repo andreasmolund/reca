@@ -1,4 +1,6 @@
 # Module to generate configurations corresponding to different problems
+# with labels/classes/fasit
+
 import random as rn
 
 
