@@ -50,29 +50,29 @@ class Reservoir:
                 cutil.print_config_1dim(config)
                 print ""
 
-            for r in self.random_mappings:
-                # For every random mapping, map the initial configuration ...
-                mapped_config = sp.zeros([self.automaton_area], dtype=np.dtype(int))
+            # Form a N * R vector in the beginning of CA evolution for this configuration
+            mapped_config = sp.zeros([self.automaton_area * len(self.random_mappings)], dtype=np.dtype(int))
+            for i, r in enumerate(self.random_mappings):
                 for ri in xrange(len(r)):
-                    mapped_config[r[ri]] = config[ri]
+                    mapped_config[self.automaton_area * i + r[ri]] = config[ri]
 
+            if self.verbose:
+                print "Mappings:", self.random_mappings
+                cutil.print_config_1dim(mapped_config)
+            concat.extend(mapped_config)
+
+            # Iterate
+            for step in xrange(self.iterations):
+                # edits = external_input.get(step, default=[])
+                # for key, val in edits:
+                #     mapped_config[key] = val
+
+                new_config = self.reservoir.step(mapped_config)
                 if self.verbose:
-                    print "Mapping:", r
-                    cutil.print_config_1dim(mapped_config)
-
-                # ... and iterate
-                concat.extend(mapped_config)
-                for step in xrange(self.iterations):
-                    # edits = external_input.get(step, default=[])
-                    # for key, val in edits:
-                    #     mapped_config[key] = val
-
-                    new_config = self.reservoir.step(mapped_config)
-                    if self.verbose:
-                        cutil.print_config_1dim(new_config)
-                    # Concatenating this new configuration to the vector
-                    concat.extend(new_config)
-                    mapped_config = new_config
+                    cutil.print_config_1dim(new_config)
+                # Concatenating this new configuration to the vector
+                concat.extend(new_config)
+                mapped_config = new_config
             outputs.append(concat)
 
         if self.verbose:
@@ -104,3 +104,6 @@ def make_random_mapping(input_size, input_area, input_offset=0):
         input_indexes.append(index)
     return [i + input_offset for i in input_indexes]
 
+
+def make_random_mapping2(input_size, input_area, input_offset=0):
+    print "Ijsfdbnrng"

@@ -80,8 +80,8 @@ if __name__ == '__main__':
     else:
         main(['parity.py',
               '-s', 4,
-              '-r', 110,
+              '-r', 90,
               '-i', 4,
-              '--random-mappings', 3,
+              '--random-mappings', 2,
               '--input-area', 4,
-              '--automaton-area', 8])
+              '--automaton-area', 4])
