@@ -2,6 +2,7 @@ import sys
 import getopt
 import math
 from sklearn import linear_model
+from sklearn import svm
 from sklearn.metrics import mean_squared_error
 import problemgenerator as problems
 from ca.ca import CA
@@ -12,38 +13,43 @@ import reservoir.util as rutil
 def main(raw_args):
     input_size, rule, iterations, random_mappings, input_area, automaton_area = digest_args(raw_args)
 
-    print "Size %d, rule %d, %d iterations, %d random mappings, input area %d, automaton area %d" \
-          % (input_size, rule, iterations, random_mappings, input_area, automaton_area)
-
     if iterations == 0:
         iterations = int(math.ceil((input_size + 1) / 2))
 
-    automation = CA(rule, k=2, n=3)
-    reservoir = Reservoir(automation,
+    automaton = CA(rule, k=2, n=3)
+    reservoir = Reservoir(automaton,
                           iterations,
                           random_mappings,
                           input_size,
                           input_area,
                           automaton_area,
-                          verbose=True)
+                          verbose=False)
 
     # Training
-    train_inputs, train_labels = problems.parity(2, input_size)
+    train_inputs, train_labels = problems.parity(5000, input_size)
     train_outputs = reservoir.transform(train_inputs)
-    regr = linear_model.LinearRegression()
+    # regr = linear_model.LinearRegression()
+    # regr.fit(train_outputs, train_labels)
+    regr = svm.SVC(kernel='linear')
     regr.fit(train_outputs, train_labels)
 
     # Testing
-    # test_inputs, y_true = problems.parity(30, size)
-    # test_outputs = reservoir.transform(test_inputs)
-    # y_pred = regr.predict(test_outputs)
-    # error = mean_squared_error(y_true, y_pred)
-    #
-    # print "TEST RESULTS"
-    # print "Raw:\t\t", y_pred
-    # print "Predicted:\t", rutil.classify_output(y_pred), "(2 means out of bounds)"
-    # print "Actual:\t\t", y_true
-    # print "Mean squared error is", error
+    test_inputs, y_true = problems.parity(500, input_size)
+    test_outputs = reservoir.transform(test_inputs)
+    y_pred = regr.predict(test_outputs)
+    y_pred_class = rutil.classify_output(y_pred)
+    error = mean_squared_error(y_true, y_pred)
+
+    print "TEST RESULTS (every 50th value)"
+    print "Raw:\t\t", y_pred[::50]
+    print "Predicted: ", rutil.classify_output(y_pred)[::50]
+    print "Actual:    ", y_true[::50]
+    print "Mean squared error is", error
+    corrects = 0
+    for i in xrange(len(y_pred_class)):
+        if y_pred_class[i] == y_true[i]:
+            corrects += 1
+    print "Correctness (%):", (100 * corrects / len(y_pred_class))
 
 
 def digest_args(args):
@@ -81,7 +87,5 @@ if __name__ == '__main__':
         main(['parity.py',
               '-s', 4,
               '-r', 90,
-              '-i', 4,
-              '--random-mappings', 2,
-              '--input-area', 4,
-              '--automaton-area', 4])
+              '-i', 9,
+              '--random-mappings', 4])

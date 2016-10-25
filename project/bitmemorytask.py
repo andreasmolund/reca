@@ -7,16 +7,13 @@ from sklearn.metrics import mean_squared_error
 import problemgenerator as problems
 from ca.ca import CA
 from reservoir.reservoir import Reservoir
-import reservoir.reservoir as rdefs
+from reservoir.reservoir import make_random_mapping
 import reservoir.util as rutil
 import ca.util as cutil
 
 
 def main(raw_args):
     size, rule, iterations, random_mappings, input_area, atomaton_area = digest_args(raw_args)
-
-    print "Size %d, rule %d, %d iterations, %d random mappings, input area %d, atomaton area %d" \
-          % (size, rule, iterations, random_mappings, input_area, atomaton_area)
 
     mappings = []
 
@@ -26,33 +23,34 @@ def main(raw_args):
     else:
         print "RANDOM MAPPINGS:"
         for _ in xrange(random_mappings):
-            mapping = rdefs.make_random_mapping(size, input_area)
+            mapping = make_random_mapping(size, input_area)
             print mapping
             mappings.append(mapping)
 
-    automation = CA(rule, k=2, n=3, visual=False)
+    automation = CA(rule, k=2, n=3)
     reservoir = Reservoir(automation, iterations, 0, size*random_mappings, input_area, atomaton_area)
 
-    raw_train_inputs, train_labels = problems.parity(2, size)
-    train_inputs = []
-    print "TRAIN INPUTS:"
-    for raw_train_input in raw_train_inputs:
-        train_input = []
-        for mapping in mappings:
-            configuration = sp.zeros([size], dtype=np.dtype(int))
-            for ri in xrange(len(mapping)):
-                configuration[mapping[ri]] = raw_train_input[ri]
-            train_input.extend(configuration)
-        train_inputs.append(train_input)
-        cutil.print_config_1dim(raw_train_input, prefix="From\t")
-        cutil.print_config_1dim(train_input, prefix="To\t")
-
-    # Training
-    train_outputs = reservoir.transform(train_inputs)
-    regr = linear_model.LinearRegression()
-    regr.fit(train_outputs, train_labels)
-
-    # Testing
+    problems.bit_memory_task(1, 5, 3)
+    # raw_train_inputs, train_labels = problems.bit_memory_task(1, 5, 20)
+    # train_inputs = []
+    # print "TRAIN INPUTS:"
+    # for raw_train_input in raw_train_inputs:
+    #     train_input = []
+    #     for mapping in mappings:
+    #         configuration = sp.zeros([size], dtype=np.dtype(int))
+    #         for ri in xrange(len(mapping)):
+    #             configuration[mapping[ri]] = raw_train_input[ri]
+    #         train_input.extend(configuration)
+    #     train_inputs.append(train_input)
+    #     cutil.print_config_1dim(raw_train_input, prefix="From\t")
+    #     cutil.print_config_1dim(train_input, prefix="To\t")
+    #
+    # # Training
+    # train_outputs = reservoir.transform(train_inputs)
+    # regr = linear_model.LinearRegression()
+    # regr.fit(train_outputs, train_labels)
+    #
+    # # Testing
     # test_inputs, y_true = problems.parity(30, size)
     # test_outputs = reservoir.transform(test_inputs)
     # y_pred = regr.predict(test_outputs)
