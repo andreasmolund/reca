@@ -20,8 +20,7 @@ class Reservoir:
         self.iterations = iterations
         self.verbose = verbose
 
-        print "%d iterations" \
-              % self.iterations
+        print "%d iterations" % self.iterations
 
     @staticmethod
     def _transform_subset(configurations, iterations, matter, nr, queue):

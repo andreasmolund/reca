@@ -1,6 +1,4 @@
 import random as rn
-import scipy as sp
-import numpy as np
 
 
 class ClassicEncoder:
@@ -37,7 +35,7 @@ class ClassicEncoder:
         translated_configs = []
         # print self.random_mappings
         for config in configurations:
-            translated_config = sp.zeros([self.automaton_area * len(self.random_mappings)], dtype=np.dtype(int))
+            translated_config = [0b0] * (self.automaton_area * len(self.random_mappings))
             for i, r in enumerate(self.random_mappings):
                 for ri in xrange(len(r)):
                     translated_config[self.automaton_area * i + r[ri]] = config[ri]
