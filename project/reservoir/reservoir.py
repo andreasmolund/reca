@@ -1,8 +1,9 @@
-import sys
-import numpy as np
+import marshal as dumper
 import random as rn
-import scipy as sp
-import ca.util as cutil
+from multiprocessing import Process, Queue
+
+prefix = "dumpprocess"
+filetype = "dump"
 
 
 class Reservoir:
@@ -17,11 +18,30 @@ class Reservoir:
         """
         self.matter = matter
         self.iterations = iterations
-        self.random_mappings = []
         self.verbose = verbose
 
         print "%d iterations" \
               % self.iterations
+
+    @staticmethod
+    def _transform_subset(configurations, iterations, matter, nr, queue):
+        outputs = []
+        for i in xrange(len(configurations)):
+
+            config = configurations[i]
+            concat = []
+
+            # Iterate
+            for _ in xrange(iterations):
+                new_config = matter.step(config)
+                # Concatenating this new configuration to the vector
+                concat.extend(new_config)
+                config = new_config
+            outputs.append(concat)
+        ouf = open("%s%d.%s" % (prefix, nr, filetype), 'wb')
+        dumper.dump(outputs, ouf)
+        ouf.close()
+        queue.put(nr)
 
     def transform(self, configurations):
         """Lets the reservoir digest each of the configurations.
@@ -30,39 +50,35 @@ class Reservoir:
         :param configurations: a list of initial configurations
         :return: a list in which each element is the output of the translation of each configuration
         """
-        outputs = []
-        n_configs = len(configurations)
-        for i, config in enumerate(configurations):
 
-            concat = []
+        out_q = Queue()
+        n_processes = 4
+        configs_per_thread = len(configurations) / n_processes
+        processes = []
+        for n in xrange(n_processes):
+            start = n * configs_per_thread
+            end = start + configs_per_thread
+            process = Process(target=self._transform_subset,
+                              args=(configurations[start:end],
+                                    self.iterations,
+                                    self.matter.copy(),
+                                    n,
+                                    out_q))
+            processes.append(process)
+            process.start()
 
-            if self.verbose:
-                print "NEW CONFIGURATION:"
-                cutil.print_config_1dim(config)
+        outputs = [None] * len(configurations)
+        for _ in xrange(n_processes):
+            item = out_q.get()
+            inf = open("%s%d.%s" % (prefix, item, filetype), 'rb')
+            readouts = dumper.load(inf)
+            inf.close()
+            for i, readout in enumerate(readouts):
+                outputs[configs_per_thread * item + i] = readout
 
-            # concat.extend(config)
-
-            # Iterate
-            for step in xrange(self.iterations):
-
-                new_config = self.matter.step(config)
-                if self.verbose:
-                    cutil.print_config_1dim(new_config)
-                # if step >= (self.iterations - 5):
-                # Concatenating this new configuration to the vector
-                concat.extend(new_config)
-                config = new_config
-            outputs.append(concat)
-
-            sys.stdout.write("\rTransformation progress: %d%%" % (100 * i / (n_configs - 1)))
-            sys.stdout.flush()
-
-        sys.stdout.write("\n")
-        sys.stdout.flush()
-        if self.verbose:
-            print "OUTPUT VECTORS"
-            for o in outputs:
-                cutil.print_config_1dim(o)
+        # Wait for all sub computations to finish
+        for process in processes:
+            process.join()
 
         return outputs
 

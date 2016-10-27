@@ -1,6 +1,4 @@
 import util
-import scipy as sp
-import numpy as np
 
 
 class CA:
@@ -8,13 +6,15 @@ class CA:
     Thinking about generating the rules at initialization."""
 
     def __init__(self, rule, k=2, n=3):
-        self.transition = util.get_rule(rule, k, n)
+        self.rule = rule
+        self.k = k
         self.n = n
+        self.transition = util.get_rule(rule, k, n)
         self.radius = (n - 1) / 2
 
     def step(self, config):
         size = len(config)
-        next_config = sp.zeros([size], dtype=np.dtype(int))
+        next_config = [0b0] * size
 
         for c in xrange(size):
             neighborhood = 0b0
@@ -27,6 +27,9 @@ class CA:
             next_config[c] = next_state
 
         return next_config
+
+    def copy(self):
+        return CA(self.rule, self.k, self.n)
 
 
 # Useful

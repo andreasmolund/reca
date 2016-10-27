@@ -1,6 +1,8 @@
 import sys
 import getopt
 import math
+
+import time
 from sklearn import linear_model
 from sklearn import svm
 from sklearn.metrics import mean_squared_error
@@ -23,21 +25,29 @@ def main(raw_args):
     reservoir = Reservoir(automaton, iterations, verbose=False)
 
     # Training
+    sys.stdout.write("Transforming... ")
+    sys.stdout.flush()
+    time_checkpoint = time.time()
     raw_train_inputs, train_labels = problems.parity(5000, input_size)
     train_inputs = encoder.translate(raw_train_inputs)
     train_outputs = reservoir.transform(train_inputs)
-
-    sys.stdout.write("Fitting... ")
-    sys.stdout.flush()
-    # regr = linear_model.LinearRegression()
-    # regr.fit(train_outputs, train_labels)
-    regr = svm.SVC(kernel='linear')
-    regr.fit(train_outputs, train_labels)
     sys.stdout.write("Done\n")
     sys.stdout.flush()
+    print "Transforming time:", (time.time() - time_checkpoint)
+
+    time_checkpoint = time.time()
+    sys.stdout.write("Fitting... ")
+    sys.stdout.flush()
+    regr = linear_model.LinearRegression()
+    regr.fit(train_outputs, train_labels)
+    # regr = svm.SVC(kernel='linear')
+    # regr.fit(train_outputs, train_labels)
+    sys.stdout.write("Done\n")
+    sys.stdout.flush()
+    print "Fitting time time:", (time.time() - time_checkpoint)
 
     # Testing
-    raw_test_inputs, y_true = problems.parity(500, input_size)
+    raw_test_inputs, y_true = problems.parity(1000, input_size)
     test_inputs = encoder.translate(raw_test_inputs)
     test_outputs = reservoir.transform(test_inputs)
     y_pred = regr.predict(test_outputs)
@@ -89,9 +99,9 @@ if __name__ == '__main__':
         main(sys.argv)
     else:
         main(['parity.py',
-              '-s', '6',
+              '-s', '10',
               '-r', '154',
-              '-i', '16',
-              '--random-mappings', '4',
+              '-i', '32',
+              '--random-mappings', '16',
               '--input-area', '4',
               '--automaton-area', '4'])

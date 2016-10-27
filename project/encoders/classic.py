@@ -41,8 +41,6 @@ class ClassicEncoder:
             for i, r in enumerate(self.random_mappings):
                 for ri in xrange(len(r)):
                     translated_config[self.automaton_area * i + r[ri]] = config[ri]
-            # cautil.print_config_1dim(config, prefix="From ")
-            # cautil.print_config_1dim(translated_config, prefix="to   ")
             translated_configs.append(translated_config)
         return translated_configs
 
