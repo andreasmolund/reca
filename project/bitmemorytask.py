@@ -6,6 +6,7 @@ from sklearn import linear_model
 from sklearn.metrics import mean_squared_error
 import problemgenerator as problems
 from ca.ca import CA
+from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.reservoir import make_random_mapping
 import reservoir.util as rutil
@@ -17,39 +18,47 @@ def main(raw_args):
 
     mappings = []
 
-    if random_mappings < 1:
-        input_area = size
-        atomaton_area = size
-    else:
-        print "RANDOM MAPPINGS:"
-        for _ in xrange(random_mappings):
-            mapping = make_random_mapping(size, input_area)
-            print mapping
-            mappings.append(mapping)
+    size = 4
+    quantity = 2
+    bits = 5
+    distractor_period = 3
+    time_steps = 2 * bits + distractor_period + 1
 
+    # if random_mappings < 1:
+    #     input_area = size
+    #     atomaton_area = size
+    # else:
+    #     print "RANDOM MAPPINGS:"
+    #     for _ in xrange(random_mappings):
+    #         mapping = make_random_mapping(size, input_area)
+    #         print mapping
+    #         mappings.append(mapping)
+
+    encoder = ClassicEncoder(random_mappings, size, input_area, atomaton_area)
     automation = CA(rule, k=2, n=3)
-    reservoir = Reservoir(automation, iterations, 0, size*random_mappings, input_area, atomaton_area)
+    reservoir = Reservoir(automation, iterations, verbose=False)
 
-    problems.bit_memory_task(1, 5, 3)
-    # raw_train_inputs, train_labels = problems.bit_memory_task(1, 5, 20)
-    # train_inputs = []
-    # print "TRAIN INPUTS:"
-    # for raw_train_input in raw_train_inputs:
-    #     train_input = []
-    #     for mapping in mappings:
-    #         configuration = sp.zeros([size], dtype=np.dtype(int))
-    #         for ri in xrange(len(mapping)):
-    #             configuration[mapping[ri]] = raw_train_input[ri]
-    #         train_input.extend(configuration)
-    #     train_inputs.append(train_input)
-    #     cutil.print_config_1dim(raw_train_input, prefix="From\t")
-    #     cutil.print_config_1dim(train_input, prefix="To\t")
-    #
-    # # Training
-    # train_outputs = reservoir.transform(train_inputs)
-    # regr = linear_model.LinearRegression()
-    # regr.fit(train_outputs, train_labels)
-    #
+    raw_train_inputs, train_labels = problems.bit_memory_task(quantity, bits, distractor_period)
+    # E.g. [[1000,1000,1000,0100,...], [1000,1000,1000,0100,...], [1000,1000,1000,0100,...]]
+
+    # Training
+    train_outputs = [[None]] * quantity
+    for t in xrange(time_steps):
+        # Get the input for the time step
+        inputs_at_t = [i[t] for i in raw_train_inputs]
+
+        # Translate it
+        translations = encoder.translate(inputs_at_t)
+
+        # Transform it
+        outputs_at_t = np.array(reservoir.transform(translations, n_processes=1))
+
+        for i, output in enumerate(outputs_at_t):
+            train_outputs[i]=outputs_at_t[i]
+
+    regr = linear_model.LinearRegression()
+    regr.fit(train_outputs, train_labels)
+
     # # Testing
     # test_inputs, y_true = problems.parity(30, size)
     # test_outputs = reservoir.transform(test_inputs)

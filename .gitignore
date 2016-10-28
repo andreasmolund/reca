@@ -92,4 +92,4 @@ ENV/
 .idea/
 
 # My dump files
-.dump
+project/tmp/

@@ -57,6 +57,13 @@ def parity(quantity, size=4):
 
 
 def bit_memory_task(quantity, bits, distractor_period):
+    """
+
+    :param quantity: the number of tasks to generate
+    :param bits:
+    :param distractor_period:
+    :return: tasks, labels
+    """
     a1 = 0
     a2 = 0
     a3 = 0  # Distractor signal
@@ -90,14 +97,16 @@ def bit_memory_task(quantity, bits, distractor_period):
             else:
                 a4 = 0
 
+            task.append(np.asarray([a1, a2, a3, a4]))
+            label.append(np.asarray([y1, y2, y3]))
+
             if t > bits + distractor_period:
                 y1 = task[t - (bits + distractor_period) - 1][0]
                 y2 = task[t - (bits + distractor_period) - 1][1]
                 y3 = 0
 
             print "%d %d %d %d\t\t%d %d %d" % (a1, a2, a3, a4, y1, y2, y3)
-            task.append(np.asarray([a1, a2, a3, a4]))
-            label.append(np.asarray([y1, y2, y3]))
         tasks.append(task)
         labels.append(label)
+    return tasks, labels
 

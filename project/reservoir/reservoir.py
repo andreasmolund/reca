@@ -2,6 +2,9 @@ import marshal as dumper
 import random as rn
 from multiprocessing import Process, Queue
 
+import sys
+
+dump_path = "tmp/"
 prefix = "dumpprocess"
 filetype = "dump"
 
@@ -24,7 +27,7 @@ class Reservoir:
 
     @staticmethod
     def _transform_subset(configurations, iterations, matter, nr, queue):
-        outputs = []
+        ouf = open("%s%s%d.%s" % (dump_path, prefix, nr, filetype), 'wb')
         for i in xrange(len(configurations)):
 
             config = configurations[i]
@@ -36,50 +39,80 @@ class Reservoir:
                 # Concatenating this new configuration to the vector
                 concat.extend(new_config)
                 config = new_config
-            outputs.append(concat)
-        ouf = open("%s%d.%s" % (prefix, nr, filetype), 'wb')
-        dumper.dump(outputs, ouf)
+            dumper.dump(concat, ouf)
         ouf.close()
         queue.put(nr)
 
-    def transform(self, configurations):
+    def transform(self, configurations, n_processes=4):
         """Lets the reservoir digest each of the configurations.
         No training here.
 
+        :param n_processes: divides the work into processes for better performance
         :param configurations: a list of initial configurations
         :return: a list in which each element is the output of the translation of each configuration
         """
 
-        out_q = Queue()
-        n_processes = 4
-        configs_per_thread = len(configurations) / n_processes
-        processes = []
-        for n in xrange(n_processes):
-            start = n * configs_per_thread
-            end = start + configs_per_thread
-            process = Process(target=self._transform_subset,
-                              args=(configurations[start:end],
-                                    self.iterations,
-                                    self.matter.copy(),
-                                    n,
-                                    out_q))
-            processes.append(process)
-            process.start()
+        sys.stdout.write("Transforming... ")
+        sys.stdout.flush()
 
-        outputs = [None] * len(configurations)
-        for _ in xrange(n_processes):
-            item = out_q.get()
-            inf = open("%s%d.%s" % (prefix, item, filetype), 'rb')
-            readouts = dumper.load(inf)
-            inf.close()
-            for i, readout in enumerate(readouts):
-                outputs[configs_per_thread * item + i] = readout
+        if n_processes > 1:
+            out_q = Queue()
+            configs_per_thread = len(configurations) / n_processes
+            processes = []
+            for n in xrange(n_processes):
+                start = n * configs_per_thread
+                end = start + configs_per_thread
+                process = Process(target=self._transform_subset,
+                                  args=(configurations[start:end],
+                                        self.iterations,
+                                        self.matter.copy(),
+                                        n,
+                                        out_q))
+                processes.append(process)
+                process.start()
 
-        # Wait for all sub computations to finish
-        for process in processes:
-            process.join()
+            outputs = [None] * len(configurations)
+            for _ in xrange(n_processes):
+                item = out_q.get()
+                inf = open("%s%s%d.%s" % (dump_path, prefix, item, filetype), 'rb')
+                for i in xrange(configs_per_thread):
+                    outputs[configs_per_thread * item + i] = dumper.load(inf)
+                inf.close()
+
+            # Wait for all sub computations to finish
+            for process in processes:
+                process.join()
+        else:
+            outputs = []
+            for i in xrange(len(configurations)):
+
+                config = configurations[i]
+                concat = []
+
+                # Iterate
+                for _ in xrange(self.iterations):
+                    new_config = self.matter.step(config)
+                    # Concatenating this new configuration to the vector
+                    concat.extend(new_config)
+                    config = new_config
+                outputs.append(concat)
+
+        sys.stdout.write("Done\n")
+        sys.stdout.flush()
 
         return outputs
+
+
+def normalized_addition(state_vector, input_vector):
+    """Entries with value 2 (i.e. 1 + 1) become 1,
+    with value 0 stay 0 (i.e. 0 + 0),
+    and with value 1 (i.e. 0 + 1) are decided randomly.
+
+    :param state_vector:
+    :param input_vector:
+    :return:
+    """
+    return 0
 
 
 def make_random_mapping(input_size, input_area, input_offset=0):

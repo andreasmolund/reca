@@ -8,7 +8,6 @@ from sklearn import svm
 from sklearn.metrics import mean_squared_error
 import problemgenerator as problems
 from ca.ca import CA
-import ca.util as cutil
 from reservoir.reservoir import Reservoir
 import reservoir.util as rutil
 from encoders.classic import ClassicEncoder
@@ -24,46 +23,41 @@ def main(raw_args):
     automaton = CA(rule, k=2, n=3)
     reservoir = Reservoir(automaton, iterations, verbose=False)
 
-    # Training
-    sys.stdout.write("Transforming... ")
-    sys.stdout.flush()
+    n_training_sets = 1000
+    n_testing_sets = 200
     time_checkpoint = time.time()
-    raw_train_inputs, train_labels = problems.parity(5000, input_size)
-    train_inputs = encoder.translate(raw_train_inputs)
-    train_outputs = reservoir.transform(train_inputs)
-    sys.stdout.write("Done\n")
-    sys.stdout.flush()
+    raw_inputs, labels = problems.parity(n_training_sets + n_testing_sets, input_size)
+    inputs = encoder.translate(raw_inputs)
+    outputs = reservoir.transform(inputs)
     print "Transforming time:", (time.time() - time_checkpoint)
 
+    # Training
     time_checkpoint = time.time()
-    sys.stdout.write("Fitting... ")
-    sys.stdout.flush()
-    regr = linear_model.LinearRegression()
-    regr.fit(train_outputs, train_labels)
-    # regr = svm.SVC(kernel='linear')
+    # regr = linear_model.LinearRegression()
     # regr.fit(train_outputs, train_labels)
-    sys.stdout.write("Done\n")
-    sys.stdout.flush()
+    regr = svm.SVC(kernel='linear')
+    regr.fit(outputs[:n_training_sets], labels[:n_training_sets])
     print "Fitting time time:", (time.time() - time_checkpoint)
 
     # Testing
-    raw_test_inputs, y_true = problems.parity(1000, input_size)
-    test_inputs = encoder.translate(raw_test_inputs)
-    test_outputs = reservoir.transform(test_inputs)
-    y_pred = regr.predict(test_outputs)
+    y_pred = regr.predict(outputs[n_testing_sets:])
     y_pred_class = rutil.classify_output(y_pred)
-    error = mean_squared_error(y_true, y_pred)
+    error = mean_squared_error(labels[n_testing_sets:], y_pred)
 
+    step = 50
     print "TEST RESULTS (samples, every 50th value)"
-    print "Predicted, raw:    ", y_pred[::50]
-    print "Predicted:         ", y_pred_class[::50]
-    print "Actual:            ", y_true[::50]
+    print "Predicted, raw:    ", y_pred[::step]
+    print "Predicted:         ", y_pred_class[::step]
+    print "Actual:            ", labels[n_testing_sets::step]
     print "Mean squared error:", error
     corrects = 0
     for i in xrange(len(y_pred_class)):
-        if y_pred_class[i] == y_true[i]:
+        if y_pred_class[i] == labels[n_testing_sets + i]:
             corrects += 1
     print "Correctness (%):   ", (100 * corrects / len(y_pred_class))
+
+    for i in xrange(10):
+        print inputs[n_testing_sets + i * step], "->", y_pred_class[i * step]
 
 
 def digest_args(args):
@@ -99,9 +93,7 @@ if __name__ == '__main__':
         main(sys.argv)
     else:
         main(['parity.py',
-              '-s', '10',
-              '-r', '154',
-              '-i', '32',
-              '--random-mappings', '16',
-              '--input-area', '4',
-              '--automaton-area', '4'])
+              '-s', '8',
+              '-r', '105',
+              '-i', '128',
+              '--random-mappings', '128'])

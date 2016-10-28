@@ -22,7 +22,7 @@ def sim(raw_args):
             if o == '-l':
                 length = int(a)
             elif o == '-s':
-                simple = a in ['True', 'true', 'y', 'yes', 'seff']
+                simple = a in ['True', 'true', 'y', 'yes', 'seff', 'ofc']
             elif o == '-r':
                 rule = int(a)
             elif o == '-i':
