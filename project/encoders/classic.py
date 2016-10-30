@@ -12,7 +12,7 @@ class ClassicEncoder:
     then translations of new size 4 configurations will be of size 3*4=12
     """
 
-    def __init__(self, random_mappings, input_size, input_area, automaton_area, input_offset=0):
+    def __init__(self, random_mappings, input_size, input_area, automaton_area, input_offset=0, verbose=0, concat=True):
         """
 
         :param random_mappings: the number of random mappings (0 is none)
@@ -24,6 +24,8 @@ class ClassicEncoder:
         self.random_mappings = []
         self.input_area = max([input_size, input_area])
         self.automaton_area = max([self.input_area, automaton_area])
+        self.verbose = verbose
+        self.concat = concat
 
         if random_mappings > 0:
             for _ in xrange(random_mappings):
@@ -31,15 +33,24 @@ class ClassicEncoder:
         else:
             self.random_mappings.append([i for i in xrange(input_size)])
 
+        if self.verbose > 0:
+            print "Random mappings:"
+            print self.random_mappings
+
     def translate(self, configurations):
         translated_configs = []
-        # print self.random_mappings
         for config in configurations:
-            translated_config = [0b0] * (self.automaton_area * len(self.random_mappings))
+            translated_config = []
+
             for i, r in enumerate(self.random_mappings):
+                partial_translated_config = [0b0] * self.automaton_area
                 for ri in xrange(len(r)):
-                    translated_config[self.automaton_area * i + r[ri]] = config[ri]
-            translated_configs.append(translated_config)
+                    partial_translated_config[r[ri]] = config[ri]
+
+                translated_config.extend(partial_translated_config if self.concat else [partial_translated_config])
+
+            translated_configs.extend([translated_config] if self.concat else translated_config)
+
         return translated_configs
 
 

@@ -9,7 +9,7 @@ Example: `python2 parity.py -s 6 -i 32 -r 154 --random-mappings 16 --automaton-a
 * `-r` rule
 * `-s` size
 * `--random-mappings` the number of random mappings
-* `--input-area` iterations
+* `--input-area` input area, it spreads the mapping to over a larger area
 * `--automaton-area` a number >= `size` if you want padding on your automata
 
 ## parity.py

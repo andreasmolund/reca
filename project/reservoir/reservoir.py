@@ -1,8 +1,8 @@
 import marshal as dumper
 import random as rn
 from multiprocessing import Process, Queue
-
 import sys
+import ca.util as cutil
 
 dump_path = "tmp/"
 prefix = "dumpprocess"
@@ -12,12 +12,12 @@ filetype = "dump"
 class Reservoir:
     # TODO maybe make it capable of delay (?) like Bye did
 
-    def __init__(self, matter, iterations, verbose=False):
+    def __init__(self, matter, iterations, verbose=1):
         """
 
         :param matter: the CA object
         :param iterations: the number of iterations
-        :param verbose: set to true if you want to print the configurations
+        :param verbose: 1 prints basic information, 2 prints the
         """
         self.matter = matter
         self.iterations = iterations
@@ -25,13 +25,79 @@ class Reservoir:
 
         print "%d iterations" % self.iterations
 
+    def transform(self, configurations, n_processes=4):
+        """Lets the reservoir digest each of the configurations.
+        No training here.
+
+        :param configurations: a list of initial configurations,
+                               and the quantity of it must be divisible on n_processes
+        :param n_processes: divides the work into processes for better performance
+        :return: a list in which each element is the output of the translation of each configuration
+        """
+
+        if self.verbose == 0:
+            sys.stdout.write("Transforming... ")
+            sys.stdout.flush()
+        elif self.verbose > 1:
+            print "Input:"
+            for i, c in enumerate(configurations):
+                cutil.print_config_1dim(c, postfix="(%d)" % i)
+
+        # Starting processes to distribute work
+        out_q = Queue()
+        configs_per_thread = len(configurations) / n_processes
+        processes = []
+        for n in xrange(n_processes):
+            start = n * configs_per_thread
+            end = start + configs_per_thread
+            process = Process(target=self._transform_subset,
+                              args=(configurations[start:end],
+                                    self.iterations,
+                                    self.matter.copy(),
+                                    start,
+                                    out_q))
+            processes.append(process)
+            process.start()
+
+        # Collecting data from the different processes
+        outputs = [None] * len(configurations)
+        for _ in xrange(n_processes):
+            process_i = out_q.get()  # Process index; from where the process began
+            in_file = open("%s%s%d.%s" % (dump_path, prefix, process_i, filetype), 'rb')
+
+            for i in xrange(configs_per_thread):
+                outputs[process_i + i] = dumper.load(in_file)
+
+                if self.verbose > 1:
+                    print "Output (%d):" % (process_i + i)
+                    op = outputs[process_i + i]
+                    casize = len(op) / self.iterations
+                    for iteration in xrange(self.iterations):
+                        cutil.print_config_1dim(op[iteration*casize:iteration*casize+casize])
+
+            in_file.close()
+
+        # Wait for all sub computations to finish
+        for process in processes:
+            process.join()
+
+        if self.verbose == 1:
+            sys.stdout.write("Done\n")
+            sys.stdout.flush()
+        elif self.verbose > 1:
+            print "Concats:"
+            for i, o in enumerate(outputs):
+                cutil.print_config_1dim(o, postfix="(%d)" % i)
+
+        return outputs
+
     @staticmethod
     def _transform_subset(configurations, iterations, matter, nr, queue):
-        ouf = open("%s%s%d.%s" % (dump_path, prefix, nr, filetype), 'wb')
+        out_file = open("%s%s%d.%s" % (dump_path, prefix, nr, filetype), 'wb')
         for i in xrange(len(configurations)):
-
-            config = configurations[i]
             concat = []
+            config = configurations[i]
+            # concat.extend(config)  # To include the initial configuration
 
             # Iterate
             for _ in xrange(iterations):
@@ -39,68 +105,13 @@ class Reservoir:
                 # Concatenating this new configuration to the vector
                 concat.extend(new_config)
                 config = new_config
-            dumper.dump(concat, ouf)
-        ouf.close()
+            dumper.dump(concat, out_file)
+        out_file.close()
         queue.put(nr)
 
-    def transform(self, configurations, n_processes=4):
-        """Lets the reservoir digest each of the configurations.
-        No training here.
-
-        :param n_processes: divides the work into processes for better performance
-        :param configurations: a list of initial configurations
-        :return: a list in which each element is the output of the translation of each configuration
-        """
-
-        sys.stdout.write("Transforming... ")
-        sys.stdout.flush()
-
-        if n_processes > 1:
-            out_q = Queue()
-            configs_per_thread = len(configurations) / n_processes
-            processes = []
-            for n in xrange(n_processes):
-                start = n * configs_per_thread
-                end = start + configs_per_thread
-                process = Process(target=self._transform_subset,
-                                  args=(configurations[start:end],
-                                        self.iterations,
-                                        self.matter.copy(),
-                                        n,
-                                        out_q))
-                processes.append(process)
-                process.start()
-
-            outputs = [None] * len(configurations)
-            for _ in xrange(n_processes):
-                item = out_q.get()
-                inf = open("%s%s%d.%s" % (dump_path, prefix, item, filetype), 'rb')
-                for i in xrange(configs_per_thread):
-                    outputs[configs_per_thread * item + i] = dumper.load(inf)
-                inf.close()
-
-            # Wait for all sub computations to finish
-            for process in processes:
-                process.join()
-        else:
-            outputs = []
-            for i in xrange(len(configurations)):
-
-                config = configurations[i]
-                concat = []
-
-                # Iterate
-                for _ in xrange(self.iterations):
-                    new_config = self.matter.step(config)
-                    # Concatenating this new configuration to the vector
-                    concat.extend(new_config)
-                    config = new_config
-                outputs.append(concat)
-
-        sys.stdout.write("Done\n")
-        sys.stdout.flush()
-
-        return outputs
+    @staticmethod
+    def _concat(elements, n_elements_per_concat):
+        raise NotImplementedError("Not impl yet")
 
 
 def normalized_addition(state_vector, input_vector):
