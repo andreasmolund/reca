@@ -64,29 +64,28 @@ def bit_memory_task(quantity, bits, distractor_period):
     :param distractor_period:
     :return: tasks, labels
     """
-    a1 = 0
-    a2 = 0
-    a3 = 0  # Distractor signal
-    a4 = 0  # Cue signal
-    y1 = 0
-    y2 = 0
-    y3 = 1
     tasks = []
     labels = []
 
     for i in xrange(quantity):
+        y = 2  # y being 0, 1, 2 means which of the output nodes y1, y2, y3 that is activated, respectively
         task = []
         label = []
         for t in xrange(bits + distractor_period + 1 + bits):
-            if rn.random() > 0.5:
-                a1 = 1
-                a2 = 0
+            if t < bits:
+                bit = (i & 2**t) / 2**t
+                a1 = - bit + 1
+                a2 = bit
             else:
-                a1 = 0
-                a2 = 1
+                if rn.random() > 0.5:
+                    a1 = 1
+                    a2 = 0
+                else:
+                    a1 = 0
+                    a2 = 1
 
             if bits <= t < bits + distractor_period or t > bits + distractor_period:
-                # In the distractor period
+                # Distractor signal
                 a3 = 1
             else:
                 a3 = 0
@@ -98,14 +97,14 @@ def bit_memory_task(quantity, bits, distractor_period):
                 a4 = 0
 
             task.append(np.asarray([a1, a2, a3, a4]))
-            label.append(np.asarray([y1, y2, y3]))
 
             if t > bits + distractor_period:
                 y1 = task[t - (bits + distractor_period) - 1][0]
-                y2 = task[t - (bits + distractor_period) - 1][1]
-                y3 = 0
+                y = 0 if y1 == 1 else 1
 
-            print "%d %d %d %d\t\t%d %d %d" % (a1, a2, a3, a4, y1, y2, y3)
+            if i == 9:
+                print "%d %d %d %d -> %d" % (a1, a2, a3, a4, y)
+            label.append(y)
         tasks.append(task)
         labels.append(label)
     return tasks, labels

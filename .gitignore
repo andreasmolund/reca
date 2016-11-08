@@ -93,3 +93,6 @@ ENV/
 
 # My dump files
 project/tmp/
+
+# My temporary result files
+project/tmpresults/

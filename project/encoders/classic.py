@@ -12,7 +12,7 @@ class ClassicEncoder:
     then translations of new size 4 configurations will be of size 3*4=12
     """
 
-    def __init__(self, random_mappings, input_size, input_area, automaton_area, input_offset=0, verbose=0, concat=True):
+    def __init__(self, n_random_mappings, input_size, input_area, automaton_area, input_offset=0, verbose=0):
         """
 
         :param random_mappings: the number of random mappings (0 is none)
@@ -25,33 +25,61 @@ class ClassicEncoder:
         self.input_area = max([input_size, input_area])
         self.automaton_area = max([self.input_area, automaton_area])
         self.verbose = verbose
-        self.concat = concat
 
-        if random_mappings > 0:
-            for _ in xrange(random_mappings):
+        if n_random_mappings > 0:
+            for _ in xrange(n_random_mappings):
                 self.random_mappings.append(make_random_mapping(input_size, self.input_area, input_offset))
         else:
             self.random_mappings.append([i for i in xrange(input_size)])
 
-        if self.verbose > 0:
+        if self.verbose > 1:
             print "Random mappings:"
             print self.random_mappings
 
     def translate(self, configurations):
         translated_configs = []
         for config in configurations:
-            translated_config = []
 
-            for i, r in enumerate(self.random_mappings):
+            for r in self.random_mappings:
                 partial_translated_config = [0b0] * self.automaton_area
                 for ri in xrange(len(r)):
                     partial_translated_config[r[ri]] = config[ri]
 
-                translated_config.extend(partial_translated_config if self.concat else [partial_translated_config])
-
-            translated_configs.extend([translated_config] if self.concat else translated_config)
+                translated_configs.append(partial_translated_config)
 
         return translated_configs
+
+    def mapping_addition(self, master, second):
+        """Master overwrites second according to the mapping
+
+        :param master: the unmapped master or input vector
+        :param second: the already mapped vector that is to be overwritten
+        :return: added vectors
+        """
+        mapped = [None] * self.automaton_area
+        start = 0
+        for i, r in enumerate(self.random_mappings):
+            for sub_i in xrange(self.automaton_area):
+                mapped[start + sub_i] = second[start + sub_i]
+
+            for ri in xrange(len(r)):
+                mapped[start + r[ri]] = master[ri]
+            
+            start += self.automaton_area
+
+        return mapped
+
+    @property
+    def n_random_mappings(self):
+        return len(self.random_mappings)
+
+    @property
+    def to_area(self):
+        """
+
+        :return: the size of the whole area that the input is mapped to
+        """
+        return self.automaton_area * len(self.random_mappings)
 
 
 def make_random_mapping(input_size, input_area, input_offset=0):

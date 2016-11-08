@@ -81,13 +81,9 @@ class Reservoir:
         for process in processes:
             process.join()
 
-        if self.verbose == 1:
+        if self.verbose == 0:
             sys.stdout.write("Done\n")
             sys.stdout.flush()
-        elif self.verbose > 1:
-            print "Concats:"
-            for i, o in enumerate(outputs):
-                cutil.print_config_1dim(o, postfix="(%d)" % i)
 
         return outputs
 
@@ -109,21 +105,13 @@ class Reservoir:
         out_file.close()
         queue.put(nr)
 
-    @staticmethod
-    def _concat(elements, n_elements_per_concat):
-        raise NotImplementedError("Not impl yet")
+    @property
+    def iterations(self):
+        return self.iterations
 
-
-def normalized_addition(state_vector, input_vector):
-    """Entries with value 2 (i.e. 1 + 1) become 1,
-    with value 0 stay 0 (i.e. 0 + 0),
-    and with value 1 (i.e. 0 + 1) are decided randomly.
-
-    :param state_vector:
-    :param input_vector:
-    :return:
-    """
-    return 0
+    @iterations.setter
+    def iterations(self, value):
+        self.iterations = value
 
 
 def make_random_mapping(input_size, input_area, input_offset=0):
