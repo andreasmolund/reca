@@ -15,7 +15,7 @@ class ClassicEncoder:
     def __init__(self, n_random_mappings, input_size, input_area, automaton_area, input_offset=0, verbose=0):
         """
 
-        :param random_mappings: the number of random mappings (0 is none)
+        :param n_random_mappings: the number of random mappings (0 is none)
         :param input_size: the size that the configurations come in
         :param input_area: the area/size that the inputs are to be mapped to
         :param automaton_area: the size of the whole automaton
@@ -39,35 +39,35 @@ class ClassicEncoder:
     def translate(self, configurations):
         translated_configs = []
         for config in configurations:
-
-            for r in self.random_mappings:
-                partial_translated_config = [0b0] * self.automaton_area
-                for ri in xrange(len(r)):
-                    partial_translated_config[r[ri]] = config[ri]
-
-                translated_configs.append(partial_translated_config)
+            partial_translated_config = [0b0] * (self.n_random_mappings * self.automaton_area)
+            translated_configs.extend(self.mapping_addition(config, partial_translated_config))
 
         return translated_configs
 
     def mapping_addition(self, master, second):
-        """Master overwrites second according to the mapping
+        """Master overwrites second according to the mapping/translation
 
         :param master: the unmapped master or input vector
         :param second: the already mapped vector that is to be overwritten
         :return: added vectors
         """
-        mapped = [None] * self.automaton_area
-        start = 0
-        for i, r in enumerate(self.random_mappings):
-            for sub_i in xrange(self.automaton_area):
-                mapped[start + sub_i] = second[start + sub_i]
+        mapped_vector = []
+        automaton_offset = 0  # Offset index
+        for r in self.random_mappings:
+            partial_mapped = [None] * self.automaton_area
+            for automaton_i in xrange(self.automaton_area):
+                # print "i:%d,map_i:%d" % (i, master_i)
+                if r.count(automaton_i) > 0:  # r[map_i] == automaton_i:  # automaton_i in r:
+                    # If the area element has a mapping to it,
+                    # then get from master
+                    partial_mapped[automaton_i] = master[r.index(automaton_i)]
+                else:
+                    # Else, get from second
+                    partial_mapped[automaton_i] = second[automaton_offset + automaton_i]
+            mapped_vector.append(partial_mapped)
+            automaton_offset += self.automaton_area  # Adjusting offset
 
-            for ri in xrange(len(r)):
-                mapped[start + r[ri]] = master[ri]
-            
-            start += self.automaton_area
-
-        return mapped
+        return mapped_vector
 
     @property
     def n_random_mappings(self):

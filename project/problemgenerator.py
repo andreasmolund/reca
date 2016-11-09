@@ -77,12 +77,14 @@ def bit_memory_task(quantity, bits, distractor_period):
                 a1 = - bit + 1
                 a2 = bit
             else:
-                if rn.random() > 0.5:
-                    a1 = 1
-                    a2 = 0
-                else:
-                    a1 = 0
-                    a2 = 1
+                a1 = 0
+                a2 = 0
+                # if rn.random() > 0.5:
+                #     a1 = 1
+                #     a2 = 0
+                # else:
+                #     a1 = 0
+                #     a2 = 1
 
             if bits <= t < bits + distractor_period or t > bits + distractor_period:
                 # Distractor signal
@@ -102,8 +104,8 @@ def bit_memory_task(quantity, bits, distractor_period):
                 y1 = task[t - (bits + distractor_period) - 1][0]
                 y = 0 if y1 == 1 else 1
 
-            if i == 9:
-                print "%d %d %d %d -> %d" % (a1, a2, a3, a4, y)
+            # if i == 9:
+            #     print "%d %d %d %d -> %d" % (a1, a2, a3, a4, y)
             label.append(y)
         tasks.append(task)
         labels.append(label)

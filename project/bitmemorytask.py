@@ -23,13 +23,11 @@ filetype = "dump"
 def main(raw_args):
     size, rule, iterations, random_mappings, input_area, automaton_area = digest_args(raw_args)
 
-    mappings = []
-
     size = 4
-    n_training_sets = 128
+    n_training_sets = 32
     n_testing_sets = 32
     bits = 5
-    distractor_period = 10
+    distractor_period = 200
     time_steps = 2 * bits + distractor_period + 1
     concat_before = True
     verbose = 1
@@ -62,11 +60,21 @@ def main(raw_args):
     time_checkpoint = time.time()
 
     # Testing
-    y_pred = computer.test(inputs[n_training_sets:])
+    y_pred = computer.test(inputs[:n_training_sets])
+    y_pred = y_pred.reshape(n_testing_sets, time_steps).tolist()
     out_file = open("%s%s.%s" % (path, prefix, filetype), 'wb')
-    dumper.dump(y_pred.reshape(n_testing_sets, time_steps).tolist(), out_file)
+    dumper.dump(y_pred, out_file)
     dumper.dump(labels[n_training_sets:], out_file)
     out_file.close()
+    n_correct = 0
+    for pred, labels in zip(y_pred, labels[n_training_sets:]):
+        correct = True
+        for pred_element, label_element in zip(pred, labels):
+            if pred_element != label_element:
+                correct = False
+        if correct:
+            n_correct += 1
+    print "Correct: %d/%d" % (n_correct, n_testing_sets)
 
     # step = 1
     # print "Testing time: ", (time.time() - time_checkpoint)
@@ -117,8 +125,8 @@ if __name__ == '__main__':
     else:
         main(['parity.py',
               '-s', '4',
-              '-r', '105',
-              '-i', '64',
-              '--random-mappings', '128',
-              '--input-area', '4',
-              '--automaton-area', '4'])
+              '-r', '90',
+              '-i', '15',
+              '--random-mappings', '2',
+              '--input-area', '12',
+              '--automaton-area', '12'])
