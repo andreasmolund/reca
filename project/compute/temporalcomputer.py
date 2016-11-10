@@ -20,7 +20,7 @@ class TemporalComputer(Computer):
 
     def test(self, sets):
         x = self._translate_and_transform(sets)
-        return self.estimator.predict(x)
+        return x, self.estimator.predict(x)
 
     def _translate_and_transform(self, sets):
         n_processes = self._n_processes(len(sets))

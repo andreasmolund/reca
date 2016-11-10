@@ -14,6 +14,8 @@ import reservoir.util as rutil
 import ca.util as cutil
 from compute.temporalcomputer import TemporalComputer
 import marshal as dumper
+from matplotlib import pyplot as pl
+from plotter import plot_temporal
 
 path = "tmpresults/"
 prefix = "results"
@@ -21,7 +23,7 @@ filetype = "dump"
 
 
 def main(raw_args):
-    size, rule, iterations, random_mappings, input_area, automaton_area = digest_args(raw_args)
+    size, rule, n_iterations, n_random_mappings, input_area, automaton_area = digest_args(raw_args)
 
     size = 4
     n_training_sets = 32
@@ -32,13 +34,13 @@ def main(raw_args):
     concat_before = True
     verbose = 1
 
-    encoder = ClassicEncoder(random_mappings,
+    encoder = ClassicEncoder(n_random_mappings,
                              size,
                              input_area,
                              automaton_area,
                              verbose=verbose)
     automation = CA(rule, k=2, n=3)
-    reservoir = Reservoir(automation, iterations, verbose=verbose)
+    reservoir = Reservoir(automation, n_iterations, verbose=verbose)
     estimator = svm.SVC()
     # estimator = svm.SVC(kernel='linear')
     # estimator = linear_model.LinearRegression()
@@ -60,7 +62,7 @@ def main(raw_args):
     time_checkpoint = time.time()
 
     # Testing
-    y_pred = computer.test(inputs[:n_training_sets])
+    x, y_pred = computer.test(inputs[:n_training_sets])
     y_pred = y_pred.reshape(n_testing_sets, time_steps).tolist()
     out_file = open("%s%s.%s" % (path, prefix, filetype), 'wb')
     dumper.dump(y_pred, out_file)
@@ -75,6 +77,15 @@ def main(raw_args):
         if correct:
             n_correct += 1
     print "Correct: %d/%d" % (n_correct, n_testing_sets)
+
+    # Drawing
+    plot_temporal(x,
+                  n_random_mappings,
+                  encoder.automaton_area,
+                  time_steps,
+                  n_iterations)
+
+    # time.sleep(4)
 
     # step = 1
     # print "Testing time: ", (time.time() - time_checkpoint)
@@ -125,8 +136,8 @@ if __name__ == '__main__':
     else:
         main(['parity.py',
               '-s', '4',
-              '-r', '90',
-              '-i', '15',
-              '--random-mappings', '2',
-              '--input-area', '12',
-              '--automaton-area', '12'])
+              '-r', '102',
+              '-i', '4',
+              '--random-mappings', '8',
+              '--input-area', '40',
+              '--automaton-area', '40'])

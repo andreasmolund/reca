@@ -1,4 +1,5 @@
 import random as rn
+# rn.seed(20161109)
 
 
 class ClassicEncoder:
