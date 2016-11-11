@@ -1,4 +1,5 @@
 import itertools
+
 import ca.util as cutil
 
 
@@ -8,7 +9,7 @@ class Computer:
         """
 
         :param encoder:
-        :param reservoir:
+        :param reservoir: must have a function transform(sets)
         :param estimator: must have functions fit(X,y) and predict(X)
         :param concat_before: whether to concatenate before or after iterations
         """
@@ -30,6 +31,11 @@ class Computer:
         self.estimator.fit(outputs, labels)
 
     def test(self, sets):
+        """Encodes and transforms the sets, and uses the estimator to predict outputs
+
+        :param sets:
+        :return:
+        """
         outputs = self._translate_and_transform(sets)
 
         return self.estimator.predict(outputs)

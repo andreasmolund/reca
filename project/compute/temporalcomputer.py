@@ -1,8 +1,8 @@
 import numpy as np
-from operators import bitwise_or
-import ca.util as cutil
 
+import ca.util as cutil
 from compute.computer import Computer
+from operators import bitwise_or
 
 
 class TemporalComputer(Computer):
@@ -20,15 +20,21 @@ class TemporalComputer(Computer):
 
     def test(self, sets):
         x = self._translate_and_transform(sets)
-        return x, self.estimator.predict(x)
+        return x, self.estimator.predict(x).reshape(len(sets), len(sets[0]))
 
     def _translate_and_transform(self, sets):
+        """You need to reshape it to get a list of sets again
+
+        :return: a list of all time steps to every set
+        """
         n_processes = self._n_processes(len(sets))
         n_time_steps = len(sets[0])
-        size = self.encoder.to_area
+        size = self.encoder.total_area
 
         if self.verbose > 1:
-            for the_set in sets:
+            print "Each time step in every set:"
+            for i, the_set in enumerate(sets):
+                print "Set %d:" % i
                 for time_step in the_set:
                     cutil.print_config_1dim(time_step)
 
@@ -39,9 +45,10 @@ class TemporalComputer(Computer):
             if self.verbose > 1:
                 print "Time step %d:" % t
 
-            sets_at_t = [s[t] for s in sets]  # Input
+            sets_at_t = [s[t] for s in sets]  # Input at time t
             if t == 0:
-                sets_at_t = self.encoder.translate(sets_at_t)  # Input, translated/encoded
+                # Translating the initial input
+                sets_at_t = self.encoder.translate(sets_at_t)
             else:
                 # Adding input with parts of the previous output
                 new_sets_at_t = []
@@ -53,13 +60,17 @@ class TemporalComputer(Computer):
             outputs[t] = outputs_at_t if self.concat_before else self._concat(outputs_at_t)
 
         # "outputs" is currently a list of time steps (each containing all outputs at that time step),
-        # but we want a list of outputs so that it corresponds with the labels
+        # but we want a list of outputs so that it corresponds with the labels (transposition)
         x = np.transpose(outputs, (1, 0, 2))
+
+        # We also want to concatenate/flatten, which must be done through reshaping
         x = x.reshape(x.shape[0] * x.shape[1], x.shape[2])
+
         if self.verbose > 1:
             print "Final outputs:"
             for time_step in x:
                 cutil.print_config_1dim(time_step)
+
         return x
 
 

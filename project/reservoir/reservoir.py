@@ -1,7 +1,8 @@
 import marshal as dumper
 import random as rn
-from multiprocessing import Process, Queue
 import sys
+from multiprocessing import Process, Queue
+
 import ca.util as cutil
 
 dump_path = "tmp/"

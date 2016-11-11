@@ -32,7 +32,3 @@ class CA:
         return CA(self.rule, self.k, self.n)
 
 
-# Useful
-#   pylab's subplot for plotting, e.g. as a func of time
-#   pylab's imshow function
-#       cmap option in imshow is to specify colour scheme

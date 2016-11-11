@@ -82,13 +82,3 @@ def get_rule(rule=0, k=2, n=3):
 
     return rule
 
-
-def concat(array_a, array_b):
-    """ Concats the array a and b
-
-    :param array_a:
-    :param array_b:
-    :return:
-    """
-    return array_a.extend(array_b)
-

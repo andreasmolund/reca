@@ -1,19 +1,22 @@
-import sys
 import getopt
 import math
-import itertools
+import sys
 import time
-from sklearn import linear_model
+
 from sklearn import svm
 from sklearn.metrics import mean_squared_error
+
+import ca.util as cutil
 import problemgenerator as problems
+import reservoir.util as rutil
 from ca.ca import CA
 from compute.computer import Computer
-from reservoir.reservoir import Reservoir
-import reservoir.util as rutil
 from encoders.classic import ClassicEncoder
-import ca.util as cutil
+from reservoir.reservoir import Reservoir
 
+
+# This is the non-temporal parity problem;
+# not an experiment that is to be included in the report
 
 def main(raw_args):
     input_size, rule, iterations, random_mappings, input_area, automaton_area = digest_args(raw_args)

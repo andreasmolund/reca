@@ -1,15 +1,19 @@
-import sys
 import getopt
 import math
-from sklearn import linear_model
+import sys
+
 from sklearn import svm
 from sklearn.metrics import mean_squared_error
+
 import problemgenerator as problems
+import reservoir.util as rutil
 from ca.ca import CA
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
-import reservoir.util as rutil
 
+
+# This is the non-temporal density classification task;
+# not an experiment that is to be included in the report
 
 def main(raw_args):
     input_size, rule, iterations, random_mappings, input_area, automaton_area = digest_args(raw_args)

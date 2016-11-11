@@ -1,6 +1,9 @@
 import random as rand
 
 
+# rand.seed(20161110)
+
+
 def normalized_addition(a, b):
     """"Normalized addition" according to Yilmaz:
     "entries with value 2 (i.e. 1 + 1) become 1,

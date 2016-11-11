@@ -1,5 +1,7 @@
-import random as rn
-# rn.seed(20161109)
+import random as rand
+
+
+# rand.seed(20161110)
 
 
 class ClassicEncoder:
@@ -70,16 +72,21 @@ class ClassicEncoder:
 
         return mapped_vector
 
+    def pos(self, element):
+        """Get what positions an element has
+
+        :return: the position of all the element's mapping
+        """
+        return [pos[element] for pos in self.random_mappings]
+
     @property
     def n_random_mappings(self):
+        """The number of random mappings"""
         return len(self.random_mappings)
 
     @property
-    def to_area(self):
-        """
-
-        :return: the size of the whole area that the input is mapped to
-        """
+    def total_area(self):
+        """The area of all automata"""
         return self.automaton_area * len(self.random_mappings)
 
 
@@ -96,9 +103,9 @@ def make_random_mapping(input_size, input_area, input_offset=0):
     for i in xrange(input_size):
         # Going through all states in the reservoir
         # Might be possible to improve
-        index = rn.randint(0, input_area - 1)
+        index = rand.randint(0, input_area - 1)
         while index in input_indexes:
-            index = rn.randint(0, input_area - 1)
+            index = rand.randint(0, input_area - 1)
         input_indexes.append(index)
     return [i + input_offset for i in input_indexes]
 
