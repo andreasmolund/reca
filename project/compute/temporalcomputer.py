@@ -20,17 +20,17 @@ class TemporalComputer(Computer):
         x = self._distribute_and_collect(sets, n_processes=_n_processes(sets))
         x = self._post_process(x)
         if self.verbose > 0:
-            print "Transformed %d training sets in %d seconds" % (len(sets), time.time() - time_checkpoint)
+            print "Transformed training sets:", time.time() - time_checkpoint
 
         labels = np.array(labels).flatten()
-        self.estimator.fit(x, labels)
+        # self.estimator.fit(x, labels)
 
     def test(self, sets):
         time_checkpoint = time.time()
         x = self._distribute_and_collect(sets, n_processes=_n_processes(sets))
         x = self._post_process(x)
         if self.verbose > 0:
-            print "Transformed %d testing sets in %d seconds" % (len(sets), time.time() - time_checkpoint)
+            print "Transformed testing sets: ", time.time() - time_checkpoint
 
         return x, self.estimator.predict(x).reshape(len(sets), len(sets[0]))
 

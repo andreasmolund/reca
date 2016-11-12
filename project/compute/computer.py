@@ -81,11 +81,8 @@ class Computer:
 
         # Collecting data from the different processes
         outputs = [None] * len(sets)
-        print "Collecting"
         for _ in xrange(n_processes):
-            print "Waiting on work"
             identifier = out_q.get()  # Process index; from where the process began
-            print "Working on", identifier
             in_file = open(file_name(identifier), 'rb')
 
             # for i in xrange(sets_per_thread):
@@ -94,12 +91,9 @@ class Computer:
             outputs[identifier[0]:identifier[1]] = data
 
             in_file.close()
-        print "Collected"
 
         for process in processes:
             process.join()
-
-        print "Joined processes"
 
         return outputs
 
@@ -123,7 +117,6 @@ def range_from(sets, part, n_parts):
         size = part_sizes[part] * fraction_size
         start = sum(part_sizes[:part]) * fraction_size
         end = start + size
-        print "Optimized work distribution"
     else:
         # Just dividing into n_parts equal parts
         size = n_sets / n_parts

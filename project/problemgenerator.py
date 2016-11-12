@@ -4,6 +4,7 @@
 import random as rn
 
 import numpy as np
+np.random.seed(20161112)
 
 
 def bit_memory_task(quantity, bits, distractor_period):
