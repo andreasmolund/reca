@@ -1,7 +1,8 @@
 import random as rand
 
 
-# rand.seed(20161110)
+seed = 20161110
+rand.seed(seed)
 
 
 class ClassicEncoder:

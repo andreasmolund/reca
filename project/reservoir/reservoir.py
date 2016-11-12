@@ -24,15 +24,12 @@ class Reservoir:
         self.iterations = iterations
         self.verbose = verbose
 
-        print "%d iterations" % self.iterations
-
-    def transform(self, configurations, n_processes=4):
+    def transform(self, configurations):
         """Lets the reservoir digest each of the configurations.
         No training here.
 
         :param configurations: a list of initial configurations,
                                and the quantity of it must be divisible on n_processes
-        :param n_processes: divides the work into processes for better performance
         :return: a list in which each element is the output of the translation of each configuration
         """
 
@@ -44,67 +41,25 @@ class Reservoir:
             for i, c in enumerate(configurations):
                 cutil.print_config_1dim(c, postfix="(%d)" % i)
 
-        # Starting processes to distribute work
-        out_q = Queue()
-        configs_per_thread = len(configurations) / n_processes
-        processes = []
-        for n in xrange(n_processes):
-            start = n * configs_per_thread
-            end = start + configs_per_thread
-            process = Process(target=self._transform_subset,
-                              args=(configurations[start:end],
-                                    self.iterations,
-                                    self.matter.copy(),
-                                    start,
-                                    out_q))
-            processes.append(process)
-            process.start()
-
-        # Collecting data from the different processes
-        outputs = [None] * len(configurations)
-        for _ in xrange(n_processes):
-            process_i = out_q.get()  # Process index; from where the process began
-            in_file = open("%s%s%d.%s" % (dump_path, prefix, process_i, filetype), 'rb')
-
-            for i in xrange(configs_per_thread):
-                outputs[process_i + i] = dumper.load(in_file)
-
-                if self.verbose > 1:
-                    print "Output (%d):" % (process_i + i)
-                    op = outputs[process_i + i]
-                    casize = len(op) / self.iterations
-                    for iteration in xrange(self.iterations):
-                        cutil.print_config_1dim(op[iteration*casize:iteration*casize+casize])
-
-            in_file.close()
-
-        # Wait for all sub computations to finish
-        for process in processes:
-            process.join()
-
-        if self.verbose == 0:
-            sys.stdout.write("Done\n")
-            sys.stdout.flush()
-
-        return outputs
-
-    @staticmethod
-    def _transform_subset(configurations, iterations, matter, nr, queue):
-        out_file = open("%s%s%d.%s" % (dump_path, prefix, nr, filetype), 'wb')
+        outputs = []
         for i in xrange(len(configurations)):
             concat = []
             config = configurations[i]
             # concat.extend(config)  # To include the initial configuration
 
             # Iterate
-            for _ in xrange(iterations):
-                new_config = matter.step(config)
+            for _ in xrange(self.iterations):
+                new_config = self.matter.step(config)
                 # Concatenating this new configuration to the vector
                 concat.extend(new_config)
                 config = new_config
-            dumper.dump(concat, out_file)
-        out_file.close()
-        queue.put(nr)
+            outputs.append(concat)
+
+        if self.verbose == 0:
+            sys.stdout.write("Done\n")
+            sys.stdout.flush()
+
+        return outputs
 
     @property
     def iterations(self):

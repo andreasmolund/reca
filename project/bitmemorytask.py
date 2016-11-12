@@ -14,7 +14,7 @@ from reservoir.reservoir import Reservoir
 
 path = "tmpresults/"
 prefix = "bitmemoryresults"
-filetype = "dump"
+file_type = "dump"
 
 
 def main(raw_args):
@@ -58,7 +58,7 @@ def main(raw_args):
     time_checkpoint = time.time()
     x, y_pred = computer.test(inputs[:n_training_sets])
     print "Testing time:        ", (time.time() - time_checkpoint)
-    out_file = open("%s%s.%s" % (path, prefix, filetype), 'wb')
+    out_file = open("%s%s.%s" % (path, prefix, file_type), 'wb')
     dumper.dump(y_pred.tolist(), out_file)
     dumper.dump(labels[n_training_sets:], out_file)
     out_file.close()

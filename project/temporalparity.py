@@ -1,5 +1,6 @@
 import sys
 
+import time
 from sklearn import svm
 
 import problemgenerator as problems
@@ -13,8 +14,8 @@ from reservoir.reservoir import Reservoir
 def main(raw_args):
     size, rule, n_iterations, n_random_mappings, input_area, automaton_area = digest_args(raw_args)
 
-    n_training_sets = 100
-    n_testing_sets = 20
+    n_training_sets = 200
+    n_testing_sets = 50
     time_steps = 30
     delay = 0
     concat_before = True
@@ -46,13 +47,16 @@ def main(raw_args):
                                                               delay=delay)
     print zip(training_inputs[0][:8], training_labels[0][:8])
 
+    time_checkpoint = time.time()
     computer.train(training_inputs, training_labels)
     x, y_pred = computer.test(testing_inputs)
+    print "Training and testing time:", (time.time() - time_checkpoint)
+
     n_correct = 0
     n_semi_correct = 0
     n_total_semi = 0
-    print y_pred[0].tolist()
-    print testing_labels[0]
+    print y_pred[0][:10].tolist()
+    print testing_labels[0][:10]
     for predicted, actual in zip(y_pred, testing_labels):
         correct = True
         for y1, y2 in zip(predicted, actual):
@@ -62,8 +66,8 @@ def main(raw_args):
                 n_semi_correct += 1
             n_total_semi += 1
         n_correct += 1 if correct else 0
-    print "Correct:      %d" % n_correct
-    print "Semi correct: %d/%d" % (n_semi_correct, n_total_semi)
+    print "Correct:       %d/%d" % (n_correct, n_testing_sets)
+    print "Semi correct:  %d/%d" % (n_semi_correct, n_total_semi)
 
 
 if __name__ == '__main__':
