@@ -1,10 +1,8 @@
 import copy
 import itertools
 import marshal as dumper
-from multiprocessing import Process, Queue
-from math import floor, ceil
-
 import time
+from multiprocessing import Process, Queue
 
 dump_path = "tmp/"
 prefix = "dump-process"
@@ -34,7 +32,7 @@ class Computer:
         :param labels: labels/classes corresponding to the training sets
         :return: void
         """
-        outputs = self._distribute_and_collect(sets, n_processes=_n_processes(sets))
+        outputs = self._distribute_and_collect(sets)
 
         self.estimator.fit(outputs, labels)
 
@@ -44,13 +42,24 @@ class Computer:
         :param sets:
         :return:
         """
-        outputs = self._distribute_and_collect(sets, n_processes=_n_processes(sets))
+        outputs = self._distribute_and_collect(sets)
 
         return self.estimator.predict(outputs)
 
     @staticmethod
     def _translate_and_transform(sets, reservoir, encoder, concat_function, concat_before, identifier, queue):
-        out_file = open(file_name(identifier), 'wb')
+        """What the computer desires to to with the sets.
+        How it wants to translate and transform them.
+
+        :param sets: a subset of the whole
+        :param reservoir: reservoir
+        :param encoder: encoder
+        :param concat_function: concat function
+        :param concat_before: true if concat_function is to be applied before transformation, false otherwise
+        :param identifier: id that makes the work unique
+        :param queue: to put the identifier on when done
+        :return:
+        """
         inputs = encoder.translate(sets)
 
         inputs = concat_function(inputs, encoder.n_random_mappings) if concat_before else inputs
@@ -60,17 +69,26 @@ class Computer:
         if not concat_before:
             outputs = concat_function(outputs, encoder.n_random_mappings)
 
+        out_file = open(file_name(identifier), 'wb')
         dumper.dump(outputs, out_file)
         out_file.close()
         queue.put(identifier)
 
-    def _distribute_and_collect(self, sets, n_processes):
+    def _distribute_and_collect(self, sets):
+        """Divides the sets into parts,
+        distributes them to processes,
+        and collects the results afterwards
+
+        :param sets:
+        :return:
+        """
         # Starting processes to distribute work
         out_q = Queue()
-        sets_per_thread = len(sets) / n_processes
         processes = []
+        n_processes = _n_processes(sets)
+
         for n in xrange(n_processes):
-            start, end = range_from(sets, n, n_processes)
+            start, end = custom_range(sets, n, n_processes)
             process = Process(target=self._translate_and_transform,
                               args=(sets[start:end],
                                     copy.deepcopy(self.reservoir),
@@ -84,28 +102,17 @@ class Computer:
 
         # Collecting data from the different processes
         outputs = [None] * len(sets)
-        print "Started to collect"
-        time_checkpoint = time.time()
         for _ in xrange(n_processes):
-            print "Work time %f. Now waiting for work" % (time.time() - time_checkpoint)
-            time_checkpoint = time.time()
-            identifier = out_q.get()  # Process index; from where the process began
-            print "Working on %s. Idle time %f" % (identifier, time.time() - time_checkpoint)
-            time_checkpoint = time.time()
+            identifier = out_q.get()  # Process identifier
             in_file = open(file_name(identifier), 'rb')
 
-            # for i in xrange(sets_per_thread):
-            #     outputs[process_i + i] = dumper.load(in_file)
             data = dumper.load(in_file)
             outputs[identifier[0]:identifier[1]] = data
 
             in_file.close()
-        print "Work time %f" % (time.time() - time_checkpoint)
-        print "Collected"
 
         for process in processes:
             process.join()
-        print "Joined processes"
 
         return outputs
 
@@ -120,45 +127,56 @@ class Computer:
         return outputs
 
 
-def range_from(sets, part, n_parts):
-    n_sets = len(sets)
+def custom_range(sets, part, n_parts):
+    """Calculates a start index and an end index from the arguments
 
-    if n_sets > 9:
-        part_sizes = custom_range(n_parts)
-        start = int(round(sum(part_sizes[:part]) * n_sets))
-        end = int(round(sum(part_sizes[:part + 1]) * n_sets))
-        # end = n_sets if part == len(part_sizes) else start + size
-    else:
-        # Just dividing into n_parts equal parts
-        size = n_sets / n_parts
-        start = part * size
-        end = start + size
+    :param sets:
+    :param part:
+    :param n_parts:
+    :return: start, end
+    """
+    if part >= n_parts:
+        raise ValueError("Size of part must be less than n_parts")
+
+    n_sets = len(sets)
+    sizes = sizes_of(n_parts)
+
+    start = int(round(sum(sizes[:part]) * n_sets))
+    end = int(round(sum(sizes[:part + 1]) * n_sets))
 
     return start, end
 
 
-def custom_range(n_parts):
+def sizes_of(n_parts):
+    """Finds different sizes of distribution.
+
+    :param n_parts: the number of parts you want to distribute work to
+    :return: a list of length n_parts, with values summing to 1
+    """
     if n_parts == 4:
-        # return [0.16, 0.22, 0.28, 0.34]
-        # return [0.19, 0.23, 0.27, 0.31]
         return [0.22, 0.24, 0.26, 0.28]
+    elif n_parts == 2:
+        return [0.45, 0.55]
+    elif n_parts == 1:
+        return [1]
     else:
         raise NotImplementedError("n_parts of value %d is not implemented" % n_parts)
 
 
-def custom_range2(n_parts):
-    return [2**i for i in xrange(n_parts)]
-
-
 def _n_processes(sets):
+    """
+
+    :param sets:
+    :return: a number of processes in which you can divide the sets
+    """
     n_sets = len(sets)
-    if n_sets % 4 == 0:
+    if n_sets >= 4:
         return 4
-    elif n_sets % 2 == 0:
+    elif n_sets >= 2:
         return 2
     else:
         return 1
 
 
-def file_name(nr):
-    return "%s%s%s.%s" % (dump_path, prefix, nr, file_type)
+def file_name(identifier):
+    return "%s%s%s.%s" % (dump_path, prefix, identifier, file_type)

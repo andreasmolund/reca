@@ -16,21 +16,15 @@ class TemporalComputer(Computer):
         :param labels: a list/array with the same shape as sets, so that it corresponds
         :return: void
         """
-        time_checkpoint = time.time()
-        x = self._distribute_and_collect(sets, n_processes=4)
+        x = self._distribute_and_collect(sets)
         x = self._post_process(x)
-        if self.verbose > 0:
-            print "Transformed training sets:", time.time() - time_checkpoint
 
         labels = np.array(labels).flatten()
-        # self.estimator.fit(x, labels)
+        self.estimator.fit(x, labels)
 
     def test(self, sets):
-        time_checkpoint = time.time()
-        x = self._distribute_and_collect(sets, n_processes=4)
+        x = self._distribute_and_collect(sets)
         x = self._post_process(x)
-        if self.verbose > 0:
-            print "Transformed testing sets: ", time.time() - time_checkpoint
 
         return x, self.estimator.predict(x).reshape(len(sets), len(sets[0]))
 
@@ -43,7 +37,6 @@ class TemporalComputer(Computer):
 
     @staticmethod
     def _translate_and_transform(sets, reservoir, encoder, concat_function, concat_before, identifier, queue):
-        out_file = open(file_name(identifier), 'wb')
         n_time_steps = len(sets[0])
         size = encoder.total_area
         n_random_mappings = encoder.n_random_mappings
@@ -83,6 +76,7 @@ class TemporalComputer(Computer):
         outputs = np.transpose(outputs, (1, 0, 2))
 
         # Writing to file
+        out_file = open(file_name(identifier), 'wb')
         dumper.dump(outputs.tolist(), out_file)
         out_file.close()
 
