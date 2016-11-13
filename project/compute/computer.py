@@ -2,6 +2,9 @@ import copy
 import itertools
 import marshal as dumper
 from multiprocessing import Process, Queue
+from math import floor, ceil
+
+import time
 
 dump_path = "tmp/"
 prefix = "dump-process"
@@ -81,8 +84,14 @@ class Computer:
 
         # Collecting data from the different processes
         outputs = [None] * len(sets)
+        print "Started to collect"
+        time_checkpoint = time.time()
         for _ in xrange(n_processes):
+            print "Work time %f. Now waiting for work" % (time.time() - time_checkpoint)
+            time_checkpoint = time.time()
             identifier = out_q.get()  # Process index; from where the process began
+            print "Working on %s. Idle time %f" % (identifier, time.time() - time_checkpoint)
+            time_checkpoint = time.time()
             in_file = open(file_name(identifier), 'rb')
 
             # for i in xrange(sets_per_thread):
@@ -91,9 +100,12 @@ class Computer:
             outputs[identifier[0]:identifier[1]] = data
 
             in_file.close()
+        print "Work time %f" % (time.time() - time_checkpoint)
+        print "Collected"
 
         for process in processes:
             process.join()
+        print "Joined processes"
 
         return outputs
 
@@ -110,13 +122,12 @@ class Computer:
 
 def range_from(sets, part, n_parts):
     n_sets = len(sets)
-    part_sizes = custom_range(n_parts)
-    fraction_size = n_sets / sum(part_sizes)
 
-    if n_sets % sum(part_sizes) == 0:
-        size = part_sizes[part] * fraction_size
-        start = sum(part_sizes[:part]) * fraction_size
-        end = start + size
+    if n_sets > 9:
+        part_sizes = custom_range(n_parts)
+        start = int(round(sum(part_sizes[:part]) * n_sets))
+        end = int(round(sum(part_sizes[:part + 1]) * n_sets))
+        # end = n_sets if part == len(part_sizes) else start + size
     else:
         # Just dividing into n_parts equal parts
         size = n_sets / n_parts
@@ -127,7 +138,12 @@ def range_from(sets, part, n_parts):
 
 
 def custom_range(n_parts):
-    return [i + 1 for i in xrange(n_parts)]
+    if n_parts == 4:
+        # return [0.16, 0.22, 0.28, 0.34]
+        # return [0.19, 0.23, 0.27, 0.31]
+        return [0.22, 0.24, 0.26, 0.28]
+    else:
+        raise NotImplementedError("n_parts of value %d is not implemented" % n_parts)
 
 
 def custom_range2(n_parts):

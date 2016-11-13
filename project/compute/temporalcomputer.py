@@ -17,7 +17,7 @@ class TemporalComputer(Computer):
         :return: void
         """
         time_checkpoint = time.time()
-        x = self._distribute_and_collect(sets, n_processes=_n_processes(sets))
+        x = self._distribute_and_collect(sets, n_processes=4)
         x = self._post_process(x)
         if self.verbose > 0:
             print "Transformed training sets:", time.time() - time_checkpoint
@@ -27,7 +27,7 @@ class TemporalComputer(Computer):
 
     def test(self, sets):
         time_checkpoint = time.time()
-        x = self._distribute_and_collect(sets, n_processes=_n_processes(sets))
+        x = self._distribute_and_collect(sets, n_processes=4)
         x = self._post_process(x)
         if self.verbose > 0:
             print "Transformed testing sets: ", time.time() - time_checkpoint
