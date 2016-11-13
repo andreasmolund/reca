@@ -4,7 +4,7 @@
 import random as rn
 
 import numpy as np
-np.random.seed(20161112)
+# np.random.seed(20161112)
 
 
 def bit_memory_task(quantity, bits, distractor_period):
@@ -76,6 +76,7 @@ def temporal_parity(quantity, size, window_size=2, delay=0):
 
             task.append(task_element.tolist())
             label_element = False if from_i < delay else sum(task[i - delay]) % 2 == 1
+            label_element = 1 if label_element else 0
             label.append(label_element)
         tasks.append(task)
         labels.append(label)
