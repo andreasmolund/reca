@@ -50,8 +50,8 @@ def main(raw_args):
                              verbose=verbose)
     automation = CA(rule, k=2, n=3)
     reservoir = Reservoir(automation, n_iterations, verbose=verbose)
-    estimator = LinearRegressionEstimator(3)
-    # estimator = svm.SVC()
+    # estimator = LinearRegressionEstimator(3)
+    estimator = svm.SVC()
     # estimator = svm.SVC(kernel='linear')
     # estimator = linear_model.LinearRegression()
     computer = TemporalComputer(encoder,
@@ -62,6 +62,7 @@ def main(raw_args):
 
     # Training
     time_checkpoint = time.time()
+    # labels = [y[0] for y in [time_step for time_step in [a_set for a_set in labels]]]
     computer.train(inputs[:n_training_sets], labels[:n_training_sets])
     print "Training time:       ", (time.time() - time_checkpoint)
 
