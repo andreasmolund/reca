@@ -1,5 +1,6 @@
 from sklearn import linear_model
-from reservoir.util import classify_output
+import numpy as np
+import reservoir.util as rutil
 
 
 class LinearRegressionEstimator:
@@ -9,12 +10,12 @@ class LinearRegressionEstimator:
 
     def fit(self, X, y):
         for i, output_node in enumerate(self.output_nodes):
-            output_node.fit(X, [label[i] for label in y])
+            output_node.fit(X, [labels[i] for labels in y])
 
     def predict(self, X):
         predictions = [None] * len(self.output_nodes)
         for i, output_node in enumerate(self.output_nodes):
-            predictions[i] = classify_output(output_node.predict(X))
-        return predictions
+            predictions[i] = rutil.classify_output(output_node.predict(X))
+        return np.transpose(predictions, (1, 0))
 
 

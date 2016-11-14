@@ -20,8 +20,11 @@ def bit_memory_task(quantity, bits, distractor_period):
 
     for i in xrange(quantity):
         y = 2  # y being 0, 1, 2 means which of the output nodes y1, y2, y3 that is activated, respectively
+        y1 = 0
+        y2 = 0
+        y3 = 1
         task = []
-        label = []
+        set_labels = []
         for t in xrange(bits + distractor_period + 1 + bits):
             if t < bits:
                 bit = (i & 2**t) / 2**t
@@ -47,20 +50,22 @@ def bit_memory_task(quantity, bits, distractor_period):
 
             if t > bits + distractor_period:
                 y1 = task[t - (bits + distractor_period) - 1][0]
+                y2 = 1 - y1
+                y3 = 0
                 y = 0 if y1 == 1 else 1
 
             # if i == 7:
             #     print "%d %d %d %d -> %d" % (a1, a2, a3, a4, y)
-            label.append(y)
+            set_labels.append([y1, y2, y3])
         tasks.append(task)
-        labels.append(label)
+        labels.append(set_labels)
     return tasks, labels
 
 
 def temporal_parity(quantity, size, window_size=2, delay=0):
     tasks = []
     labels = []
-    for _ in xrange(quantity):
+    for q in xrange(quantity):
         task = []
         label = []
 
@@ -73,10 +78,12 @@ def temporal_parity(quantity, size, window_size=2, delay=0):
             if to_i > size:
                 # Adding zeros if we have moved beyond the original bit_stream
                 task_element = np.append(task_element, np.zeros(min(to_i - size, window_size), dtype='int'))
+            if q == 1:
+                print task_element
 
             task.append(task_element.tolist())
             label_element = False if from_i < delay else sum(task[i - delay]) % 2 == 1
-            label_element = 1 if label_element else 0
+            label_element = [1] if label_element else [0]
             label.append(label_element)
         tasks.append(task)
         labels.append(label)

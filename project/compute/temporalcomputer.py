@@ -1,9 +1,8 @@
 import marshal as dumper
 
 import numpy as np
-import time
+from computer import Computer, file_name
 
-from compute.computer import Computer, file_name, _n_processes
 from operators import bitwise_or
 
 
@@ -19,14 +18,16 @@ class TemporalComputer(Computer):
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
 
-        labels = np.array(labels).flatten()
+        labels = np.array(labels)
+        shape = labels.shape
+        labels = labels.reshape(shape[0] * shape[1], shape[2])
         self.estimator.fit(x, labels)
 
     def test(self, sets):
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
-
-        return x, self.estimator.predict(x).reshape(len(sets), len(sets[0]))
+        predictions = self.estimator.predict(x)
+        return x, predictions.reshape(len(sets), len(sets[0]), predictions.shape[1])
 
     @staticmethod
     def _post_process(outputs):
