@@ -23,9 +23,10 @@ logging.basicConfig(format='"%(asctime)s",%(message)s',
                     filename='results/bitmemorytask-%s.csv' % start_time.isoformat(),
                     level=logging.INFO)
 logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,"
-             "Training sets,Testing sets,Distractor period,Successful,Soft successful")
+             "Training sets,Testing sets,Distractor period,"
+             "Successful,Soft successful")
 
-n_whole_runs = 100
+n_whole_runs = 250
 
 n_training_sets = 32
 n_testing_sets = 32
@@ -41,7 +42,7 @@ def main(raw_args):
 
     size = 4
     time_steps = 2 * bits + distractor_period + 1
-    concat_before = False
+    concat_before = True
     verbose = 1
 
     encoder = ClassicEncoder(n_random_mappings,

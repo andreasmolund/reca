@@ -1,7 +1,9 @@
+import os
 import copy
 import itertools
 import marshal as dumper
 from multiprocessing import Process, Queue
+import random as rand
 
 import numpy as np
 
@@ -94,7 +96,7 @@ class Computer:
         # Starting processes to distribute work
         out_q = Queue()
         processes = []
-        n_processes = 1
+        n_processes = _n_processes(sets)
 
         for n in xrange(n_processes):
             start, end = custom_range(sets, n, n_processes)
@@ -105,7 +107,7 @@ class Computer:
                                     self._concat_before,
                                     self._concat_after,
                                     self.concat_before,
-                                    (start, end),
+                                    (start, end, '%032x' % rand.getrandbits(128)),
                                     out_q))
             processes.append(process)
             process.start()
@@ -120,6 +122,7 @@ class Computer:
             outputs[identifier[0]:identifier[1]] = data
 
             in_file.close()
+            os.remove(file_name(identifier))
 
         for process in processes:
             process.join()
