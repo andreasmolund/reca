@@ -22,9 +22,10 @@ start_time = datetime.now()
 logging.basicConfig(format='"%(asctime)s",%(message)s',
                     filename='results/bitmemorytask-%s.csv' % start_time.isoformat(),
                     level=logging.INFO)
-logging.info("I,R,Rule,Input size,Input area,Automaton size,Training sets,Testing sets,Distractor period,Successful")
+logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,"
+             "Training sets,Testing sets,Distractor period,Successful,Soft successful")
 
-n_whole_runs = 10
+n_whole_runs = 100
 
 n_training_sets = 32
 n_testing_sets = 32
@@ -40,7 +41,7 @@ def main(raw_args):
 
     size = 4
     time_steps = 2 * bits + distractor_period + 1
-    concat_before = True
+    concat_before = False
     verbose = 1
 
     encoder = ClassicEncoder(n_random_mappings,
@@ -62,44 +63,49 @@ def main(raw_args):
 
     # Training
     time_checkpoint = time.time()
-    # labels = [y[0] for y in [time_step for time_step in [a_set for a_set in labels]]]
     computer.train(inputs[:n_training_sets], labels[:n_training_sets])
-    print "Training time:       ", (time.time() - time_checkpoint)
+    # print "Training time:       ", (time.time() - time_checkpoint)
 
     # Testing
     time_checkpoint = time.time()
-    x, y_pred = computer.test(inputs[:n_training_sets])
-    print "Testing time:        ", (time.time() - time_checkpoint)
+    x, y_pred = computer.test(inputs[n_training_sets:])
+    # print "Testing time:        ", (time.time() - time_checkpoint)
     out_file = open("%s%s.%s" % (result_path, result_prefix, file_type), 'wb')
     dumper.dump(y_pred.tolist(), out_file)
     dumper.dump(labels[n_training_sets:], out_file)
     out_file.close()
     n_correct = 0
+    n_correct_soft = 0
     for pred, set_labels in zip(y_pred, labels[n_training_sets:]):
+        soft_reward = 1.0 / len(pred)
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
-            if pred_element.tolist() != label_element:
+            if pred_element != label_element:
                 correct = False
+            else:
+                n_correct_soft += soft_reward
         if correct:
             n_correct += 1
     print "Correct:              %d/%d" % (n_correct, n_testing_sets)
-    logging.info("%d,%d,%d,%d,%d,%d,%d,%d,%d,%f",
+    logging.info("%d,%d,%d,%d,%d,%d,%s,%d,%d,%d,%d,%f",
                  n_iterations,
                  encoder.n_random_mappings,
                  rule,
                  size,
                  encoder.input_area,
                  encoder.automaton_area,
+                 concat_before,
                  n_training_sets,
                  n_testing_sets,
                  distractor_period,
-                 (100.0 * n_correct / n_testing_sets))
+                 n_correct,
+                 n_correct_soft)
 
     # Drawing
-    print "a1 positions:        ", encoder.pos(0)
-    print "a2 positions:        ", encoder.pos(1)
-    print "Distractor positions:", encoder.pos(2)
-    print "Cue positions:       ", encoder.pos(3)
+    # print "a1 positions:        ", encoder.pos(0)
+    # print "a2 positions:        ", encoder.pos(1)
+    # print "Distractor positions:", encoder.pos(2)
+    # print "Cue positions:       ", encoder.pos(3)
     if n_whole_runs < 2:
         plot_temporal(x,
                       n_random_mappings,
@@ -132,16 +138,16 @@ def digest_args(args):
         elif o == '--automaton-area':
             automaton_area = int(a)
 
-    print opts
     return size, rule, iterations, random_mappings, input_area, automaton_area
 
 if __name__ == '__main__':
-    for _ in xrange(n_whole_runs):
+    for r in xrange(n_whole_runs):
+        print "Run %d started" % r
         if len(sys.argv) > 1:
             main(sys.argv)
         else:
             main(['bitmemorytask.py',
-                  '-r', '90',
-                  '-i', '8',
-                  '--random-mappings', '8',
-                  '--input-area', '40'])
+                  '-r', '204',
+                  '-i', '4',
+                  '--random-mappings', '2',
+                  '--input-area', '8'])

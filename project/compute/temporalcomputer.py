@@ -20,14 +20,21 @@ class TemporalComputer(Computer):
 
         labels = np.array(labels)
         shape = labels.shape
-        labels = labels.reshape(shape[0] * shape[1], shape[2])
+        if len(shape) < 3:
+            new_shape = shape[0] * shape[1]
+        else:
+            new_shape = (shape[0] * shape[1], shape[2])
+        labels = labels.reshape(new_shape)
         self.estimator.fit(x, labels)
 
     def test(self, sets):
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
         predictions = self.estimator.predict(x)
-        return x, predictions.reshape(len(sets), len(sets[0]), predictions.shape[1])
+        new_shape = (len(sets), len(sets[0]))
+        if len(predictions.shape) > 1:
+            new_shape = new_shape + (predictions.shape[1],)
+        return x, predictions.reshape(new_shape)
 
     @staticmethod
     def _post_process(outputs):
@@ -37,7 +44,14 @@ class TemporalComputer(Computer):
         return outputs.reshape(shape[0] * shape[1], shape[2])
 
     @staticmethod
-    def _translate_and_transform(sets, reservoir, encoder, concat_function, concat_before, identifier, queue):
+    def _translate_and_transform(sets,
+                                 reservoir,
+                                 encoder,
+                                 concat_before_function,
+                                 concat_after_function,
+                                 concat_before,
+                                 identifier,
+                                 queue):
         n_time_steps = len(sets[0])
         size = encoder.total_area
         n_random_mappings = encoder.n_random_mappings
@@ -60,14 +74,15 @@ class TemporalComputer(Computer):
                 sets_at_t = new_sets_at_t
 
             # Concatenating before if that is to be done
-            sets_at_t = concat_function(sets_at_t, n_random_mappings) if concat_before else sets_at_t
+            if concat_before:
+                sets_at_t = concat_before_function(sets_at_t, n_random_mappings)
 
             # Transforming in the reservoir
             outputs_at_t = reservoir.transform(sets_at_t)
 
             # Concatenating after if it wasn't done before
             if not concat_before:
-                outputs_at_t = concat_function(outputs_at_t, n_random_mappings)
+                outputs_at_t = concat_after_function(outputs_at_t, n_random_mappings, size / n_random_mappings)
 
             # Saving
             outputs[t] = outputs_at_t

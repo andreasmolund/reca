@@ -18,7 +18,7 @@ def main(raw_args):
 
     n_training_sets = 30
     n_testing_sets = 20
-    time_steps = 200
+    time_steps = 20
     delay = 0
     concat_before = True
     verbose = 1
@@ -87,9 +87,9 @@ def main(raw_args):
 
 if __name__ == '__main__':
     arg_size = '3'
-    arg_rule = '90'
-    arg_n_iterations = '8'
-    arg_n_random_mappings = '8'
+    arg_rule = '204'
+    arg_n_iterations = '4'
+    arg_n_random_mappings = '4'
     arg_input_area = '30'
 
     if len(sys.argv) > 1:

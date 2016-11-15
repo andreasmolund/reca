@@ -1,8 +1,9 @@
 import copy
 import itertools
 import marshal as dumper
-import time
 from multiprocessing import Process, Queue
+
+import numpy as np
 
 dump_path = "tmp/"
 prefix = "dump-process"
@@ -47,14 +48,22 @@ class Computer:
         return self.estimator.predict(outputs)
 
     @staticmethod
-    def _translate_and_transform(sets, reservoir, encoder, concat_function, concat_before, identifier, queue):
+    def _translate_and_transform(sets,
+                                 reservoir,
+                                 encoder,
+                                 concat_before_function,
+                                 concat_after_function,
+                                 concat_before,
+                                 identifier,
+                                 queue):
         """What the computer desires to to with the sets.
         How it wants to translate and transform them.
 
         :param sets: a subset of the whole
         :param reservoir: reservoir
         :param encoder: encoder
-        :param concat_function: concat function
+        :param concat_before_function: function for concatenating before reservoir transformation
+        :param concat_after_function: function for concatenating after
         :param concat_before: true if concat_function is to be applied before transformation, false otherwise
         :param identifier: id that makes the work unique
         :param queue: to put the identifier on when done
@@ -62,12 +71,12 @@ class Computer:
         """
         inputs = encoder.translate(sets)
 
-        inputs = concat_function(inputs, encoder.n_random_mappings) if concat_before else inputs
+        inputs = concat_before_function(inputs, encoder.n_random_mappings) if concat_before else inputs
 
         outputs = reservoir.transform(inputs)
 
         if not concat_before:
-            outputs = concat_function(outputs, encoder.n_random_mappings)
+            outputs = concat_before_function(outputs, encoder.n_random_mappings)
 
         out_file = open(file_name(identifier), 'wb')
         dumper.dump(outputs, out_file)
@@ -85,7 +94,7 @@ class Computer:
         # Starting processes to distribute work
         out_q = Queue()
         processes = []
-        n_processes = _n_processes(sets)
+        n_processes = 1
 
         for n in xrange(n_processes):
             start, end = custom_range(sets, n, n_processes)
@@ -93,7 +102,8 @@ class Computer:
                               args=(sets[start:end],
                                     copy.deepcopy(self.reservoir),
                                     copy.deepcopy(self.encoder),
-                                    self._concat,
+                                    self._concat_before,
+                                    self._concat_after,
                                     self.concat_before,
                                     (start, end),
                                     out_q))
@@ -117,13 +127,33 @@ class Computer:
         return outputs
 
     @staticmethod
-    def _concat(elements, from_n_parts):
-        from_n_parts = from_n_parts
+    def _concat_before(elements, from_n_parts):
         outputs = []
         for i in xrange(len(elements) / from_n_parts):
-            span = i * from_n_parts
+            span = i * from_n_parts  # From where to concatenate
             concat = list(itertools.chain.from_iterable(elements[span:span + from_n_parts]))
             outputs.append(concat)
+        return outputs
+
+    @staticmethod
+    def _concat_after(elements, n_random_mappings, intertwine_size):
+        """
+
+        :param elements:
+        :param n_random_mappings:
+        :param intertwine_size: really the size of one CA (R * automaton area)
+        :return:
+        """
+        outputs = []
+        for i in xrange(0, len(elements), n_random_mappings):
+            a = np.array(elements[i])
+            n_rows = a.shape[0] / intertwine_size
+            a = a.reshape(n_rows, intertwine_size)
+            for e in xrange(1, n_random_mappings):
+                element = np.array(elements[i + e]).reshape(n_rows, intertwine_size)
+                a = np.insert(a, intertwine_size * e, element.T, axis=1)
+            # concat = list(itertools.chain.from_iterable(elements[span:span + n_random_mappings]))
+            outputs.append(a.reshape(n_rows * intertwine_size * n_random_mappings).tolist())
         return outputs
 
 
