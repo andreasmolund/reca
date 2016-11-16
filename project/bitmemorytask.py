@@ -22,7 +22,7 @@ start_time = datetime.now()
 logit = False
 if logit:
     logging.basicConfig(format='"%(asctime)s",%(message)s',
-                        filename='results/bitmemorytask-%s.csv' % start_time.isoformat(),
+                        filename='preresults/bitmemorytask-%s.csv' % start_time.isoformat(),
                         level=logging.INFO)
     logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,"
                  "Training sets,Testing sets,Distractor period,"

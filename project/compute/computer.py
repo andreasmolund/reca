@@ -88,7 +88,7 @@ class Computer:
     def _distribute_and_collect(self, sets):
         """Divides the sets into parts,
         distributes them to processes,
-        and collects the results afterwards
+        and collects the preresults afterwards
 
         :param sets:
         :return:
