@@ -56,8 +56,8 @@ def bit_memory_task(quantity, bits, distractor_period):
 
             # if i == 7:
             #     print "%d %d %d %d -> %d" % (a1, a2, a3, a4, y)
-            # set_labels.append([y1, y2, y3])  # For multiple output nodes
-            set_labels.append(y)
+            set_labels.append([y1, y2, y3])  # For multiple output nodes
+            # set_labels.append(y)
         tasks.append(task)
         labels.append(set_labels)
     return tasks, labels

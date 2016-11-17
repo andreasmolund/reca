@@ -4,7 +4,7 @@ import sys
 import time
 
 from datetime import datetime
-from sklearn import svm
+from sklearn import svm, linear_model
 import logging
 
 import problemgenerator as problems
@@ -13,26 +13,19 @@ from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
 from plotter import plot_temporal
 from reservoir.reservoir import Reservoir
-from estimators.linearregressionestimator import LinearRegressionEstimator
+from reservoir.util import classify_output
 
 result_path = "tmpresults/"
 result_prefix = "bitmemoryresults"
 file_type = "dump"
 start_time = datetime.now()
-logit = False
-if logit:
-    logging.basicConfig(format='"%(asctime)s",%(message)s',
-                        filename='preresults/bitmemorytask-%s.csv' % start_time.isoformat(),
-                        level=logging.INFO)
-    logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,"
-                 "Training sets,Testing sets,Distractor period,"
-                 "Successful,Soft successful")
+logit = True
 
-n_whole_runs = 1
+n_whole_runs = 5
 n_training_sets = 32
 n_testing_sets = 32
 bits = 5
-distractor_period = 20
+distractor_period = 200
 inputs, labels = problems.bit_memory_task(n_training_sets + n_testing_sets,
                                           bits,
                                           distractor_period)
@@ -51,12 +44,11 @@ def main(raw_args):
                              input_area,
                              automaton_area,
                              verbose=verbose)
-    automation = CA(rule, k=2, n=3)
-    reservoir = Reservoir(automation, n_iterations, verbose=verbose)
-    # estimator = LinearRegressionEstimator(3)
-    estimator = svm.SVC()
+    automaton = CA(rule, k=2, n=3)
+    reservoir = Reservoir(automaton, n_iterations, verbose=verbose)
+    estimator = linear_model.LinearRegression()
+    # estimator = svm.SVC()
     # estimator = svm.SVC(kernel='linear')
-    # estimator = linear_model.LinearRegression()
     computer = TemporalComputer(encoder,
                                 reservoir,
                                 estimator,
@@ -72,10 +64,11 @@ def main(raw_args):
     # time_checkpoint = time.time()
     x, y_pred = computer.test(inputs[n_training_sets:])
     # print "Testing time:        ", (time.time() - time_checkpoint)
-    out_file = open("%s%s.%s" % (result_path, result_prefix, file_type), 'wb')
-    dumper.dump(y_pred.tolist(), out_file)
-    dumper.dump(labels[n_training_sets:], out_file)
-    out_file.close()
+    y_pred = [[classify_output(set_prediction) for set_prediction in set_predictions] for set_predictions in y_pred]
+    # out_file = open("%s%s.%s" % (result_path, result_prefix, file_type), 'wb')
+    # dumper.dump(y_pred, out_file)
+    # dumper.dump(labels[n_training_sets:], out_file)
+    # out_file.close()
     n_correct = 0
     n_incorrect_bits = 0
     for pred, set_labels in zip(y_pred, labels[n_training_sets:]):
@@ -89,7 +82,7 @@ def main(raw_args):
     # print "Correct:              %d/%d" % (n_correct, n_testing_sets)
     # print "Incorrect bits:       %d" % n_incorrect_bits
     if logit:
-        logging.info("%d,%d,%d,%d,%d,%d,%s,%d,%d,%d,%d,%d",
+        logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d",
                      n_iterations,
                      encoder.n_random_mappings,
                      rule,
@@ -97,6 +90,7 @@ def main(raw_args):
                      encoder.input_area,
                      encoder.automaton_area,
                      concat_before,
+                     estimator.__class__.__name__,
                      n_training_sets,
                      n_testing_sets,
                      distractor_period,
@@ -104,10 +98,10 @@ def main(raw_args):
                      n_incorrect_bits)
 
     # Drawing
-    print "a1 positions:        ", encoder.pos(0)
-    print "a2 positions:        ", encoder.pos(1)
-    print "Distractor positions:", encoder.pos(2)
-    print "Cue positions:       ", encoder.pos(3)
+    # print "a1 positions:        ", encoder.pos(0)
+    # print "a2 positions:        ", encoder.pos(1)
+    # print "Distractor positions:", encoder.pos(2)
+    # print "Cue positions:       ", encoder.pos(3)
     if n_whole_runs < 2:
         plot_temporal(x,
                       encoder.n_random_mappings,
@@ -144,13 +138,20 @@ def digest_args(args):
     return size, rule, iterations, random_mappings, input_area, automaton_area
 
 if __name__ == '__main__':
+    if logit:
+        logging.basicConfig(format='"%(asctime)s",%(message)s',
+                            filename='preresults/bitmem1-%s.csv' % start_time.isoformat(),
+                            level=logging.INFO)
+        logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
+                     "Training sets,Testing sets,Distractor period,"
+                     "Successful,Wrong bits")
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:
             main(sys.argv)
         else:
             main(['bitmemorytask.py',
-                  '-r', '90',
+                  '-r', '102',
                   '-i', '4',
                   '--random-mappings', '4',
                   '--input-area', '40',

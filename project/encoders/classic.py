@@ -73,12 +73,19 @@ class ClassicEncoder:
 
         return mapped_vector
 
+    def normalised_addition(self, master, second):
+        mapped_master = [0b0] * (self.n_random_mappings * self.automaton_area)
+        raise NotImplementedError("Not fully implemented yet")
+
     def pos(self, element):
         """Get what positions an element has
 
         :return: the position of all the element's mapping
         """
         return [pos[element] for pos in self.random_mappings]
+
+    def mappings(self):
+        return self.random_mappings
 
     @property
     def n_random_mappings(self):
