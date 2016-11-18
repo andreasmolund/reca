@@ -17,12 +17,11 @@ from reservoir.util import classify_output
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 1000
-n_training_sets = 32
-n_testing_sets = 32
+n_whole_runs = 1
+n_sets = 32
 bits = 5
-distractor_period = 20
-inputs, labels = problems.bit_memory_task(n_training_sets + n_testing_sets,
+distractor_period = 200
+inputs, labels = problems.bit_memory_task(n_sets,
                                           bits,
                                           distractor_period)
 
@@ -59,29 +58,36 @@ def main(raw_args):
                                  concat_before=concat_before,
                                  verbose=verbose)
 
+    # The first reservoir needs to be trained (fit)
     try:
-        computer1.train(inputs[:n_training_sets], labels[:n_training_sets])
-    except LinAlgError as e:
-        handle_linalgerror(e, computer1, encoder1, inputs[:n_training_sets], labels[:n_training_sets])
+        # Preserving the values of the output nodes
+        x1 = computer1.train(inputs, labels)
+    except LinAlgError:
+        logging.error("LinAlgError occured: Skipping this run.")
         return
 
-    _, o1 = computer1.test(inputs[:n_training_sets])
+    # The first reservoir needs to predict the output (predict)
+    _, o1 = computer1.test(inputs, x1)
     o1 = [[classify_output(t) for t in s] for s in o1]
 
+    # Then, the second reservoir needs to be trained (fit)
     try:
-        computer2.train(o1[:n_testing_sets], labels[:n_testing_sets])
-    except LinAlgError as e:
-        handle_linalgerror(e, computer2, encoder2, o1[:n_testing_sets], labels[:n_testing_sets])
+        # Preserving the values of the output nodes
+        x2 = computer2.train(o1, labels)
+    except LinAlgError:
+        logging.error("LinAlgError occured: Skipping this run.")
         return
 
-    _, o1 = computer1.test(inputs[n_training_sets:])
-    o1 = [[classify_output(t) for t in s] for s in o1]
-    _, o2 = computer2.test(o1)
+    # Currently, the system is trained.
+    # Now we need to test,
+    # but it is no need to transform and predict the output of the first reservoir.
+
+    _, o2 = computer2.test(o1, x2)
     o2 = [[classify_output(t) for t in s] for s in o2]
 
     r1_n_correct = 0
     r1_n_incorrect_bits = 0
-    for pred, set_labels in zip(o1, labels[n_training_sets:]):
+    for pred, set_labels in zip(o1, labels):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
             if pred_element != label_element:
@@ -94,7 +100,7 @@ def main(raw_args):
 
     r2_n_correct = 0
     r2_n_incorrect_bits = 0
-    for pred, set_labels in zip(o2, labels[n_training_sets:]):
+    for pred, set_labels in zip(o2, labels):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
             if pred_element != label_element:
@@ -106,7 +112,7 @@ def main(raw_args):
     # print "2. Incorrect bits:", n_incorrect_bits
 
     if logit:
-        logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d",
+        logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d",
                      n_iterations,
                      encoder1.n_random_mappings,
                      rule,
@@ -115,54 +121,23 @@ def main(raw_args):
                      encoder1.automaton_area,
                      concat_before,
                      estimator1.__class__.__name__,
-                     n_training_sets,
-                     n_testing_sets,
+                     n_sets,
+                     n_sets,
                      distractor_period,
+                     1 if r2_n_correct == n_sets else 0,
                      r1_n_correct,
                      r1_n_incorrect_bits,
                      r2_n_correct,
                      r2_n_incorrect_bits)
 
-
-def bitify_classes(sets, n_classes=3):
-    bitified_sets = []
-    for a_set in sets:
-        bitified_set = []
-        for a_class in a_set:
-            bitified_class = [0] * n_classes
-            bitified_class[a_class] = 1
-            bitified_set.append(bitified_class)
-        bitified_sets.append(bitified_set)
-    return bitified_sets
-
-
-def handle_linalgerror(e, computer, encoder, p_inputs, p_labels):
-    print "ERROR OCCURED YO"
-    print "YO DUDE"
-    # Print encoder's mappings ...
-    x = computer._distribute_and_collect(p_inputs)
-    x = computer._post_process(x)
-    np.set_printoptions(threshold='nan')
-    logging.warning("\"Hmmmmm, a LinAlgError occured. Why is that? Have a look:\n"
-                    "e: %s\n"
-                    "e.args: %s\n"
-                    "e.message: %s\n"
-                    "Encoder mappings: %s\n"
-                    "Sets: %s\n"
-                    "Labels: %s\n"
-                    "Outputs \"nodes\": %s\"",
-                    e, e.args, e.message, encoder.mappings(), p_inputs, p_labels[:n_training_sets], x)
-    np.set_printoptions(threshold=1000)
-
-
 if __name__ == '__main__':
     if logit:
         logging.basicConfig(format='"%(asctime)s",%(message)s',
-                            filename='preresults/bitmem2-%s.csv' % start_time.isoformat(),
+                            filename='preresults/%s-bitmem2.csv' % start_time.isoformat(),
                             level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
-                     "R1 successful,R1 wrong bits,R2 successful,R2 wrong bits")
+                     "Point (success),R1 correct,R1 wrong bits,R2 correct,R2 wrong bits")
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:
@@ -170,7 +145,7 @@ if __name__ == '__main__':
         else:
             main(['bitmemorytask.py',
                   '-r', '102',
-                  '-i', '4',
-                  '--random-mappings', '4',
-                  '--input-area', '40',
+                  '-i', '3',
+                  '--random-mappings', '5',
+                  '--input-area', '29',
                   '--automaton-area', '0'])

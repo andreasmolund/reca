@@ -13,7 +13,7 @@ class TemporalComputer(Computer):
 
         :param sets: a list of training sets, each containing a list of their chronological input vectors
         :param labels: a list/array with the same shape as sets, so that it corresponds
-        :return: void
+        :return: x, the values of the output nodes
         """
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
@@ -26,12 +26,12 @@ class TemporalComputer(Computer):
             new_shape = (shape[0] * shape[1], shape[2])
         labels = labels.reshape(new_shape)
         self.estimator.fit(x, labels)
-        # raise np.linalg.LinAlgError("Ijfiejfs")
         return x
 
-    def test(self, sets):
-        x = self._distribute_and_collect(sets)
-        x = self._post_process(x)
+    def test(self, sets, x=None):
+        if x is None:
+            x = self._distribute_and_collect(sets)
+            x = self._post_process(x)
         predictions = self.estimator.predict(x)
         new_shape = (len(sets), len(sets[0]))
         if len(predictions.shape) > 1:

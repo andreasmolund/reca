@@ -39,15 +39,17 @@ class Computer:
 
         self.estimator.fit(outputs, labels)
 
-    def test(self, sets):
+    def test(self, sets, x=None):
         """Encodes and transforms the sets, and uses the estimator to predict outputs
 
+        :param x: already transformed sets
         :param sets:
         :return:
         """
-        outputs = self._distribute_and_collect(sets)
+        if x is None:
+            x = self._distribute_and_collect(sets)
 
-        return self.estimator.predict(outputs)
+        return self.estimator.predict(x)
 
     @staticmethod
     def _translate_and_transform(sets,

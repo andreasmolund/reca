@@ -15,13 +15,13 @@ from plotter import plot_temporal
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
 
-result_path = "tmpresults/"
+result_path = "preresults/"
 result_prefix = "bitmemoryresults"
 file_type = "dump"
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 5
+n_whole_runs = 1000
 n_training_sets = 32
 n_testing_sets = 32
 bits = 5
@@ -57,14 +57,14 @@ def main(raw_args):
 
     # Training
     # time_checkpoint = time.time()
-    computer.train(inputs[:n_training_sets], labels[:n_training_sets])
+    x = computer.train(inputs[:n_training_sets], labels[:n_training_sets])
     # print "Training time:       ", (time.time() - time_checkpoint)
 
     # Testing
     # time_checkpoint = time.time()
-    x, y_pred = computer.test(inputs[n_training_sets:])
+    _, y_pred = computer.test(inputs[n_training_sets:], x)
     # print "Testing time:        ", (time.time() - time_checkpoint)
-    y_pred = [[classify_output(set_prediction) for set_prediction in set_predictions] for set_predictions in y_pred]
+    y_pred = [[classify_output(t) for t in s] for s in y_pred]
     # out_file = open("%s%s.%s" % (result_path, result_prefix, file_type), 'wb')
     # dumper.dump(y_pred, out_file)
     # dumper.dump(labels[n_training_sets:], out_file)
@@ -82,7 +82,7 @@ def main(raw_args):
     # print "Correct:              %d/%d" % (n_correct, n_testing_sets)
     # print "Incorrect bits:       %d" % n_incorrect_bits
     if logit:
-        logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d",
+        logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d",
                      n_iterations,
                      encoder.n_random_mappings,
                      rule,
@@ -94,6 +94,7 @@ def main(raw_args):
                      n_training_sets,
                      n_testing_sets,
                      distractor_period,
+                     1 if n_correct == n_testing_sets else 0,
                      n_correct,
                      n_incorrect_bits)
 
@@ -108,7 +109,7 @@ def main(raw_args):
                       encoder.automaton_area,
                       time_steps,
                       n_iterations,
-                      sample_nr=0)
+                      sample_nr=12)
 
 
 def digest_args(args):
@@ -144,7 +145,7 @@ if __name__ == '__main__':
                             level=logging.INFO)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
-                     "Successful,Wrong bits")
+                     "Points,Successful,Wrong bits")
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:
