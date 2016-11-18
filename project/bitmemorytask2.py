@@ -133,7 +133,7 @@ def main(raw_args):
 if __name__ == '__main__':
     if logit:
         logging.basicConfig(format='"%(asctime)s",%(message)s',
-                            filename='preresults/%s-bitmem2.csv' % start_time.isoformat(),
+                            filename='preresults/%s-bitmem2res.csv' % start_time.isoformat(),
                             level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
