@@ -1,6 +1,12 @@
 # semester-project-code
 The code for my specialisation/semester project
 
+# Results
+
+Results are placed in project/results/.
+The files starts with the time they started, followed by the problem, and the specifications.
+E.g. "2016-11-16T23:43:14-bitmem2res-i4-r4-rule-102": N-bit-memory task, 2 reservoirs, 4 iterations, 4 random mappings, rule 102.
+
 # Applications
 
 ## Arguments
