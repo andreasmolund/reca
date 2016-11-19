@@ -21,7 +21,7 @@ file_type = "dump"
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 1000
+n_whole_runs = 500
 n_training_sets = 32
 n_testing_sets = 32
 bits = 5
@@ -141,11 +141,11 @@ def digest_args(args):
 if __name__ == '__main__':
     if logit:
         logging.basicConfig(format='"%(asctime)s",%(message)s',
-                            filename='preresults/bitmem1-%s.csv' % start_time.isoformat(),
-                            level=logging.INFO)
+                            filename='preresults/%s-bitmem1res.csv' % start_time.isoformat(),
+                            level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
-                     "Points,Successful,Wrong bits")
+                     "Point (success),Successful,Wrong bits")
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:

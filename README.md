@@ -43,3 +43,8 @@ Non-temporal density classification task
 * numpy
 * scipy
 * matplotlib
+
+# A sort of a log
+
+* 2016-11-18T14:30 Sort of checkpoint of code and time.
+
