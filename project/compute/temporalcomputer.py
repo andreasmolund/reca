@@ -15,7 +15,14 @@ class TemporalComputer(Computer):
         :param labels: a list/array with the same shape as sets, so that it corresponds
         :return: x, the values of the output nodes
         """
-        x = self._distribute_and_collect(sets)
+        x = self._translate_and_transform(sets,
+                                          self.reservoir,
+                                          self.encoder,
+                                          self._concat_before,
+                                          self._concat_after,
+                                          self.concat_before,
+                                          (0,),
+                                          None)
         x = self._post_process(x)
 
         labels = np.array(labels)
@@ -94,12 +101,14 @@ class TemporalComputer(Computer):
         outputs = np.transpose(outputs, (1, 0, 2))
 
         # Writing to file
-        out_file = open(file_name(identifier), 'wb')
-        dumper.dump(outputs.tolist(), out_file)
-        out_file.close()
+        # out_file = open(file_name(identifier), 'wb')
+        outputs = outputs.tolist()
+        # dumper.dump(outputs, out_file)
+        # out_file.close()
 
         # Telling whomever invoked this function that we're done!
-        queue.put(identifier)
+        # queue.put(identifier)
+        return outputs
 
 
 combine = np.vectorize(bitwise_or)

@@ -17,7 +17,7 @@ from reservoir.util import classify_output
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 500
+n_whole_runs = 1
 n_sets = 32
 bits = 5
 distractor_period = 200
@@ -135,7 +135,7 @@ linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
 if __name__ == '__main__':
     if logit:
         logging.basicConfig(format='"%(asctime)s",%(message)s',
-                            filename='preresults/%s-bitmem2res.csv' % start_time.isoformat(),
+                            filename='preresults/%s-bitmem2res.csv' % start_time.isoformat().replace(":", ""),
                             level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
