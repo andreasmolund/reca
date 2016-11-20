@@ -63,7 +63,7 @@ def main(raw_args):
         # Preserving the values of the output nodes
         x1 = computer1.train(inputs, labels)
     except LinAlgError:
-        logging.error("LinAlgError occured: Skipping this run.")
+        logging.error(linalgerrmessage)
         return
 
     # The first reservoir needs to predict the output (predict)
@@ -75,7 +75,7 @@ def main(raw_args):
         # Preserving the values of the output nodes
         x2 = computer2.train(o1, labels)
     except LinAlgError:
-        logging.error("LinAlgError occured: Skipping this run.")
+        logging.error(linalgerrmessage)
         return
 
     # Currently, the system is trained.
@@ -129,6 +129,8 @@ def main(raw_args):
                      r1_n_incorrect_bits,
                      r2_n_correct,
                      r2_n_incorrect_bits)
+
+linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
 
 if __name__ == '__main__':
     if logit:
