@@ -11,19 +11,17 @@
 # R: 4, 8
 # Yilmaz tested (I,R): (4,4), (4,16), (16,4) ...
 
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 90
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 150
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 182
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 22
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 30
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 126
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 110
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 54
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 62
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 60
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 32
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 160
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 4
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 108
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 218
-python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 2 -r 250
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 62
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 60
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 32
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 160
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 4
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 108
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 218
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 250
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 102
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 105
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 153
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 165
+python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 180
+#python2 bitmemorytask2.py --input-area 40 --random-mappings 4 -i 4 -r 195
