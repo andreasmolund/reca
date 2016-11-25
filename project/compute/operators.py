@@ -1,4 +1,5 @@
 import random as rand
+import numpy as np
 
 
 # rand.seed(20161110)
@@ -49,3 +50,5 @@ def bitwise_left(a, b):
 
 def bitwise_right(a, b):
     return b
+
+combine = np.vectorize(normalized_addition)

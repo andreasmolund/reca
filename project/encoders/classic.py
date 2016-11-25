@@ -1,5 +1,7 @@
 import random as rand
 
+import numpy as np
+from compute.operators import combine
 
 seed = 20161112
 # rand.seed(seed)
@@ -74,8 +76,11 @@ class ClassicEncoder:
         return mapped_vector
 
     def normalised_addition(self, master, second):
-        mapped_master = [0b0] * (self.n_random_mappings * self.automaton_area)
-        raise NotImplementedError("Not fully implemented yet")
+        empty = [0b0] * (self.n_random_mappings * self.automaton_area)
+        mapped_master = self.mapping_addition(master, empty)
+        mapped_master = np.array(mapped_master)
+        shape = mapped_master.shape
+        return combine(mapped_master.flatten(), second).reshape(shape[0], shape[1]).tolist()
 
     def pos(self, element):
         """Get what positions an element has

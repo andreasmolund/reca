@@ -25,7 +25,7 @@ n_whole_runs = 500
 n_training_sets = 32
 n_testing_sets = 32
 bits = 5
-distractor_period = 200
+distractor_period = 5
 inputs, labels = problems.bit_memory_task(n_training_sets + n_testing_sets,
                                           bits,
                                           distractor_period)
@@ -152,8 +152,8 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bitmemorytask.py',
-                  '-r', '102',
-                  '-i', '4',
-                  '--random-mappings', '4',
-                  '--input-area', '40',
-                  '--automaton-area', '0'])
+                  '-r', '110',
+                  '-i', '32',
+                  '--random-mappings', '16',
+                  '--input-area', '4',
+                  '--automaton-area', '32'])

@@ -101,5 +101,3 @@ class TemporalComputer(Computer):
         # Telling whomever invoked this function that we're done!
         queue.put(identifier)
 
-
-combine = np.vectorize(bitwise_or)

@@ -17,7 +17,7 @@ from reservoir.util import classify_output
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 500
+n_whole_runs = 100
 n_sets = 32
 bits = 5
 distractor_period = 200
@@ -147,8 +147,8 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bitmemorytask.py',
-                  '-r', '102',
-                  '-i', '3',
-                  '--random-mappings', '5',
-                  '--input-area', '29',
+                  '-r', '110',
+                  '-i', '32',
+                  '--random-mappings', '16',
+                  '--input-area', '4',
                   '--automaton-area', '0'])
