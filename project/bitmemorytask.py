@@ -21,11 +21,11 @@ file_type = "dump"
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 500
+n_whole_runs = 1
 n_training_sets = 32
 n_testing_sets = 32
 bits = 5
-distractor_period = 5
+distractor_period = 200
 inputs, labels = problems.bit_memory_task(n_training_sets + n_testing_sets,
                                           bits,
                                           distractor_period)
@@ -79,8 +79,8 @@ def main(raw_args):
                 n_incorrect_bits += 1
         if correct:
             n_correct += 1
-    # print "Correct:              %d/%d" % (n_correct, n_testing_sets)
-    # print "Incorrect bits:       %d" % n_incorrect_bits
+    print "Correct:              %d/%d" % (n_correct, n_testing_sets)
+    print "Incorrect bits:       %d" % n_incorrect_bits
     if logit:
         logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d",
                      n_iterations,
@@ -141,7 +141,7 @@ def digest_args(args):
 if __name__ == '__main__':
     if logit:
         logging.basicConfig(format='"%(asctime)s",%(message)s',
-                            filename='preresults/%s-bitmem1res.csv' % start_time.isoformat(),
+                            filename='preresults/%s-bitmem1res.csv' % start_time.isoformat().replace(":", ""),
                             level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"

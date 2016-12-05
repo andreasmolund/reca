@@ -3,8 +3,6 @@ import marshal as dumper
 import numpy as np
 from computer import Computer, file_name
 
-from operators import bitwise_or
-
 
 class TemporalComputer(Computer):
 
@@ -72,7 +70,7 @@ class TemporalComputer(Computer):
                 # Adding input with parts of the previous output
                 new_sets_at_t = []
                 for set_at_t, prev_output in zip(sets_at_t, outputs[t - 1]):
-                    new_sets_at_t.extend(encoder.mapping_addition(set_at_t, prev_output[-size:]))
+                    new_sets_at_t.extend(encoder.normalised_addition(set_at_t, prev_output[-size:]))
                 sets_at_t = new_sets_at_t
 
             # Concatenating before if that is to be done

@@ -11,9 +11,12 @@
 # R: 4, 8
 # Yilmaz tested (I,R): (4,4), (4,16), (16,4) ...
 
-#python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 90
-#python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 150
-#python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 60
-python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 102
+python2 bitmemorytask2.py --input-area 40 --random-mappings 8 -i 16 -r 22
+python2 bitmemorytask2.py --input-area 40 --random-mappings 8 -i 16 -r 182
+#python2 bitmemorytask2.py --input-area 40 --random-mappings 8 -i 16 -r 60
+#python2 bitmemorytask2.py --input-area 40 --random-mappings 8 -i 16 -r 102
 #python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 105
 #python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 153
+#python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 165
+#python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 180
+#python2 bitmemorytask2.py --input-area 40 --random-mappings 16 -i 8 -r 195
