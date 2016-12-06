@@ -17,7 +17,7 @@ from reservoir.util import classify_output
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 100
+n_whole_runs = 1000
 n_sets = 32
 bits = 5
 distractor_period = 200
