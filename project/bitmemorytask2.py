@@ -11,16 +11,17 @@ from bitmemorytask import digest_args
 from ca.ca import CA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
+from plotter import plot_temporal
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
 
 start_time = datetime.now()
-logit = True
+logit = False
 
-n_whole_runs = 1000
+n_whole_runs = 1
 n_sets = 32
 bits = 5
-distractor_period = 200
+distractor_period = 20
 inputs, labels = problems.bit_memory_task(n_sets,
                                           bits,
                                           distractor_period)
@@ -95,8 +96,8 @@ def main(raw_args):
                 r1_n_incorrect_bits += 1
         if correct:
             r1_n_correct += 1
-    # print "1. Correct:       ", n_correct
-    # print "1. Incorrect bits:", n_incorrect_bits
+    print "1. Correct:       ", r1_n_correct
+    print "1. Incorrect bits:", r1_n_incorrect_bits
 
     r2_n_correct = 0
     r2_n_incorrect_bits = 0
@@ -108,8 +109,8 @@ def main(raw_args):
                 r2_n_incorrect_bits += 1
         if correct:
             r2_n_correct += 1
-    # print "2. Correct:       ", n_correct
-    # print "2. Incorrect bits:", n_incorrect_bits
+    print "2. Correct:       ", r2_n_correct
+    print "2. Incorrect bits:", r2_n_incorrect_bits
 
     if logit:
         logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d",
@@ -130,6 +131,22 @@ def main(raw_args):
                      r2_n_correct,
                      r2_n_incorrect_bits)
 
+    if n_whole_runs < 2:
+        time_steps = 2 * bits + distractor_period + 1
+        plot_temporal(x1,
+                      encoder1.n_random_mappings,
+                      encoder1.automaton_area,
+                      time_steps,
+                      n_iterations,
+                      sample_nr=12)
+
+        plot_temporal(x2,
+                      encoder2.n_random_mappings,
+                      encoder2.automaton_area,
+                      time_steps,
+                      n_iterations,
+                      sample_nr=12)
+
 linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
 
 if __name__ == '__main__':
@@ -148,7 +165,7 @@ if __name__ == '__main__':
         else:
             main(['bitmemorytask.py',
                   '-r', '110',
-                  '-i', '32',
-                  '--random-mappings', '16',
-                  '--input-area', '4',
+                  '-i', '4',
+                  '--random-mappings', '4',
+                  '--input-area', '40',
                   '--automaton-area', '0'])

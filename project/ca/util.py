@@ -70,15 +70,22 @@ def get_all_rules(k, n):
     return rules
 
 
-def get_rule(rule=0, k=2, n=3):
+def get_rule(rulecode=0, k=2, n=3):
     """Gets the transition function for the rule number
 
-    :param rule: the rule
+    :param rulecode: the rule
     :param k: number of states
     :param n: number of neighbors
     """
-    rules = get_all_rules(k, n)
-    rule = rules[rule]
+    # rules = get_all_rules(k, n)
+    # rule = rules[rulecode]
+    rule = get_one_rule(rulecode, k, n)
+
+    return rule
+
+
+def get_one_rule(rulecode=0, k=2, n=3):
+    rule = [(rulecode/pow(k, i)) % k for i in range(pow(k, n))]
 
     return rule
 

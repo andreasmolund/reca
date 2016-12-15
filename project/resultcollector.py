@@ -21,13 +21,17 @@ def main(args):
         iterations = -1
         permutations = -1
 
+        count = 0
+
         res1max = 0
         res1min = 32
         res1 = 0
+        res1misbits = 0
 
         res2max = 0
         res2min = 32
         res2 = 0
+        res2misbits = 0
 
         for row in reader:
             try:
@@ -40,8 +44,10 @@ def main(args):
                     res1min = value
 
                 res2 += int(row['Point (success)'])
+                res1misbits += int(row['R1 wrong bits'])
 
                 value = int(row['R2 correct'])
+                res2misbits += int(row['R2 wrong bits'])
                 if value > res2max:
                     res2max = value
                 if value < res2min:
@@ -53,12 +59,20 @@ def main(args):
                     iterations = int(row['I'])
                 if permutations == -1:
                     permutations = int(row['R'])
-            except (TypeError, ValueError):
-                print "Prolly LinAlgError in da house"
 
-        print "I %d, R %d, rule %d" % (iterations, permutations, rule)
-        print "Reservoir 1: %d" % res1
-        print "Reservoir 2: %d" % res2
+                count += 1
+            except (TypeError, ValueError):
+                taiesvjewijvgf = 0
+
+        print "(%d,%d,%d)\t\t1:%s,%d\t\t2:%s,%d" % (iterations,
+                                                    permutations,
+                                                    rule,
+                                                    "%s/%s" % (res1, count),
+                                                    res1misbits,
+                                                    "%s/%s" % (res2, count),
+                                                    res2misbits)
+        # print "Reservoir 1: %d" % res1
+        # print "Reservoir 2: %d" % res2
 
 
 if __name__ == '__main__':
