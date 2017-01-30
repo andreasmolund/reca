@@ -1,6 +1,7 @@
 import logging
 import sys
 from datetime import datetime
+import time
 
 import numpy as np
 from numpy.linalg.linalg import LinAlgError
@@ -21,7 +22,7 @@ logit = False
 n_whole_runs = 1
 n_sets = 32
 bits = 5
-distractor_period = 20
+distractor_period = 199
 inputs, labels = problems.bit_memory_task(n_sets,
                                           bits,
                                           distractor_period)
@@ -59,6 +60,8 @@ def main(raw_args):
                                  concat_before=concat_before,
                                  verbose=verbose)
 
+    time_checkpoint = time.time()
+
     # The first reservoir needs to be trained (fit)
     try:
         # Preserving the values of the output nodes
@@ -85,6 +88,8 @@ def main(raw_args):
 
     _, o2 = computer2.test(o1, x2)
     o2 = [[classify_output(t) for t in s] for s in o2]
+
+    print "Time:              %d (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     r1_n_correct = 0
     r1_n_incorrect_bits = 0

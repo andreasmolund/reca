@@ -75,7 +75,7 @@ class ClassicEncoder:
 
         return mapped_vector
 
-    def normalised_addition(self, master, second):
+    def normalized_addition(self, master, second):
         empty = [0b0] * (self.n_random_mappings * self.automaton_area)
         mapped_master = self.mapping_addition(master, empty)
         mapped_master = np.array(mapped_master)
