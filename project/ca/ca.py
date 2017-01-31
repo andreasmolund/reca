@@ -15,17 +15,14 @@ class CA:
         self.radius = (n - 1) / 2
 
     def step(self, config):
-        size = config.shape[0]
-        next_config = np.empty(size, dtype='int')
+        size = len(config)
+        next_config = [0b0] * size
 
         for c in xrange(size):
-
             neighborhood = 0b0
-            power = self.n - 1
             for d in xrange(-self.radius, self.radius + 1):
                 state = config[(c + d) % size]
-                neighborhood += 2**power * state
-                power -= 1
+                neighborhood = (neighborhood << 1) | state
             next_state = self.transition[neighborhood]
             next_config[c] = next_state
 

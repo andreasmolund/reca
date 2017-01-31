@@ -21,7 +21,7 @@ logit = False
 
 n_whole_runs = 1
 n_sets = 32
-distractor_period = 99
+distractor_period = 199  # Because cue is within distr. period
 inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)
