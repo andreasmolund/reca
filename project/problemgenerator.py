@@ -60,7 +60,7 @@ def bit_memory_task(quantity, bits, distractor_period):
             # set_labels.append(y)
         tasks.append(task)
         labels.append(set_labels)
-    return tasks, labels
+    return np.array(tasks), np.array(labels)
 
 
 def temporal_parity(quantity, size, window_size=2, delay=0):

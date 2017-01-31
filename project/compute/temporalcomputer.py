@@ -1,4 +1,5 @@
 import marshal as dumper
+from itertools import izip, count
 
 import numpy as np
 import time
@@ -16,7 +17,7 @@ class TemporalComputer(Computer):
         :return: x, the values of the output nodes
         """
         time_checkpoint = time.time()
-        
+
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
 
@@ -28,11 +29,10 @@ class TemporalComputer(Computer):
             new_shape = (shape[0] * shape[1], shape[2])
         labels = labels.reshape(new_shape)
 
-        print "Transforming time: %d" % (time.time() - time_checkpoint)
+        print "Transforming time:      %d" % (time.time() - time_checkpoint)
         time_checkpoint = time.time()
 
         self.estimator.fit(x, labels)
-
         print "Estimator fitting time: %d" % (time.time() - time_checkpoint)
 
         return x
@@ -63,26 +63,34 @@ class TemporalComputer(Computer):
                                  concat_before,
                                  identifier,
                                  queue):
-        n_time_steps = len(sets[0])
+        n_sets = sets.shape[0]
+        n_time_steps = sets.shape[1]
         size = encoder.total_area
         n_random_mappings = encoder.n_random_mappings
+        automaton_area = size / n_random_mappings
 
-        outputs = [None] * n_time_steps
+        outputs = np.empty((n_time_steps, n_sets, size * reservoir.iterations), dtype='int')
 
         for t in xrange(n_time_steps):
 
             # Input at time t
-            sets_at_t = [s[t] for s in sets]
+            sets_at_t = sets.transpose((1, 0, 2))[t]
 
             if t == 0:
                 # Translating the initial input
                 sets_at_t = encoder.translate(sets_at_t)
             else:
                 # Adding input with parts of the previous output
-                new_sets_at_t = []
-                for set_at_t, prev_output in zip(sets_at_t, outputs[t - 1]):
-                    new_sets_at_t.extend(encoder.normalised_addition(set_at_t, prev_output[-size:]))
-                sets_at_t = new_sets_at_t
+
+                # new_sets_at_t = []
+                # for set_at_t, prev_output in zip(sets_at_t, outputs[t - 1]):
+                #     new_sets_at_t.extend(encoder.normalized_addition(set_at_t, prev_output[-size:]))
+
+                new_sets_at_t = np.empty((n_sets, n_random_mappings, automaton_area), dtype='int')
+                for i, set_at_t, prev_output in izip(count(), sets_at_t, outputs[t - 1]):
+                    new_sets_at_t[i] = encoder.normalized_addition(set_at_t, prev_output[-size:])
+
+                sets_at_t = new_sets_at_t.reshape((n_sets * n_random_mappings, automaton_area))
 
             # Concatenating before if that is to be done
             if concat_before:
@@ -93,14 +101,14 @@ class TemporalComputer(Computer):
 
             # Concatenating after if it wasn't done before
             if not concat_before:
-                outputs_at_t = concat_after_function(outputs_at_t, n_random_mappings, size / n_random_mappings)
+                outputs_at_t = concat_after_function(outputs_at_t, n_random_mappings, automaton_area)
 
             # Saving
             outputs[t] = outputs_at_t
 
         # "outputs" is currently a list of time steps (each containing all outputs at that time step),
         # but we want a list of outputs so that it corresponds with what came as argument to this method
-        outputs = np.transpose(outputs, (1, 0, 2))
+        outputs = outputs.transpose(1, 0, 2)
 
         # Writing to file
         out_file = open(file_name(identifier), 'wb')

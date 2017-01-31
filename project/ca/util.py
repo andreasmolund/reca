@@ -77,14 +77,19 @@ def get_rule(rulecode=0, k=2, n=3):
     :param k: number of states
     :param n: number of neighbors
     """
-    # rules = get_all_rules(k, n)
-    # rule = rules[rulecode]
-    rule = get_one_rule(rulecode, k, n)
 
-    return rule
+    return get_one_rule(rulecode, k, n)
 
 
 def get_one_rule(rulecode=0, k=2, n=3):
+
+    # b_rule = format(rulecode, '0%db' % pow(k, n))
+    # rule = {}
+    # for i, bit in enumerate(b_rule):
+    #     b_neighborhood = format(i, '0%db' % n)
+    #     neighborhood = [neighbor for neighbor in b_neighborhood]
+    #     rule[''.join(neighborhood)] = b_rule[i]
+
     rule = [(rulecode/pow(k, i)) % k for i in range(pow(k, n))]
 
     return rule
