@@ -133,12 +133,13 @@ class Computer:
 
     @staticmethod
     def _concat_before(elements, from_n_parts):
-        outputs = []
-        for i in xrange(len(elements) / from_n_parts):
-            span = i * from_n_parts  # From where to concatenate
-            concat = list(itertools.chain.from_iterable(elements[span:span + from_n_parts]))
-            outputs.append(concat)
-        return outputs
+        # outputs = []
+        # for i in xrange(len(elements) / from_n_parts):
+        #     span = i * from_n_parts  # From where to concatenate
+        #     concat = list(itertools.chain.from_iterable(elements[span:span + from_n_parts]))
+        #     outputs.append(concat)
+        # return outputs
+        return elements.reshape((elements.shape[0] / from_n_parts, elements.shape[1] * from_n_parts))
 
     @staticmethod
     def _concat_after(elements, n_random_mappings, intertwine_size):
@@ -149,6 +150,7 @@ class Computer:
         :param intertwine_size: really the size of one CA (R * automaton area)
         :return:
         """
+        # TODO: Implement numpy stuff here
         outputs = []
         for i in xrange(0, len(elements), n_random_mappings):
             a = np.array(elements[i])
@@ -188,7 +190,9 @@ def sizes_of(n_parts):
     :param n_parts: the number of parts you want to distribute work to
     :return: a list of length n_parts, with values summing to 1
     """
-    if n_parts == 4:
+    if n_parts == 8:
+        return [0.055, 0.075, 0.095, 0.115, 0.135, 0.155, 0.175, 0.195]
+    elif n_parts == 4:
         return [0.22, 0.24, 0.26, 0.28]
     elif n_parts == 2:
         return [0.45, 0.55]
@@ -205,12 +209,16 @@ def _n_processes(sets):
     :return: a number of processes in which you can divide the sets
     """
     n_sets = len(sets)
-    if n_sets >= 4:
-        return 4
+    n_processes = 1
+
+    if n_sets >= 8:
+        n_processes = 8
+    elif n_sets >= 4:
+        n_processes = 4
     elif n_sets >= 2:
-        return 2
-    else:
-        return 1
+        n_processes = 2
+
+    return n_processes
 
 
 def file_name(identifier):

@@ -1,3 +1,5 @@
+import numpy as np
+
 import util
 
 
@@ -13,7 +15,7 @@ class CA:
         self.radius = (n - 1) / 2
 
     def step(self, config):
-        size = len(config)
+        size = config.shape[0]
         next_config = [0b0] * size
 
         for c in xrange(size):
@@ -26,7 +28,7 @@ class CA:
             next_state = self.transition[neighborhood]
             next_config[c] = next_state
 
-        return next_config
+        return np.array(next_config)
 
     def copy(self):
         return CA(self.rule, self.k, self.n)

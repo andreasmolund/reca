@@ -1,3 +1,4 @@
+import numpy as np
 import marshal as dumper
 import random as rn
 import sys
@@ -11,14 +12,13 @@ filetype = "dump"
 
 
 class Reservoir:
-    # TODO maybe make it capable of delay (?) like Bye did
 
     def __init__(self, matter, iterations, verbose=1):
         """
 
         :param matter: the CA object
         :param iterations: the number of iterations
-        :param verbose: 1 prints basic information, 2 prints the
+        :param verbose: 1 prints basic information, 2 prints more
         """
         self.matter = matter
         self.iterations = iterations
@@ -41,19 +41,21 @@ class Reservoir:
             for i, c in enumerate(configurations):
                 cutil.print_config_1dim(c, postfix="(%d)" % i)
 
-        outputs = []
-        for i in xrange(len(configurations)):
-            concat = []
+        state_vector_len = self.iterations * configurations.shape[1]
+        outputs = np.empty((configurations.shape[0], state_vector_len), dtype='int')
+
+        for i in xrange(configurations.shape[0]):
+            concat = np.empty((self.iterations, configurations.shape[1]), dtype='int')
             config = configurations[i]
             # concat.extend(config)  # To include the initial configuration
 
             # Iterate
-            for _ in xrange(self.iterations):
+            for t in xrange(self.iterations):
                 new_config = self.matter.step(config)
                 # Concatenating this new configuration to the vector
-                concat.extend(new_config)
+                concat[t] = new_config
                 config = new_config
-            outputs.append(concat)
+            outputs[i] = concat.reshape(state_vector_len)
 
         if self.verbose == 0:
             sys.stdout.write("Done\n")

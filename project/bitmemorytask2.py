@@ -61,6 +61,7 @@ def main(raw_args):
                                  verbose=verbose)
 
     time_checkpoint = time.time()
+    print "Complexity:        %d (I*R*L_d)" % (n_iterations * n_random_mappings * automaton_area)
 
     # The first reservoir needs to be trained (fit)
     try:
@@ -77,7 +78,7 @@ def main(raw_args):
     # Then, the second reservoir needs to be trained (fit)
     try:
         # Preserving the values of the output nodes
-        x2 = computer2.train(o1, labels)
+        x2 = computer2.train(np.array(o1), labels)
     except LinAlgError:
         logging.error(linalgerrmessage)
         return
@@ -93,7 +94,7 @@ def main(raw_args):
 
     r1_n_correct = 0
     r1_n_incorrect_bits = 0
-    for pred, set_labels in zip(o1, labels):
+    for pred, set_labels in zip(o1, labels.tolist()):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
             if pred_element != label_element:
@@ -106,7 +107,7 @@ def main(raw_args):
 
     r2_n_correct = 0
     r2_n_incorrect_bits = 0
-    for pred, set_labels in zip(o2, labels):
+    for pred, set_labels in zip(o2, labels.tolist()):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
             if pred_element != label_element:
@@ -169,8 +170,8 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bitmemorytask.py',
-                  '-r', '110',
+                  '-r', '90',
                   '-i', '4',
-                  '--random-mappings', '4',
-                  '--input-area', '40',
+                  '--random-mappings', '3',
+                  '--input-area', '0',
                   '--automaton-area', '0'])
