@@ -1,6 +1,8 @@
 import marshal as dumper
 
 import numpy as np
+import time
+
 from computer import Computer, file_name
 
 
@@ -13,6 +15,8 @@ class TemporalComputer(Computer):
         :param labels: a list/array with the same shape as sets, so that it corresponds
         :return: x, the values of the output nodes
         """
+        time_checkpoint = time.time()
+        
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
 
@@ -23,7 +27,14 @@ class TemporalComputer(Computer):
         else:
             new_shape = (shape[0] * shape[1], shape[2])
         labels = labels.reshape(new_shape)
+
+        print "Transforming time: %d" % (time.time() - time_checkpoint)
+        time_checkpoint = time.time()
+
         self.estimator.fit(x, labels)
+
+        print "Estimator fitting time: %d" % (time.time() - time_checkpoint)
+
         return x
 
     def test(self, sets, x=None):
@@ -70,7 +81,7 @@ class TemporalComputer(Computer):
                 # Adding input with parts of the previous output
                 new_sets_at_t = []
                 for set_at_t, prev_output in zip(sets_at_t, outputs[t - 1]):
-                    new_sets_at_t.extend(encoder.mapping_addition(set_at_t, prev_output[-size:]))
+                    new_sets_at_t.extend(encoder.normalised_addition(set_at_t, prev_output[-size:]))
                 sets_at_t = new_sets_at_t
 
             # Concatenating before if that is to be done
