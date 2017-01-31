@@ -61,7 +61,7 @@ def main(raw_args):
                                  verbose=verbose)
 
     time_checkpoint = time.time()
-    print "Complexity:              %d (I*R*L_d)" % (n_iterations * n_random_mappings * automaton_area)
+    print "Complexity:             %d (I*R*L_d)" % (n_iterations * n_random_mappings * automaton_area)
 
     # The first reservoir needs to be trained (fit)
     try:

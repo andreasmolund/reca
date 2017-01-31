@@ -4,7 +4,7 @@ import numpy as np
 from compute.operators import combine
 
 seed = 20161112
-# rand.seed(seed)
+rand.seed(seed)
 
 
 class ClassicEncoder:
@@ -61,7 +61,7 @@ class ClassicEncoder:
         mapped_vector = np.empty((self.n_random_mappings, self.automaton_area), dtype='int')
         automaton_offset = 0  # Offset index
         for i, r in enumerate(self.random_mappings):
-            partial_mapped = np.empty(self.automaton_area, dtype='int')
+            partial_mapped = [0b0] * self.automaton_area
             for automaton_i in xrange(self.automaton_area):
                 # print "i:%d,map_i:%d" % (i, master_i)
                 if r.count(automaton_i) > 0:  # r[map_i] == automaton_i:  # automaton_i in r:

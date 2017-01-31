@@ -211,9 +211,9 @@ def _n_processes(sets):
     n_sets = len(sets)
     n_processes = 1
 
-    # if n_sets >= 8:
-    #     n_processes = 8 el
-    if n_sets >= 4:
+    if n_sets >= 8:
+        n_processes = 8
+    elif n_sets >= 4:
         n_processes = 4
     elif n_sets >= 2:
         n_processes = 2

@@ -1,5 +1,5 @@
 # semester-project-code
-The code for my specialisation/semester project
+Source code for my semester project and master thesis. Reservoir Computing using Cellular Automata (ReCA).
 
 # Results
 
