@@ -16,7 +16,7 @@ class TemporalComputer(Computer):
         :param labels: a list/array with the same shape as sets, so that it corresponds
         :return: x, the values of the output nodes
         """
-        # time_checkpoint = time.time()
+        time_checkpoint = time.time()
 
         x = self._distribute_and_collect(sets)
         x = self._post_process(x)
@@ -29,7 +29,7 @@ class TemporalComputer(Computer):
             new_shape = (shape[0] * shape[1], shape[2])
         labels = labels.reshape(new_shape)
 
-        # print "Transforming time:      %d" % (time.time() - time_checkpoint)
+        print "Transforming time:      %d" % (time.time() - time_checkpoint)
         time_checkpoint = time.time()
 
         self.estimator.fit(x, labels)

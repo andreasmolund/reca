@@ -21,10 +21,9 @@ logit = False
 
 n_whole_runs = 1
 n_sets = 32
-bits = 5
-distractor_period = 199
+distractor_period = 99
 inputs, labels = problems.bit_memory_task(n_sets,
-                                          bits,
+                                          5,
                                           distractor_period)
 
 
@@ -137,8 +136,8 @@ def main(raw_args):
                      r2_n_correct,
                      r2_n_incorrect_bits)
 
-    if n_whole_runs < 2:
-        time_steps = 2 * bits + distractor_period + 1
+    if n_whole_runs < 1:
+        time_steps = 2 * 5 + distractor_period + 1
         plot_temporal(x1,
                       encoder1.n_random_mappings,
                       encoder1.automaton_area,

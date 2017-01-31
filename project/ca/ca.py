@@ -17,20 +17,15 @@ class CA:
     def step(self, config):
         size = config.shape[0]
         next_config = np.empty(size, dtype='int')
-        indices = np.arange(-self.radius, self.radius + 1)
 
         for c in xrange(size):
-            template = config.take(indices + c, mode='wrap')
-            neighborhood = 0
-            for bit in template:
-                neighborhood = (neighborhood << 1) | bit
 
-            # neighborhood = 0b0
-            # power = self.n - 1
-            # for d in xrange(-self.radius, self.radius + 1):
-            #     state = config[(c + d) % size]
-            #     neighborhood += 2**power * state
-            #     power -= 1
+            neighborhood = 0b0
+            power = self.n - 1
+            for d in xrange(-self.radius, self.radius + 1):
+                state = config[(c + d) % size]
+                neighborhood += 2**power * state
+                power -= 1
             next_state = self.transition[neighborhood]
             next_config[c] = next_state
 
