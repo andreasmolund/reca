@@ -3,7 +3,7 @@ import random as rand
 import numpy as np
 from compute.operators import combine
 
-seed = 20161112
+seed = 20170131
 rand.seed(seed)
 
 
