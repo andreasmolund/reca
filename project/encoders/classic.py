@@ -47,11 +47,11 @@ class ClassicEncoder:
         translated_configs = np.empty((n_configurations, self.n_random_mappings, self.automaton_area), dtype='int')
         for i, config in enumerate(configurations):
             partial_translated_config = np.zeros(self.n_random_mappings * self.automaton_area, dtype='int')
-            translated_configs[i] = self.mapping_addition(config, partial_translated_config)
+            translated_configs[i] = self.overwrite(config, partial_translated_config)
 
         return translated_configs.reshape((self.n_random_mappings * n_configurations, self.automaton_area))
 
-    def mapping_addition(self, master, second):
+    def overwrite(self, master, second):
         """Master overwrites second according to the mapping/translation
 
         :param master: the unmapped master or input vector
@@ -78,7 +78,7 @@ class ClassicEncoder:
 
     def normalized_addition(self, master, second):
         empty = np.zeros(self.n_random_mappings * self.automaton_area, dtype='int')
-        mapped_master = self.mapping_addition(master, empty)
+        mapped_master = self.overwrite(master, empty)
         shape = mapped_master.shape
         comb = combine(mapped_master.flatten(), second).reshape(shape[0], shape[1])
         return comb

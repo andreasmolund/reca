@@ -133,12 +133,6 @@ class Computer:
 
     @staticmethod
     def _concat_before(elements, from_n_parts):
-        # outputs = []
-        # for i in xrange(len(elements) / from_n_parts):
-        #     span = i * from_n_parts  # From where to concatenate
-        #     concat = list(itertools.chain.from_iterable(elements[span:span + from_n_parts]))
-        #     outputs.append(concat)
-        # return outputs
         return elements.reshape((elements.shape[0] / from_n_parts, elements.shape[1] * from_n_parts))
 
     @staticmethod
@@ -208,6 +202,7 @@ def _n_processes(sets):
     :param sets:
     :return: a number of processes in which you can divide the sets
     """
+    # return 1
     n_sets = len(sets)
     n_processes = 1
 
