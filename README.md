@@ -46,5 +46,6 @@ Non-temporal density classification task
 
 # A sort of a log
 
+* 2017-01-31T21:07 Made the repo public. Great day for folk and fedreland.
 * 2016-11-18T14:30 Sort of checkpoint of code and time.
 

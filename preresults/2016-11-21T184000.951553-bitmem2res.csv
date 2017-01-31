@@ -1,0 +1,11 @@
+"2016-11-21 18:40:00,960",I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,Training sets,Testing sets,Distractor period,Point (success),R1 correct,R1 wrong bits,R2 correct,R2 wrong bits
+"2016-11-21 18:40:10,865",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,2,52,5,41
+"2016-11-21 18:40:20,727",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,4,52,8,32
+"2016-11-21 18:40:31,114",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,3,54,6,42
+"2016-11-21 18:40:40,611",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,5,53,7,38
+"2016-11-21 18:40:50,343",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,3,54,8,37
+"2016-11-21 18:41:00,521",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,6,48,6,38
+"2016-11-21 18:41:11,436",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,5,46,7,39
+"2016-11-21 18:41:22,465",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,3,53,8,40
+"2016-11-21 18:41:32,546",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,5,49,8,33
+"2016-11-21 18:41:43,696",4,8,60,4,4,40,True,LinearRegression,32,32,200,0,5,54,9,28

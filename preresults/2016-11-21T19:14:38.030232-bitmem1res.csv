@@ -1,0 +1,2 @@
+"2016-11-21 19:14:38,049",I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,Training sets,Testing sets,Distractor period,Point (success),Successful,Wrong bits
+"2016-11-21 19:14:42,435",4,8,110,4,4,40,True,LinearRegression,32,32,200,0,0,117
