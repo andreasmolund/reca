@@ -28,13 +28,14 @@ class ClassicEncoder:
         :param input_offset: offset for the mapping
         """
         self.random_mappings = []
+        self.input_size = input_size
         self.input_area = max([input_size, input_area])
         self.automaton_area = max([self.input_area, automaton_area])
         self.verbose = verbose
 
         if n_random_mappings > 0:
             for _ in xrange(n_random_mappings):
-                self.random_mappings.append(make_random_mapping(input_size, self.input_area, input_offset))
+                self.random_mappings.extend(make_random_mapping(input_size, self.input_area, input_offset))
         else:
             self.random_mappings.append([i for i in xrange(input_size)])
 
@@ -56,29 +57,22 @@ class ClassicEncoder:
         Master overwrites second according to the mapping/translation.
 
         :param master: the unmapped master or input vector
-        :param second: the already mapped vector that is to be overwritten
+        :param second: the already mapped vector that is to be overwritten (must already be a duplicate)
         :return: added vectors
         """
-        mapped_vector = np.empty((self.n_random_mappings, self.automaton_area), dtype='int')
         automaton_offset = 0  # Offset index
         for i, r in enumerate(self.random_mappings):
-            partial_mapped = [0b0] * self.automaton_area
-            for automaton_i in xrange(self.automaton_area):
-                # print "i:%d,map_i:%d" % (i, master_i)
-                if r.count(automaton_i) > 0:  # r[map_i] == automaton_i:  # automaton_i in r:
-                    # If the area element has a mapping to it,
-                    # then get from master
-                    partial_mapped[automaton_i] = master[r.index(automaton_i)]
-                else:
-                    # Else, get from second
-                    partial_mapped[automaton_i] = second[automaton_offset + automaton_i]
-            mapped_vector[i] = partial_mapped
-            automaton_offset += self.automaton_area  # Adjusting offset
+            master_i = i % self.input_size
+            second[automaton_offset + r] = master[master_i]
 
-        return mapped_vector
+            if master_i + 1 == self.input_size:
+                automaton_offset += self.automaton_area  # Adjusting offset
+
+        return second.reshape(self.n_random_mappings, self.automaton_area)
 
     def normalized_addition(self, master, second):
-        """Yilmaz' (2014) normalized addition.
+        """A method of adding vectors.
+        Yilmaz' (2015) normalized addition.
 
         :param master:
         :param second:
@@ -87,8 +81,7 @@ class ClassicEncoder:
         empty = np.zeros(self.n_random_mappings * self.automaton_area, dtype='int')
         mapped_master = self.overwrite(master, empty)
         shape = mapped_master.shape
-        comb = combine(mapped_master.flatten(), second).reshape(shape[0], shape[1])
-        return comb
+        return combine(mapped_master.ravel(), second).reshape(shape[0], shape[1])
 
     def pos(self, element):
         """Get what positions an element has
@@ -103,12 +96,12 @@ class ClassicEncoder:
     @property
     def n_random_mappings(self):
         """The number of random mappings"""
-        return len(self.random_mappings)
+        return len(self.random_mappings) / self.input_size
 
     @property
     def total_area(self):
         """The area of all automata"""
-        return self.automaton_area * len(self.random_mappings)
+        return self.automaton_area * self.n_random_mappings
 
 
 def make_random_mapping(input_size, input_area, input_offset=0):

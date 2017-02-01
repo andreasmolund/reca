@@ -1,3 +1,4 @@
+import getopt
 import logging
 import sys
 from datetime import datetime
@@ -8,7 +9,6 @@ from numpy.linalg.linalg import LinAlgError
 from sklearn import linear_model
 
 import problemgenerator as problems
-from bitmemorytask import digest_args
 from ca.ca import CA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
@@ -28,7 +28,7 @@ inputs, labels = problems.bit_memory_task(n_sets,
 
 
 def main(raw_args):
-    size, rule, n_iterations, n_random_mappings, input_area, automaton_area = digest_args(raw_args)
+    size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
 
     size = 4
     concat_before = True
@@ -36,13 +36,13 @@ def main(raw_args):
 
     encoder1 = ClassicEncoder(n_random_mappings,
                               size,
-                              input_area,
-                              automaton_area,
+                              diffuse,
+                              pad,
                               verbose=verbose)
     encoder2 = ClassicEncoder(n_random_mappings,
                               3,
-                              input_area,
-                              automaton_area,
+                              diffuse,
+                              pad,
                               verbose=verbose)
     automaton = CA(rule, k=2, n=3)
     reservoir = Reservoir(automaton, n_iterations, verbose=verbose)
@@ -60,7 +60,7 @@ def main(raw_args):
                                  verbose=verbose)
 
     time_checkpoint = time.time()
-    print "Complexity:             %d (I*R*L_d)" % (n_iterations * n_random_mappings * automaton_area)
+    print "Complexity:             %d (I*R*L_d)" % (n_iterations * n_random_mappings * pad)
 
     # The first reservoir needs to be trained (fit)
     try:
@@ -89,7 +89,7 @@ def main(raw_args):
     _, o2 = computer2.test(o1, x2)
     o2 = [[classify_output(t) for t in s] for s in o2]
 
-    print "Time:              %d (training, testing, binarizing)" % (time.time() - time_checkpoint)
+    print "Time:              %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     r1_n_correct = 0
     r1_n_incorrect_bits = 0
@@ -152,6 +152,33 @@ def main(raw_args):
                       n_iterations,
                       sample_nr=12)
 
+
+def digest_args(args):
+    size = 5
+    rule = 1
+    iterations = 1
+    n_random_mappings = 0
+    diffuse = 0
+    pad = 0
+    opts, args = getopt.getopt(args[1:],
+                               's:r:I:R:h?',
+                               ['diffuse=', 'pad='])
+    for o, a in opts:
+        if o == '-s':
+            size = int(a)
+        elif o == '-r':
+            rule = int(a)
+        elif o == '-I':
+            iterations = int(a)
+        elif o == '-R':
+            n_random_mappings = int(a)
+        elif o == '--diffuse':
+            diffuse = int(a)
+        elif o == '--pad':
+            pad = int(a)
+
+    return size, rule, iterations, n_random_mappings, diffuse, pad
+
 linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
 
 if __name__ == '__main__':
@@ -168,9 +195,9 @@ if __name__ == '__main__':
         if len(sys.argv) > 1:
             main(sys.argv)
         else:
-            main(['bitmemorytask.py',
+            main(['bitmemorytask2.py',
                   '-r', '90',
-                  '-i', '4',
-                  '--random-mappings', '3',
-                  '--input-area', '0',
-                  '--automaton-area', '0'])
+                  '-I', '8',
+                  '-R', '8',
+                  '--diffuse', '40',
+                  '--pad', '4'])

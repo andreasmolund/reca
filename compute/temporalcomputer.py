@@ -8,6 +8,9 @@ from computer import Computer, file_name
 
 
 class TemporalComputer(Computer):
+    """
+    Constitutes the recurrent architecture
+    """
 
     def train(self, sets, labels):
         """
@@ -29,11 +32,11 @@ class TemporalComputer(Computer):
             new_shape = (shape[0] * shape[1], shape[2])
         labels = labels.reshape(new_shape)
 
-        print "Transforming time:      %d" % (time.time() - time_checkpoint)
+        print "Transforming time:      %.1f" % (time.time() - time_checkpoint)
         time_checkpoint = time.time()
 
         self.estimator.fit(x, labels)
-        print "Estimator fitting time: %d" % (time.time() - time_checkpoint)
+        print "Estimator fitting time: %.1f" % (time.time() - time_checkpoint)
 
         return x
 
@@ -84,7 +87,8 @@ class TemporalComputer(Computer):
 
                 new_sets_at_t = np.empty((n_sets, n_random_mappings, automaton_area), dtype='int')
                 for i, set_at_t, prev_output in izip(count(), sets_at_t, outputs[t - 1]):
-                    new_sets_at_t[i] = encoder.normalized_addition(set_at_t, prev_output[-size:])
+                    prev_state_vector = prev_output[-size:].copy()
+                    new_sets_at_t[i] = encoder.overwrite(set_at_t, prev_state_vector)
 
                 sets_at_t = new_sets_at_t.reshape((n_sets * n_random_mappings, automaton_area))
 

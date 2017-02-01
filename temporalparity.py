@@ -4,7 +4,7 @@ import time
 from sklearn import linear_model
 
 import problemgenerator as problems
-from bitmemorytask import digest_args
+from bitmemorytask2 import digest_args
 from ca.ca import CA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder

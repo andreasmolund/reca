@@ -203,18 +203,18 @@ def n_processes(sets):
     :param sets:
     :return: a number of processes in which you can divide the sets
     """
-    # return 1
+    return 1
     n_sets = len(sets)
-    n_processes = 1
+    n = 1
 
     if n_sets >= 8:
-        n_processes = 8
+        n = 8
     elif n_sets >= 4:
-        n_processes = 4
+        n = 4
     elif n_sets >= 2:
-        n_processes = 2
+        n = 2
 
-    return n_processes
+    return n
 
 
 def file_name(identifier):
