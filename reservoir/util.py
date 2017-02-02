@@ -1,5 +1,10 @@
 # Utilities related to reservoir handling
+import numpy as np
 
 
-def classify_output(vector):
-    return [0 if val < 0.5 else 1 for val in vector]
+def classify_operand(value):
+    return 0 if value < 0.5 else 1
+
+
+classify_output = np.vectorize(classify_operand)
+

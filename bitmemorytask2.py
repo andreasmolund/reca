@@ -72,7 +72,7 @@ def main(raw_args):
 
     # The first reservoir needs to predict the output (predict)
     _, o1 = computer1.test(inputs, x1)
-    o1 = [[classify_output(t) for t in s] for s in o1]
+    o1 = classify_output(o1)
 
     # Then, the second reservoir needs to be trained (fit)
     try:
@@ -199,5 +199,5 @@ if __name__ == '__main__':
                   '-r', '90',
                   '-I', '8',
                   '-R', '8',
-                  '--diffuse', '40',
-                  '--pad', '4'])
+                  '--diffuse', '4',
+                  '--pad', '6'])

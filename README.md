@@ -1,7 +1,7 @@
 # ReCA
 Source code for my semester project and master thesis. Reservoir Computing using Cellular Automata (ReCA).
 
-Keywords: Reservoir computing, cellular automata, linear regression, deep learning.
+Keywords: Reservoir computing, cellular automata, deep learning, classification, regression.
 
 # Results
 
