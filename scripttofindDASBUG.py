@@ -2,14 +2,14 @@ import numpy as np
 import time
 from sklearn.linear_model import LinearRegression
 from numpy.linalg.linalg import LinAlgError
-from ca.ca import CA
+from ca.eca import ECA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 
 # 2016-11-17T19:35
 
-automaton = CA(102, k=2, n=3)
+automaton = ECA(102)
 # The encoder must have random_mappings = [[24, 26, 9], [34, 10, 35], [4, 1, 21], [28, 10, 14]]
 encoder = ClassicEncoder(8,
                          4,

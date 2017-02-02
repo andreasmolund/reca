@@ -9,7 +9,7 @@ from numpy.linalg.linalg import LinAlgError
 from sklearn import linear_model
 
 import problemgenerator as problems
-from ca.ca import CA
+from ca.eca import ECA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
 from plotter import plot_temporal
@@ -44,7 +44,7 @@ def main(raw_args):
                               diffuse,
                               pad,
                               verbose=verbose)
-    automaton = CA(rule, k=2, n=3)
+    automaton = ECA(rule)
     reservoir = Reservoir(automaton, n_iterations, verbose=verbose)
     estimator1 = linear_model.LinearRegression()
     estimator2 = linear_model.LinearRegression()
@@ -87,16 +87,16 @@ def main(raw_args):
     # but it is no need to transform and predict the output of the first reservoir.
 
     _, o2 = computer2.test(o1, x2)
-    o2 = [[classify_output(t) for t in s] for s in o2]
+    o2 = classify_output(o2)
 
     print "Time:              %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     r1_n_correct = 0
     r1_n_incorrect_bits = 0
-    for pred, set_labels in zip(o1, labels.tolist()):
+    for pred, set_labels in zip(o1, labels):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
-            if pred_element != label_element:
+            if not np.array_equal(pred_element, label_element):
                 correct = False
                 r1_n_incorrect_bits += 1
         if correct:
@@ -106,10 +106,10 @@ def main(raw_args):
 
     r2_n_correct = 0
     r2_n_incorrect_bits = 0
-    for pred, set_labels in zip(o2, labels.tolist()):
+    for pred, set_labels in zip(o2, labels):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
-            if pred_element != label_element:
+            if not np.array_equal(pred_element, label_element):
                 correct = False
                 r2_n_incorrect_bits += 1
         if correct:
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         else:
             main(['bitmemorytask2.py',
                   '-r', '90',
-                  '-I', '8',
-                  '-R', '8',
-                  '--diffuse', '4',
-                  '--pad', '6'])
+                  '-I', '32',
+                  '-R', '36',
+                  # '--diffuse', '4',
+                  '--pad', '4'])

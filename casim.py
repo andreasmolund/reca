@@ -1,16 +1,16 @@
 # Module for simulating the CA as a stand-alone
-# CASim = CA simulation
+# CASim = ECA simulation
 import getopt
 import math
 import sys
 
 import ca.util as cutil
-from ca.ca import CA
+from ca.eca import ECA
 from plotter import plot_temporal
 
 
 def sim(raw_args):
-    """Internal test for the CA"""
+    """Internal test for the ECA"""
 
     length = 5
     rule = 90
@@ -33,7 +33,7 @@ def sim(raw_args):
     if iterations == 0:
         iterations = int(math.ceil((length + 1) / 2))
     config = cutil.config_simple(length) if simple else cutil.config_rand(length)
-    automation = CA(rule, n=3)
+    automation = ECA(rule)
 
     state_vector = []
     state_vector.extend(config)

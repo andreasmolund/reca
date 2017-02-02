@@ -9,7 +9,7 @@ from sklearn.metrics import mean_squared_error
 import ca.util as cutil
 import problemgenerator as problems
 import reservoir.util as rutil
-from ca.ca import CA
+from ca.eca import ECA
 from compute.computer import Computer
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
@@ -32,7 +32,7 @@ def main(raw_args):
                              input_area,
                              automaton_area,
                              verbose=verbose)
-    automaton = CA(rule, k=2, n=3)
+    automaton = ECA(rule)
     reservoir = Reservoir(automaton,
                           iterations,
                           verbose=verbose)

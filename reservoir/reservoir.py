@@ -14,7 +14,7 @@ class Reservoir:
     def __init__(self, matter, iterations, verbose=1):
         """
 
-        :param matter: the CA object
+        :param matter: the ECA object
         :param iterations: the number of iterations
         :param verbose: 1 prints basic information, 2 prints more
         """

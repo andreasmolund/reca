@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 
 import problemgenerator as problems
 import reservoir.util as rutil
-from ca.ca import CA
+from ca.eca import ECA
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 
@@ -22,7 +22,7 @@ def main(raw_args):
         iterations = int(math.ceil((input_size + 1) / 2))
 
     encoder = ClassicEncoder(random_mappings, input_size, input_area, automaton_area)
-    automaton = CA(rule, k=2, n=3)
+    automaton = ECA(rule)
     reservoir = Reservoir(automaton, iterations, verbose=False)
 
     # Training

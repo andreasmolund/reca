@@ -69,13 +69,23 @@ def get_all_rules(k, n):
     return rules
 
 
-def get_rule(rulecode=0, k=2, n=3):
+def get_elementary_rule(wolfram_code):
     """Gets the transition function for the rule number
 
-    :param rulecode: the rule
-    :param k: number of states
-    :param n: number of neighbors
+    :param wolfram_code: the rule
     """
+    base2rule = format(wolfram_code, '08b')
 
-    return [(rulecode/pow(k, i)) % k for i in range(pow(k, n))]
+    return {
+        (1, 1, 1): int(base2rule[0]),
+        (1, 1, 0): int(base2rule[1]),
+        (1, 0, 1): int(base2rule[2]),
+        (1, 0, 0): int(base2rule[3]),
+        (0, 1, 1): int(base2rule[4]),
+        (0, 1, 0): int(base2rule[5]),
+        (0, 0, 1): int(base2rule[6]),
+        (0, 0, 0): int(base2rule[7])
+    }
+
+    # return [(wolframcode/pow(k, i)) % k for i in range(pow(k, n))]
 

@@ -140,7 +140,7 @@ class Computer:
 
         :param elements:
         :param n_random_mappings:
-        :param intertwine_size: really the size of one CA (R * automaton area)
+        :param intertwine_size: really the size of one ECA (R * automaton area)
         :return:
         """
         # TODO: Implement numpy stuff here
@@ -203,7 +203,7 @@ def n_processes(sets):
     :param sets:
     :return: a number of processes in which you can divide the sets
     """
-    return 1
+    # return 1
     n_sets = len(sets)
     n = 1
 

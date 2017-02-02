@@ -5,7 +5,7 @@ from sklearn import linear_model
 
 import problemgenerator as problems
 from bitmemorytask2 import digest_args
-from ca.ca import CA
+from ca.eca import ECA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
 from plotter import plot_temporal
@@ -28,7 +28,7 @@ def main(raw_args):
                              input_area,
                              automaton_area,
                              verbose=verbose)
-    automation = CA(rule, k=2, n=3)
+    automation = ECA(rule)
     reservoir = Reservoir(automation, n_iterations, verbose=verbose)
     # estimator = svm.SVC()
     # estimator = svm.SVC(kernel='linear')
