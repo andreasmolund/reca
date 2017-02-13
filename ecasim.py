@@ -1,5 +1,5 @@
 # Module for simulating the CA as a stand-alone
-# CASim = ECA simulation
+# ECASim = Elementary cellular automata simulation
 import getopt
 import math
 import sys
@@ -12,27 +12,29 @@ from statistics.plotter import plot_temporal
 def sim(raw_args):
     """Internal test for the ECA"""
 
-    length = 5
+    size = 5
     rule = 90
-    simple = True
+    simple = False
     iterations = 0
 
     if len(raw_args) > 1:
         # length, simple, rule
-        opts, args = getopt.getopt(raw_args[1:], "l:s:r:i:")
+        opts, args = getopt.getopt(raw_args[1:],
+                                   "s:r:I:",
+                                   ['simple'])
         for o, a in opts:
-            if o == '-l':
-                length = int(a)
-            elif o == '-s':
-                simple = a in ['True', 'true', 'y', 'yes', 'seff', 'ofc']
+            if o == '-s':
+                size = int(a)
+            elif o == '--simple':
+                simple = True
             elif o == '-r':
                 rule = int(a)
-            elif o == '-i':
+            elif o == '-I':
                 iterations = int(a)
 
     if iterations == 0:
-        iterations = int(math.ceil((length + 1) / 2))
-    config = cutil.config_simple(length) if simple else cutil.config_rand(length)
+        iterations = int(math.ceil((size + 1) / 2))
+    config = cutil.config_simple(size) if simple else cutil.config_rand(size)
     automation = ECA(rule)
 
     state_vector = []
@@ -44,13 +46,13 @@ def sim(raw_args):
 
     plot_temporal([state_vector],
                   1,
-                  length,
+                  size,
                   1,
                   1 + iterations,
                   sample_nr=0)
 
 
 if __name__ == '__main__':
-    # sys.argv = ['casim.py', '-s', 'no', '-r', '52', '-l', '10', '-i' '10']
+    # sys.argv = ['ecasim.py', '-s', 'no', '-r', '52', '-l', '10', '-i' '10']
     sim(sys.argv)
 

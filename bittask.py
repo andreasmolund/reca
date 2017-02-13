@@ -1,3 +1,5 @@
+# Runnable 5 bit memory task
+
 import getopt
 import logging
 import sys
