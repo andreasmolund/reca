@@ -1,7 +1,7 @@
 import random as rand
 
 import numpy as np
-from compute.operators import combine
+from compute.adders import combine
 
 seed = 20170131
 rand.seed(seed)

@@ -1,4 +1,5 @@
-# Vectorizable operators
+# Vectorizable operators/adders.
+# Used in addition of state vector and input vector.
 
 import random as rand
 

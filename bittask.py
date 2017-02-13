@@ -1,8 +1,8 @@
 import getopt
 import logging
 import sys
-from datetime import datetime
 import time
+from datetime import datetime
 
 import numpy as np
 from numpy.linalg.linalg import LinAlgError
@@ -12,9 +12,9 @@ import problemgenerator as problems
 from ca.eca import ECA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
-from plotter import plot_temporal
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
+from statistics.plotter import plot_temporal
 
 start_time = datetime.now()
 logit = False
@@ -26,38 +26,47 @@ inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)
 
+#  TODO: Handle LinAlgError better. Run one more time per error occurence
+
 
 def main(raw_args):
     size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
 
-    size = 4
-    concat_before = True
-    verbose = 1
+    size = 4  # The size of the input, or
+    concat_before = True  # Concat the automata before or after iterating
+    verbose = 1  # How much information to print to console
+    n_layers = 2  # The number of layers excluding the first
 
     encoder1 = ClassicEncoder(n_random_mappings,
                               size,
                               diffuse,
                               pad,
                               verbose=verbose)
-    encoder2 = ClassicEncoder(n_random_mappings,
-                              3,
-                              diffuse,
-                              pad,
-                              verbose=verbose)
+
     automaton = ECA(rule)
     reservoir = Reservoir(automaton, n_iterations, verbose=verbose)
-    estimator1 = linear_model.LinearRegression()
-    estimator2 = linear_model.LinearRegression()
-    computer1 = TemporalComputer(encoder1,
-                                 reservoir,
-                                 estimator1,
-                                 concat_before=concat_before,
+    encoders = [None] * n_layers
+    computers = [None] * n_layers
+    estimators = [None] * n_layers
+
+    for layer_i in xrange(n_layers):
+        encoder = ClassicEncoder(n_random_mappings,
+                                 3,
+                                 diffuse,
+                                 pad,
                                  verbose=verbose)
-    computer2 = TemporalComputer(encoder2,
-                                 reservoir,
-                                 estimator2,
-                                 concat_before=concat_before,
-                                 verbose=verbose)
+
+        estimator = linear_model.LinearRegression()
+
+        computer = TemporalComputer(encoder,
+                                    reservoir,
+                                    estimator,
+                                    concat_before=concat_before,
+                                    verbose=verbose)
+
+        encoders[layer_i] = encoder
+        estimators[layer_i] = estimator
+        computers[layer_i] = computer
 
     time_checkpoint = time.time()
     print "Complexity:             %d (I*R*L_d)" % (n_iterations * n_random_mappings * pad)
@@ -77,7 +86,7 @@ def main(raw_args):
     # Then, the second reservoir needs to be trained (fit)
     try:
         # Preserving the values of the output nodes
-        x2 = computer2.train(np.array(o1), labels)
+        x2 = computer2.train(o1, labels)
     except LinAlgError:
         logging.error(linalgerrmessage)
         return
@@ -89,11 +98,20 @@ def main(raw_args):
     _, o2 = computer2.test(o1, x2)
     o2 = classify_output(o2)
 
+    try:
+        # Preserving the values of the output nodes
+        x3 = computer2.train(o2, labels)
+    except LinAlgError:
+        logging.error(linalgerrmessage)
+        return
+    _, o3 = computer2.test(o2, x3)
+    o3 = classify_output(o3)
+
     print "Time:              %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     r1_n_correct = 0
     r1_n_incorrect_bits = 0
-    for pred, set_labels in zip(o1, labels):
+    for pred, set_labels in zip(o2, labels):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
             if not np.array_equal(pred_element, label_element):
@@ -106,7 +124,7 @@ def main(raw_args):
 
     r2_n_correct = 0
     r2_n_incorrect_bits = 0
-    for pred, set_labels in zip(o2, labels):
+    for pred, set_labels in zip(o3, labels):
         correct = True
         for pred_element, label_element in zip(pred, set_labels):
             if not np.array_equal(pred_element, label_element):
@@ -179,6 +197,7 @@ def digest_args(args):
 
     return size, rule, iterations, n_random_mappings, diffuse, pad
 
+
 linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
 
 if __name__ == '__main__':
@@ -195,7 +214,7 @@ if __name__ == '__main__':
         if len(sys.argv) > 1:
             main(sys.argv)
         else:
-            main(['bitmemorytask2.py',
+            main(['bittask.py',
                   '-r', '90',
                   '-I', '32',
                   '-R', '36',

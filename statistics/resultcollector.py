@@ -71,13 +71,7 @@ def main(args):
                                                     res1misbits,
                                                     "%s/%s" % (res2, count),
                                                     res2misbits)
-        # print "Reservoir 1: %d" % res1
-        # print "Reservoir 2: %d" % res2
 
 
 if __name__ == '__main__':
-    # print sys.argv
     main(sys.argv)
-    # main(['aienv',
-    #       '-f',
-    #       '/home/andreas/Documents/GitHub/semester-project-code/project/results/2016-11-25T233347.325693-bitmem2res-i16-r8-rule-150.csv'])

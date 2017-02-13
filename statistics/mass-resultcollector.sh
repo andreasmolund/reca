@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO: Make a generic collector. This is way too cumbersome
+
 python2 resultcollector.py -f '/home/andreas/Documents/GitHub/semester-project-code/project/results/2016-11-20T130826-bitmem2res-i2-r4-rule-90.csv' 
 python2 resultcollector.py -f '/home/andreas/Documents/GitHub/semester-project-code/project/results/2016-11-20T133536-bitmem2res-i2-r4-rule-150.csv' 
 python2 resultcollector.py -f '/home/andreas/Documents/GitHub/semester-project-code/project/results/2016-11-20T140326-bitmem2res-i2-r4-rule-182.csv' 

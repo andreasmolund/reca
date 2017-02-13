@@ -4,13 +4,13 @@ import time
 from sklearn import linear_model
 
 import problemgenerator as problems
-from bitmemorytask2 import digest_args
+from bittask import digest_args
 from ca.eca import ECA
 from compute.temporalcomputer import TemporalComputer
 from encoders.classic import ClassicEncoder
-from plotter import plot_temporal
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
+from statistics.plotter import plot_temporal
 
 
 def main(raw_args):

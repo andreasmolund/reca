@@ -88,7 +88,7 @@ class TemporalComputer(Computer):
                 new_sets_at_t = np.empty((n_sets, n_random_mappings, automaton_area), dtype='int')
                 for i, set_at_t, prev_output in izip(count(), sets_at_t, outputs[t - 1]):
                     prev_state_vector = prev_output[-size:].copy()
-                    new_sets_at_t[i] = encoder.overwrite(set_at_t, prev_state_vector)
+                    new_sets_at_t[i] = encoder.normalized_addition(set_at_t, prev_state_vector)
 
                 sets_at_t = new_sets_at_t.reshape((n_sets * n_random_mappings, automaton_area))
 
