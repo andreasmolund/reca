@@ -28,7 +28,7 @@ inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)
 
-#  TODO: Handle LinAlgError better. Run one more time per error occurence
+#  TODO: Handle LinAlgError better. Run one more time per error occurrence
 
 
 def main(raw_args):
@@ -37,23 +37,16 @@ def main(raw_args):
     size = 4  # The size of the input, or
     concat_before = True  # Concat the automata before or after iterating
     verbose = 1  # How much information to print to console
-    n_layers = 2  # The number of layers excluding the first
-
-    encoder1 = ClassicEncoder(n_random_mappings,
-                              size,
-                              diffuse,
-                              pad,
-                              verbose=verbose)
+    n_layers = 5  # The number of layers including the first
 
     automaton = ECA(rule)
     reservoir = Reservoir(automaton, n_iterations, verbose=verbose)
-    encoders = [None] * n_layers
-    computers = [None] * n_layers
-    estimators = [None] * n_layers
+    encoders = []
+    computers = []
 
     for layer_i in xrange(n_layers):
         encoder = ClassicEncoder(n_random_mappings,
-                                 3,
+                                 size if layer_i == 0 else labels.shape[2],  # Input size if it's the first layer
                                  diffuse,
                                  pad,
                                  verbose=verbose)
@@ -66,111 +59,76 @@ def main(raw_args):
                                     concat_before=concat_before,
                                     verbose=verbose)
 
-        encoders[layer_i] = encoder
-        estimators[layer_i] = estimator
-        computers[layer_i] = computer
+        encoders.append(encoder)
+        computers.append(computer)
 
     time_checkpoint = time.time()
     print "Complexity:             %d (I*R*L_d)" % (n_iterations * n_random_mappings * pad)
 
-    # The first reservoir needs to be trained (fit)
-    try:
-        # Preserving the values of the output nodes
-        x1 = computer1.train(inputs, labels)
-    except LinAlgError:
-        logging.error(linalgerrmessage)
-        return
+    o = None  # Output of one estimator
+    correct = []
+    incorrect_predictions = []
 
-    # The first reservoir needs to predict the output (predict)
-    _, o1 = computer1.test(inputs, x1)
-    o1 = classify_output(o1)
+    for layer_i in xrange(n_layers):
+        # Training/fitting
+        try:
+            # Preserving the values of the output nodes
+            # For the first layer, we transform/train with the very input,
+            # and for the subsequent layers, the output from the previous layer is used
+            x = computers[layer_i].train(inputs if o is None else o, labels)
+        except LinAlgError:
+            logging.error(linalgerrmessage)
+            return
 
-    # Then, the second reservoir needs to be trained (fit)
-    try:
-        # Preserving the values of the output nodes
-        x2 = computer2.train(o1, labels)
-    except LinAlgError:
-        logging.error(linalgerrmessage)
-        return
+        _, o = computers[layer_i].test(inputs, x)
+        o = classify_output(o)
 
-    # Currently, the system is trained.
-    # Now we need to test,
-    # but it is no need to transform and predict the output of the first reservoir.
+        n_correct = 0
+        n_incorrect_predictions = 0
+        for prediction_set, label_set in zip(o, labels):
+            success = True
+            for prediction_element, label_element in zip(prediction_set, label_set):
+                if not np.array_equal(prediction_element, label_element):
+                    success = False
+                    n_incorrect_predictions += 1
+            if success:
+                n_correct += 1
+        correct.append(n_correct)
+        incorrect_predictions.append(n_incorrect_predictions)
+        print "%d. corr. pred.:         %d" % (layer_i, n_correct)
+        print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
 
-    _, o2 = computer2.test(o1, x2)
-    o2 = classify_output(o2)
+        if n_whole_runs < 2:
+            time_steps = 2 * 5 + distractor_period + 1
+            plot_temporal(x,
+                          encoders[layer_i].n_random_mappings,
+                          encoders[layer_i].automaton_area,
+                          time_steps,
+                          n_iterations,
+                          sample_nr=12)
 
-    try:
-        # Preserving the values of the output nodes
-        x3 = computer2.train(o2, labels)
-    except LinAlgError:
-        logging.error(linalgerrmessage)
-        return
-    _, o3 = computer2.test(o2, x3)
-    o3 = classify_output(o3)
-
-    print "Time:              %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
-
-    r1_n_correct = 0
-    r1_n_incorrect_bits = 0
-    for pred, set_labels in zip(o2, labels):
-        correct = True
-        for pred_element, label_element in zip(pred, set_labels):
-            if not np.array_equal(pred_element, label_element):
-                correct = False
-                r1_n_incorrect_bits += 1
-        if correct:
-            r1_n_correct += 1
-    print "1. Correct:       ", r1_n_correct
-    print "1. Incorrect bits:", r1_n_incorrect_bits
-
-    r2_n_correct = 0
-    r2_n_incorrect_bits = 0
-    for pred, set_labels in zip(o3, labels):
-        correct = True
-        for pred_element, label_element in zip(pred, set_labels):
-            if not np.array_equal(pred_element, label_element):
-                correct = False
-                r2_n_incorrect_bits += 1
-        if correct:
-            r2_n_correct += 1
-    print "2. Correct:       ", r2_n_correct
-    print "2. Incorrect bits:", r2_n_incorrect_bits
+    print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     if logit:
         logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d",
                      n_iterations,
-                     encoder1.n_random_mappings,
+                     encoders[0].n_random_mappings,
                      rule,
                      size,
-                     encoder1.input_area,
-                     encoder1.automaton_area,
+                     encoders[0].input_area,
+                     encoders[0].automaton_area,
                      concat_before,
-                     estimator1.__class__.__name__,
+                     linear_model.LinearRegression().__class__.__name__,
                      n_sets,
                      n_sets,
                      distractor_period,
-                     1 if r2_n_correct == n_sets else 0,
-                     r1_n_correct,
-                     r1_n_incorrect_bits,
-                     r2_n_correct,
-                     r2_n_incorrect_bits)
+                     1 if correct[-1] == n_sets else 0,
+                     correct[0],
+                     incorrect_predictions[0],
+                     correct[-1],
+                     incorrect_predictions[-1])
 
-    if n_whole_runs < 1:
-        time_steps = 2 * 5 + distractor_period + 1
-        plot_temporal(x1,
-                      encoder1.n_random_mappings,
-                      encoder1.automaton_area,
-                      time_steps,
-                      n_iterations,
-                      sample_nr=12)
 
-        plot_temporal(x2,
-                      encoder2.n_random_mappings,
-                      encoder2.automaton_area,
-                      time_steps,
-                      n_iterations,
-                      sample_nr=12)
 
 
 def digest_args(args):
@@ -210,7 +168,7 @@ if __name__ == '__main__':
                             level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
-                     "Point (success),R1 correct,R1 wrong bits,R2 correct,R2 wrong bits")
+                     "Point (success),First res. correct,First res. wrong bits,Last res. correct,Last res. wrong bits")
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:

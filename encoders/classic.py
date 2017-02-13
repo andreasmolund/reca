@@ -4,7 +4,7 @@ import numpy as np
 from compute.adders import combine
 
 seed = 20170131
-rand.seed(seed)
+# rand.seed(seed)
 
 
 class ClassicEncoder:

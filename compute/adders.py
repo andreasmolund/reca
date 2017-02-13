@@ -5,7 +5,7 @@ import random as rand
 
 import numpy as np
 
-rand.seed(20170131)
+# rand.seed(20170131)
 
 
 def normalized_addition(a, b):
