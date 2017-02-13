@@ -92,10 +92,10 @@ ENV/
 .idea/
 
 # My dump files
-project/tmp/
+tmp/
 
 # My temporary result files
-project/tmpresults/
+tmpresults/
 
 # My result files
-project/preresults/
+preresults/
