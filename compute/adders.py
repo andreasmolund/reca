@@ -1,7 +1,7 @@
 # Vectorizable operators/adders.
 # Used in addition of state vector and input vector.
 
-import random as rand
+import random
 
 import numpy as np
 
@@ -24,26 +24,14 @@ def normalized_addition(a, b):
     elif s == 0:
         return 0
     elif s == 1:
-        return rand.randint(0, 1)
+        return random.randint(0, 1)
 
 
 def bitwise_or(a, b):
-    """Bitwise OR
-
-    :param a:
-    :param b:
-    :return:
-    """
     return a | b
 
 
 def bitwise_xor(a, b):
-    """Bitwise XOR
-
-    :param a:
-    :param b:
-    :return:
-    """
     return a ^ b
 
 

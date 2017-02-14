@@ -6,7 +6,7 @@ from sklearn import linear_model
 import problemgenerator as problems
 from bittask import digest_args
 from ca.eca import ECA
-from compute.temporalcomputer import TemporalComputer
+from compute.computer import Computer
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
@@ -33,11 +33,11 @@ def main(raw_args):
     # estimator = svm.SVC()
     # estimator = svm.SVC(kernel='linear')
     estimator = linear_model.LinearRegression()
-    computer = TemporalComputer(encoder,
-                                reservoir,
-                                estimator,
-                                concat_before=concat_before,
-                                verbose=verbose)
+    computer = Computer(encoder,
+                        reservoir,
+                        estimator,
+                        concat_before=concat_before,
+                        verbose=verbose)
 
     training_inputs, training_labels = problems.temporal_parity(n_training_sets,
                                                                 time_steps,

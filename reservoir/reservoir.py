@@ -6,7 +6,7 @@ import numpy as np
 
 dump_path = "tmp/"
 prefix = "dumpprocess"
-filetype = "dump"
+file_type = "dump"
 
 
 class Reservoir:
@@ -31,7 +31,7 @@ class Reservoir:
         :return: a list in which each element is the output of the translation of each configuration
         """
 
-        if self.verbose == 0:
+        if self.verbose == 1:
             sys.stdout.write("Transforming... ")
             sys.stdout.flush()
         elif self.verbose > 1:
@@ -55,7 +55,7 @@ class Reservoir:
                 config = new_config
             outputs[i] = concat.reshape(state_vector_len)
 
-        if self.verbose == 0:
+        if self.verbose == 1:
             sys.stdout.write("Done\n")
             sys.stdout.flush()
 

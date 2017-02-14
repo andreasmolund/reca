@@ -57,7 +57,7 @@ def main(raw_args):
 
     time_checkpoint = time.time()
 
-    computer.train(raw_inputs[:n_training_sets], labels[:n_training_sets])
+    computer.train([raw_inputs[:n_training_sets]], [labels[:n_training_sets]])
 
     print "Training time: ", (time.time() - time_checkpoint)
     time_checkpoint = time.time()

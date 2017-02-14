@@ -12,7 +12,7 @@ from sklearn import linear_model
 
 import problemgenerator as problems
 from ca.eca import ECA
-from compute.temporalcomputer import TemporalComputer
+from compute.computer import Computer
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
@@ -34,18 +34,24 @@ inputs, labels = problems.bit_memory_task(n_sets,
 def main(raw_args):
     size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
 
+    n_iterations = [int(value) for value in n_iterations.split(',')]
+    n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
+
+    if not (len(n_iterations) == len(n_random_mappings)):
+        return
+
     size = 4  # The size of the input, or
     concat_before = True  # Concat the automata before or after iterating
     verbose = 1  # How much information to print to console
-    n_layers = 5  # The number of layers including the first
+    n_layers = len(n_random_mappings)  # The number of layers including the first
 
     automaton = ECA(rule)
-    reservoir = Reservoir(automaton, n_iterations, verbose=verbose)
+
     encoders = []
     computers = []
 
     for layer_i in xrange(n_layers):
-        encoder = ClassicEncoder(n_random_mappings,
+        encoder = ClassicEncoder(n_random_mappings[layer_i],
                                  size if layer_i == 0 else labels.shape[2],  # Input size if it's the first layer
                                  diffuse,
                                  pad,
@@ -53,17 +59,20 @@ def main(raw_args):
 
         estimator = linear_model.LinearRegression()
 
-        computer = TemporalComputer(encoder,
-                                    reservoir,
-                                    estimator,
-                                    concat_before=concat_before,
-                                    verbose=verbose)
+        reservoir = Reservoir(automaton,
+                              n_iterations[layer_i],
+                              verbose=verbose)
+
+        computer = Computer(encoder,
+                            reservoir,
+                            estimator,
+                            concat_before=concat_before,
+                            verbose=verbose)
 
         encoders.append(encoder)
         computers.append(computer)
 
     time_checkpoint = time.time()
-    print "Complexity:             %d (I*R*L_d)" % (n_iterations * n_random_mappings * pad)
 
     o = None  # Output of one estimator
     correct = []
@@ -98,13 +107,13 @@ def main(raw_args):
         print "%d. corr. pred.:         %d" % (layer_i, n_correct)
         print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
 
-        if n_whole_runs < 2:
+        if n_whole_runs < 1:
             time_steps = 2 * 5 + distractor_period + 1
             plot_temporal(x,
                           encoders[layer_i].n_random_mappings,
                           encoders[layer_i].automaton_area,
                           time_steps,
-                          n_iterations,
+                          n_iterations[layer_i],
                           sample_nr=12)
 
     print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
@@ -129,13 +138,11 @@ def main(raw_args):
                      incorrect_predictions[-1])
 
 
-
-
 def digest_args(args):
     size = 5
     rule = 1
-    iterations = 1
-    n_random_mappings = 0
+    iterations = '1'
+    n_random_mappings = '1'
     diffuse = 0
     pad = 0
     opts, args = getopt.getopt(args[1:],
@@ -147,9 +154,9 @@ def digest_args(args):
         elif o == '-r':
             rule = int(a)
         elif o == '-I':
-            iterations = int(a)
+            iterations = a
         elif o == '-R':
-            n_random_mappings = int(a)
+            n_random_mappings = a
         elif o == '--diffuse':
             diffuse = int(a)
         elif o == '--pad':
@@ -159,6 +166,7 @@ def digest_args(args):
 
 
 linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
+
 
 if __name__ == '__main__':
     if logit:
@@ -175,8 +183,9 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bittask.py',
-                  '-r', '90',
-                  '-I', '32',
-                  '-R', '36',
+                  '-I', '4,2',
+                  '-R', '8,4',
                   # '--diffuse', '4',
-                  '--pad', '4'])
+                  # '--pad', '4'
+                  '-r', '90'
+                  ])
