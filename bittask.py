@@ -19,11 +19,11 @@ from reservoir.util import classify_output
 from statistics.plotter import plot_temporal
 
 start_time = datetime.now()
-logit = True
+logit = False
 
-n_whole_runs = 10
+n_whole_runs = 1
 n_sets = 32
-distractor_period = 200  # Because cue is within distr. period
+distractor_period = 199  # Because cue is within distr. period
 inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)

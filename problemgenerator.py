@@ -4,7 +4,43 @@
 import random as rn
 
 import numpy as np
+
+
 # np.random.seed(20161112)
+
+
+def japanese_vowels():
+    train_file = open("datasets/japvowels/ae.train", "r")
+
+    aetrain = np.zeros((9,  # Men
+                        30,  # Blocks
+                        12))  # Coefficients
+    aetrainlabels = np.zeros((9,
+                              30,
+                              9),  # Output nodes
+                             dtype='int')
+
+    eof = False
+    man_i = 0
+    block_i = 0
+    consecutive_empty_lines = 0
+    while not eof:
+        line = train_file.readline().rstrip(' \n')
+        if line == '':
+            man_i += 1
+            block_i = 0
+            consecutive_empty_lines += 1
+        else:
+            coefficients = [float(feature) for feature in line.split(' ')]
+            aetrain[man_i][block_i] = coefficients
+            aetrainlabels[man_i][block_i][man_i] = 1
+            block_i += 1
+            consecutive_empty_lines = 0
+
+        if consecutive_empty_lines > 1:
+            eof = True
+
+    return aetrain, aetrainlabels
 
 
 def bit_memory_task(quantity, bits, distractor_period):
@@ -27,7 +63,7 @@ def bit_memory_task(quantity, bits, distractor_period):
         set_labels = []
         for t in xrange(bits + distractor_period + 1 + bits):
             if t < bits:
-                bit = (i & 2**t) / 2**t
+                bit = (i & 2 ** t) / 2 ** t
                 a1 = - bit + 1
                 a2 = bit
             else:
@@ -140,4 +176,3 @@ def parity(quantity, size=4):
         configs.append(config)
         labels.append(1 if ones % 2 == 0 else 0)
     return configs, labels
-

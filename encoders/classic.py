@@ -7,7 +7,7 @@ seed = 20170131
 # rand.seed(seed)
 
 
-class ClassicEncoder:
+class ClassicEncoder(object):
     """
     Creates a number of random mappings from a vector of size input_size
     on to a vector of size input_area

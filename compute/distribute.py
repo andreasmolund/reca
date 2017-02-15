@@ -20,6 +20,7 @@ def distribute_and_collect(computer, sets):
     distributes them to processes,
     and collects the preresults afterwards
 
+    :param computer:
     :param sets:
     :return:
     """
@@ -79,6 +80,8 @@ def translate_and_transform(sets,
     size = encoder.total_area
     n_random_mappings = encoder.n_random_mappings
     automaton_area = size / n_random_mappings
+
+    # TODO: make it robust against arbitrary number of time steps
 
     outputs = np.empty((n_time_steps, n_sets, size * reservoir.iterations), dtype='int')
 
