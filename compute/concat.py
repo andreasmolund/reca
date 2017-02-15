@@ -1,11 +1,11 @@
 import numpy as np
 
 
-def concat_before(elements, from_n_parts):
+def before(elements, from_n_parts):
     return elements.reshape((elements.shape[0] / from_n_parts, elements.shape[1] * from_n_parts))
 
 
-def concat_after(elements, n_random_mappings, intertwine_size):
+def after(elements, n_random_mappings, intertwine_size):
     """
 
     :param elements:

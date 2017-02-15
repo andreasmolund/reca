@@ -19,11 +19,11 @@ from reservoir.util import classify_output
 from statistics.plotter import plot_temporal
 
 start_time = datetime.now()
-logit = False
+logit = True
 
-n_whole_runs = 1
+n_whole_runs = 10
 n_sets = 32
-distractor_period = 199  # Because cue is within distr. period
+distractor_period = 200  # Because cue is within distr. period
 inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)
@@ -42,7 +42,7 @@ def main(raw_args):
 
     size = 4  # The size of the input, or
     concat_before = True  # Concat the automata before or after iterating
-    verbose = 1  # How much information to print to console
+    verbose = 0  # How much information to print to console
     n_layers = len(n_random_mappings)  # The number of layers including the first
 
     automaton = ECA(rule)
@@ -104,8 +104,8 @@ def main(raw_args):
                 n_correct += 1
         correct.append(n_correct)
         incorrect_predictions.append(n_incorrect_predictions)
-        print "%d. corr. pred.:         %d" % (layer_i, n_correct)
-        print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
+        # print "%d. corr. pred.:         %d" % (layer_i, n_correct)
+        # print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
 
         if n_whole_runs < 1:
             time_steps = 2 * 5 + distractor_period + 1
@@ -116,11 +116,11 @@ def main(raw_args):
                           n_iterations[layer_i],
                           sample_nr=12)
 
-    print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
+    # print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     if logit:
         logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d",
-                     n_iterations,
+                     n_iterations[0],
                      encoders[0].n_random_mappings,
                      rule,
                      size,
@@ -183,9 +183,9 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bittask.py',
-                  '-I', '4,2',
-                  '-R', '8,4',
-                  # '--diffuse', '4',
-                  # '--pad', '4'
+                  '-I', '4,4',
+                  '-R', '8,8',
+                  '--diffuse', '40',
+                  '--pad', '0',
                   '-r', '90'
                   ])

@@ -34,8 +34,8 @@ def distribute_and_collect(computer, sets):
                           args=(sets[start:end],
                                 copy.deepcopy(computer.reservoir),
                                 copy.deepcopy(computer.encoder),
-                                concat.concat_before,
-                                concat.concat_after,
+                                concat.before,
+                                concat.after,
                                 computer.concat_before,
                                 (start, end, '%032x' % random.getrandbits(128)),
                                 out_q))

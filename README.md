@@ -1,5 +1,6 @@
 # ReCA
 Source code for my semester project and master thesis. Reservoir Computing using Cellular Automata (ReCA).
+Using the Japanese vowels data set: https://archive.ics.uci.edu/ml/datasets/Japanese+Vowels.
 
 Keywords: Reservoir computing, cellular automata, deep learning, classification, regression.
 
