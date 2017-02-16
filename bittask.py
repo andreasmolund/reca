@@ -183,8 +183,8 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bittask.py',
-                  '-I', '4,4',
-                  '-R', '8,8',
+                  '-I', '4',
+                  '-R', '8',
                   '--diffuse', '40',
                   '--pad', '0',
                   '-r', '90'

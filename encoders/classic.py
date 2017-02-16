@@ -27,10 +27,11 @@ class ClassicEncoder(object):
         :param automaton_area: the size of the whole automaton
         :param input_offset: offset for the mapping
         """
+        self._n_random_mappings = n_random_mappings
         self.random_mappings = []
         self.input_size = input_size
         self.input_area = max([input_size, input_area])
-        self.automaton_area = max([self.input_area, automaton_area])
+        self._automaton_area = max([self.input_area, automaton_area])
         self.verbose = verbose
 
         if n_random_mappings > 0:
@@ -43,22 +44,33 @@ class ClassicEncoder(object):
             print "Random mappings:"
             print self.random_mappings
 
-    def translate(self, configurations):
-        n_configurations = configurations.shape[0]
-        translated_configs = np.empty((n_configurations, self.n_random_mappings, self.automaton_area), dtype='int')
-        for i, config in enumerate(configurations):
-            partial_translated_config = np.zeros(self.n_random_mappings * self.automaton_area, dtype='int')
-            translated_configs[i] = self.overwrite(config, partial_translated_config)
+    def translate(self, configuration):
+        zero_vector = np.zeros(self.n_random_mappings * self._automaton_area, dtype='int')
+        return self._separate(self._overwrite(configuration, zero_vector))
 
-        return translated_configs.reshape((self.n_random_mappings * n_configurations, self.automaton_area))
+    def add(self, master, second):
+        return self._separate(self._overwrite(master, second))
 
-    def overwrite(self, master, second):
-        """A method of adding vectors.
-        Master overwrites second according to the mapping/translation.
+    def _normalized_addition(self, master, second):
+        """
+        A method of adding vectors.
+        Yilmaz' (2015) normalized addition.
 
-        :param master: the unmapped master or input vector
-        :param second: the already mapped vector that is to be overwritten (must already be a duplicate)
-        :return: added vectors
+        :param master:
+        :param second:
+        :return:
+        """
+        zero_vector = np.zeros(self._n_random_mappings * self._automaton_area, dtype='int')
+        mapped_master = self._overwrite(master, zero_vector)
+        return self._separate(combine(mapped_master, second))
+
+    def _overwrite(self, master, second):
+        """
+        Writing master onto second according to the random mappings
+
+        :param master:
+        :param second:
+        :return:
         """
         automaton_offset = 0  # Offset index
         for i, r in enumerate(self.random_mappings):
@@ -66,22 +78,16 @@ class ClassicEncoder(object):
             second[automaton_offset + r] = master[master_i]
 
             if master_i + 1 == self.input_size:
-                automaton_offset += self.automaton_area  # Adjusting offset
+                automaton_offset += self._automaton_area  # Adjusting offset
+        return second
 
-        return second.reshape(self.n_random_mappings, self.automaton_area)
-
-    def normalized_addition(self, master, second):
-        """A method of adding vectors.
-        Yilmaz' (2015) normalized addition.
-
-        :param master:
-        :param second:
+    def _separate(self, vector):
+        """
+        Splitting the vector up into separate pieces, with respect to the random mappings
+        :param vector: an already mapped vector
         :return:
         """
-        empty = np.zeros(self.n_random_mappings * self.automaton_area, dtype='int')
-        mapped_master = self.overwrite(master, empty)
-        shape = mapped_master.shape
-        return combine(mapped_master.ravel(), second).reshape(shape[0], shape[1])
+        return vector.reshape((self._n_random_mappings, self._automaton_area))
 
     def pos(self, element):
         """Get what positions an element has
@@ -94,14 +100,22 @@ class ClassicEncoder(object):
         return self.random_mappings
 
     @property
+    def automaton_area(self):
+        return self._automaton_area
+
+    @automaton_area.setter
+    def automaton_area(self, value):
+        self._automaton_area = value
+
+    @property
     def n_random_mappings(self):
         """The number of random mappings"""
-        return len(self.random_mappings) / self.input_size
+        return self._n_random_mappings
 
     @property
     def total_area(self):
         """The area of all automata"""
-        return self.automaton_area * self.n_random_mappings
+        return self._automaton_area * self.n_random_mappings
 
 
 def make_random_mapping(input_size, input_area, input_offset=0):
@@ -122,4 +136,3 @@ def make_random_mapping(input_size, input_area, input_offset=0):
             index = rand.randint(0, input_area - 1)
         input_indexes.append(index)
     return [i + input_offset for i in input_indexes]
-

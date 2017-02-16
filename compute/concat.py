@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def before(elements, from_n_parts):
-    return elements.reshape((elements.shape[0] / from_n_parts, elements.shape[1] * from_n_parts))
+def before(element, from_n_parts):
+    return element.reshape((1, from_n_parts * element.shape[1]))
 
 
 def after(elements, n_random_mappings, intertwine_size):
@@ -15,7 +15,7 @@ def after(elements, n_random_mappings, intertwine_size):
     """
 
     # TODO: Implement numpy stuff here
-
+    exec NotImplementedError  # Not fully implemented and tested yet
     outputs = []
     for i in xrange(0, len(elements), n_random_mappings):
         a = elements[i]
