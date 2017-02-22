@@ -37,19 +37,13 @@ class Computer:
         x = distribute_and_collect(self, sets)
         x = post_process(x)
 
-        labels = labels
-        shape = labels.shape
-        if len(shape) < 3:
-            new_shape = shape[0] * shape[1]
-        else:
-            new_shape = (shape[0] * shape[1], shape[2])
-        labels = labels.reshape(new_shape)
+        # labels = post_process(labels)
 
         if self.verbose > 0:
             print "Transforming time:      %.1f" % (time.time() - time_checkpoint)
             time_checkpoint = time.time()
 
-        self.estimator.fit(x, labels)
+        # self.estimator.fit(x, labels)
 
         if self.verbose > 0:
             print "Estimator fitting time: %.1f" % (time.time() - time_checkpoint)
@@ -61,7 +55,4 @@ class Computer:
             x = distribute_and_collect(self, sets)
             x = post_process(x)
         predictions = self.estimator.predict(x)
-        new_shape = (len(sets), len(sets[0]))
-        if len(predictions.shape) > 1:
-            new_shape = new_shape + (predictions.shape[1],)
-        return x, predictions.reshape(new_shape)
+        return x, predictions

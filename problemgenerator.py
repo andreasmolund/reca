@@ -10,37 +10,62 @@ import numpy as np
 
 
 def japanese_vowels():
-    train_file = open("datasets/japvowels/ae.train", "r")
 
-    aetrain = np.zeros((9,  # Men
-                        30,  # Blocks
-                        12))  # Coefficients
-    aetrainlabels = np.zeros((9,
-                              30,
-                              9),  # Output nodes
-                             dtype='int')
+    # aetrain = np.zeros((9,  # Men
+    #                     30,  # Blocks
+    #                     12))  # Coefficients
+    aetrainblocks = [30, 30, 30, 30, 30, 30, 30, 30, 30]
+    aetestblocks = [31, 35, 88, 44, 29, 24, 40, 50, 29]
 
+    train_file_name = "datasets/japvowels/ae.train"
+    test_file_name = "datasets/japvowels/ae.test"
+    training_sets, training_labels = read_ae_file(train_file_name, aetrainblocks)
+    testing_sets, testing_labels = read_ae_file(test_file_name, aetestblocks)
+
+    return training_sets, training_labels, testing_sets, testing_labels
+
+
+def read_ae_file(aefile_name, block_sizes):
+    aefile = open(aefile_name, "r")
+    ae = []
+    aelabels = []
     eof = False
     man_i = 0
     block_i = 0
     consecutive_empty_lines = 0
+    block = []
+    labelblock = []
     while not eof:
-        line = train_file.readline().rstrip(' \n')
+        line = aefile.readline().rstrip(' \n')
         if line == '':
-            man_i += 1
-            block_i = 0
             consecutive_empty_lines += 1
+            if consecutive_empty_lines > 1:
+                eof = True
+            else:
+                # Done with the block
+                ae.append(np.array(block))
+                aelabels.append(np.array(labelblock))
+                block = []
+                labelblock = []
+
+                # Next block
+                block_i += 1
+
+                abdaf = block_sizes[man_i]
+                # If no more blocks for this man
+                if block_i == abdaf:
+                    block_i = 0
+                    man_i += 1
         else:
             coefficients = [float(feature) for feature in line.split(' ')]
-            aetrain[man_i][block_i] = coefficients
-            aetrainlabels[man_i][block_i][man_i] = 1
-            block_i += 1
+            block.append(coefficients)
+            # label = [0] * 9
+            # label[man_i] = 1
+            label = man_i + 1
+            labelblock.append(label)
             consecutive_empty_lines = 0
-
-        if consecutive_empty_lines > 1:
-            eof = True
-
-    return aetrain, aetrainlabels
+    aefile.close()
+    return ae, aelabels
 
 
 def bit_memory_task(quantity, bits, distractor_period):
@@ -106,7 +131,7 @@ def temporal_parity(quantity, size, window_size=2, delay=0):
         task = []
         label = []
 
-        bit_stream = np.random.randint(2, size=size, dtype='int')
+        bit_stream = np.random.randint(2, size=size, dtype='int8')
 
         for i in xrange(size + delay):
             from_i = i

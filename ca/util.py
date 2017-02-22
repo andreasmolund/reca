@@ -11,8 +11,8 @@ def print_config_1dim(config, prefix="", postfix=""):
     :param postfix:
     """
     line = ""
-    on = "  "
-    off = unichr(0x2588) + unichr(0x2588)
+    on = unichr(0x2588) + unichr(0x2588)
+    off = "  "
     for i in xrange(len(config)):
         line += on if config[i] == 0b1 else off
     print prefix + line + postfix

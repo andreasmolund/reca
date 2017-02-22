@@ -5,9 +5,11 @@ import marshal as dumper
 import os
 import random
 from multiprocessing import Process, Queue
-import concat
 
 import numpy as np
+
+import concat
+import ca.util as cutil
 
 dump_path = "tmp/"
 prefix = "dump-process"
@@ -59,9 +61,11 @@ def distribute_and_collect(computer, sets):
 
 def post_process(outputs):
     # We want to concatenate/flatten, which must be done through reshaping
-    outputs = np.array(outputs)
-    shape = outputs.shape
-    return outputs.reshape(shape[0] * shape[1], shape[2])
+    processed = []
+    for m in outputs:
+        for n in m:
+            processed.append(n)
+    return processed
 
 
 def translate_and_transform(sets,
@@ -74,68 +78,35 @@ def translate_and_transform(sets,
     automaton_area = encoder.automaton_area
     total_area = encoder.total_area
 
-    # TODO: make it robust against arbitrary number of time steps
     # "outputs" is a python list which shall contain ndarrays
     outputs = []
 
-    for a_set in sets:
+    for i, a_set in enumerate(sets):
         n_time_steps = a_set.shape[0]
-        output = np.empty((n_time_steps, total_area * reservoir.iterations), dtype='int')
+        output = np.empty((n_time_steps, total_area * reservoir.iterations), dtype='int8')
         for t in xrange(n_time_steps):  # Time steps
             if t == 0:
+                # Translating the initial input
                 a_set_at_t = encoder.translate(a_set[0])
             else:
+                # Adding input with parts of the previous output
                 prev_state_vector = output[t - 1][-total_area:].copy()
                 a_set_at_t = encoder.add(a_set[t], prev_state_vector)
 
+            # Concatenating before if that is to be done
             if concat_before:
                 a_set_at_t = concat.before(a_set_at_t, n_random_mappings)
 
+            # Transforming in the reservoir
             output_at_t = reservoir.transform(a_set_at_t)
 
+            # Concatenating after if it wasn't done before
             if not concat_before:
-                output_at_t = concat.after(output_at_t, n_random_mappings, automaton_area)
+                output_at_t = concat.after(output_at_t, n_random_mappings)
 
+            # Saving/recording
             output[t] = output_at_t
         outputs.append(output)
-
-    # outputs = np.empty((n_time_steps, n_sets, size * reservoir.iterations), dtype='int')
-    #
-    # for t in xrange(n_time_steps):
-    #
-    #     # Input at time t
-    #     sets_at_t = sets.transpose((1, 0, 2))[t]
-    #
-    #     if t == 0:
-    #         # Translating the initial input
-    #         sets_at_t = encoder.translate(sets_at_t)
-    #     else:
-    #         # Adding input with parts of the previous output
-    #
-    #         new_sets_at_t = np.empty((n_sets, n_random_mappings, automaton_area), dtype='int')
-    #         for i, set_at_t, prev_output in izip(count(), sets_at_t, outputs[t - 1]):
-    #             prev_state_vector = prev_output[-size:].copy()
-    #             new_sets_at_t[i] = encoder.overwrite(set_at_t, prev_state_vector)
-    #
-    #         sets_at_t = new_sets_at_t.reshape((n_sets * n_random_mappings, automaton_area))
-    #
-    #     # Concatenating before if that is to be done
-    #     if concat_before:
-    #         sets_at_t = concat_before_function(sets_at_t, n_random_mappings)
-    #
-    #     # Transforming in the reservoir
-    #     outputs_at_t = reservoir.transform(sets_at_t)
-    #
-    #     # Concatenating after if it wasn't done before
-    #     if not concat_before:
-    #         outputs_at_t = concat_after_function(outputs_at_t, n_random_mappings, automaton_area)
-    #
-    #     # Saving
-    #     outputs[t] = outputs_at_t
-
-    # "outputs" is currently a list of time steps (each containing all outputs at that time step),
-    # but we want a list of outputs so that it corresponds with what came as argument to this method
-    # outputs = outputs.transpose(1, 0, 2)
 
     # Writing to file
     out_file = open(file_name(identifier), 'wb')
@@ -174,10 +145,9 @@ def sizes_of(n_parts):
     :param n_parts: the number of parts you want to distribute work to
     :return: a list of length n_parts, with values summing to 1
     """
-    # if n_parts == 8:
-    #     return [0.055, 0.075, 0.095, 0.115, 0.135, 0.155, 0.175, 0.195]
-    # el
-    if n_parts == 4:
+    if n_parts == 8:
+        return [0.055, 0.075, 0.095, 0.115, 0.135, 0.155, 0.175, 0.195]
+    elif n_parts == 4:
         return [0.22, 0.24, 0.26, 0.28]
     elif n_parts == 2:
         return [0.45, 0.55]
@@ -193,18 +163,16 @@ def n_processes(sets):
     :param sets:
     :return: a number of processes in which you can divide the sets
     """
-    # return 1
     n_sets = len(sets)
     n = 1
 
-    # if n_sets >= 8:
-    #     n = 8
-    # el
-    if n_sets >= 4:
+    if n_sets >= 16:
+        n = 8
+    elif n_sets >= 4:
         n = 4
     elif n_sets >= 2:
         n = 2
-
+    print n
     return n
 
 

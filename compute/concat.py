@@ -5,24 +5,11 @@ def before(element, from_n_parts):
     return element.reshape((1, from_n_parts * element.shape[1]))
 
 
-def after(elements, n_random_mappings, intertwine_size):
+def after(elements, n_random_mappings):
     """
 
     :param elements:
     :param n_random_mappings:
-    :param intertwine_size: really the size of one ECA (R * automaton area)
     :return:
     """
-
-    # TODO: Implement numpy stuff here
-    exec NotImplementedError  # Not fully implemented and tested yet
-    outputs = []
-    for i in xrange(0, len(elements), n_random_mappings):
-        a = elements[i]
-        n_rows = a.shape[0] / intertwine_size
-        a = a.reshape(n_rows, intertwine_size)
-        for e in xrange(1, n_random_mappings):
-            element = elements[i + e].reshape(n_rows, intertwine_size)
-            a = np.insert(a, intertwine_size * e, element.T, axis=1)
-        outputs.append(a.reshape(n_rows * intertwine_size * n_random_mappings).tolist())
-    return np.array(outputs)
+    return elements.reshape((1, n_random_mappings * elements.shape[1]))

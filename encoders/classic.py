@@ -28,12 +28,12 @@ class ClassicEncoder(object):
         :param input_offset: offset for the mapping
         """
         self._n_random_mappings = n_random_mappings
-        self.random_mappings = []
         self.input_size = input_size
         self.input_area = max([input_size, input_area])
         self._automaton_area = max([self.input_area, automaton_area])
         self.verbose = verbose
 
+        self.random_mappings = []
         if n_random_mappings > 0:
             for _ in xrange(n_random_mappings):
                 self.random_mappings.extend(make_random_mapping(input_size, self.input_area, input_offset))
@@ -45,11 +45,11 @@ class ClassicEncoder(object):
             print self.random_mappings
 
     def translate(self, configuration):
-        zero_vector = np.zeros(self.n_random_mappings * self._automaton_area, dtype='int')
+        zero_vector = np.zeros(self.n_random_mappings * self._automaton_area, dtype='int8')
         return self._separate(self._overwrite(configuration, zero_vector))
 
     def add(self, master, second):
-        return self._separate(self._overwrite(master, second))
+        return self._separate(self._normalized_addition(master, second))
 
     def _normalized_addition(self, master, second):
         """
@@ -60,7 +60,7 @@ class ClassicEncoder(object):
         :param second:
         :return:
         """
-        zero_vector = np.zeros(self._n_random_mappings * self._automaton_area, dtype='int')
+        zero_vector = np.zeros(self._n_random_mappings * self._automaton_area, dtype='int8')
         mapped_master = self._overwrite(master, zero_vector)
         return self._separate(combine(mapped_master, second))
 

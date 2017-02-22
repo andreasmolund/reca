@@ -31,7 +31,7 @@ class Reservoir:
         """
         configuration_size = configurations.shape[1]
         state_vector_len = self.iterations * configuration_size
-        outputs = np.empty((configurations.shape[0], state_vector_len), dtype='int')
+        outputs = np.empty((configurations.shape[0], state_vector_len), dtype='int8')
 
         for i in xrange(configurations.shape[0]):
             concat = []
@@ -45,17 +45,6 @@ class Reservoir:
                 concat.extend(new_config)
                 config = new_config
             outputs[i] = concat
-
-        # conf_len = configuration.shape[0]
-        # concat = np.empty(self.iterations * conf_len, dtype='int')
-        # # Not including the initial configuration
-        #
-        # # Iterate
-        # for t in xrange(concat.shape[0], step=conf_len):
-        #     new_config = self.matter.step(configuration)
-        #     # "Concatenating" this new configuration to the vector
-        #     concat[t:t+conf_len] = new_config
-        #     configuration = new_config
 
         return outputs
 
