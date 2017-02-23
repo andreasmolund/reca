@@ -59,15 +59,6 @@ def distribute_and_collect(computer, sets):
     return outputs
 
 
-def post_process(outputs):
-    # We want to concatenate/flatten, which must be done through reshaping
-    processed = []
-    for m in outputs:
-        for n in m:
-            processed.append(n)
-    return processed
-
-
 def translate_and_transform(sets,
                             reservoir,
                             encoder,
@@ -75,7 +66,6 @@ def translate_and_transform(sets,
                             identifier,
                             queue):
     n_random_mappings = encoder.n_random_mappings
-    automaton_area = encoder.automaton_area
     total_area = encoder.total_area
 
     # "outputs" is a python list which shall contain ndarrays
@@ -115,6 +105,37 @@ def translate_and_transform(sets,
 
     # Telling whomever invoked this function that we're done!
     queue.put(identifier)
+
+
+def flatten(unflattened):
+    """
+    From a (m,n,t) list to a (m,n*t) list.
+    :param unflattened:
+    :return:
+    """
+    processed = []
+    for m in unflattened:
+        for n in m:
+            processed.append(n)
+    return processed
+
+
+def extend_state_vectors(state_vectors, appendices):
+    """
+    Extends (in the beginning) each of the state vectors with the corresponding appendix.
+    :param state_vectors:
+    :param appendices:
+    :return:
+    """
+    extends = []
+    for appendix_sequence, state_sequence in zip(appendices, state_vectors):
+        sequence = []
+        for appendix, state_vector in zip(appendix_sequence, state_sequence):
+            extended = appendix.tolist()
+            extended.extend(state_vector)
+            sequence.append(extended)
+        extends.append(sequence)
+    return extends
 
 
 def custom_range(sets, part, n_parts):
@@ -172,7 +193,6 @@ def n_processes(sets):
         n = 4
     elif n_sets >= 2:
         n = 2
-    print n
     return n
 
 

@@ -89,7 +89,7 @@ def main(raw_args):
             logging.error(linalgerrmessage)
             return
 
-        _, o = computers[layer_i].test(inputs, x)
+        o = computers[layer_i].test(inputs, x)
         o = classify_output(o)
 
         n_correct = 0

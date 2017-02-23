@@ -2,6 +2,8 @@
 
 from encoders.classic import ClassicEncoder
 
+quantize_l = 3
+
 
 def quantize(value):
     if value < -0.2501245:
@@ -27,8 +29,8 @@ class RealEncoder(ClassicEncoder):
         automaton_offset = 0  # Offset index
         for i, r in enumerate(self.random_mappings):
             master_i = i % self.input_size
-            second_i = automaton_offset + 3 * r
-            second[second_i:second_i + 3] = quantize(master[master_i])
+            second_i = automaton_offset + quantize_l * r
+            second[second_i:second_i + quantize_l] = quantize(master[master_i])
 
             if master_i + 1 == self.input_size:
                 automaton_offset += self._automaton_area  # Adjusting offset

@@ -38,7 +38,10 @@ class ClassicEncoder(object):
             for _ in xrange(n_random_mappings):
                 self.random_mappings.extend(make_random_mapping(input_size, self.input_area, input_offset))
         else:
-            self.random_mappings.append([i for i in xrange(input_size)])
+            self.random_mappings = [i for i in xrange(input_size)]
+            # Even though there is no random mapping,
+            # we set the integer to 1 for the rest of the system to work
+            self._n_random_mappings = 1
 
         if self.verbose > 1:
             print "Random mappings:"

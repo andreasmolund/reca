@@ -1,6 +1,6 @@
 import time
 
-from distribute import post_process, distribute_and_collect
+from distribute import flatten, distribute_and_collect, extend_state_vectors
 
 
 class Computer:
@@ -11,14 +11,22 @@ class Computer:
     so that one can more easily train and use a reservoir computing system.
     """
 
-    def __init__(self, encoder, reservoir, estimator, concat_before=True, verbose=1):
+    def __init__(self,
+                 encoder,
+                 reservoir,
+                 estimator,
+                 concat_before=True,
+                 extended_state_vector=True,
+                 verbose=1):
         """
 
         :param encoder:
         :param reservoir: must have a function transform(sets)
         :param estimator: must have functions fit(X,y) and predict(X)
         :param concat_before: whether to concatenate before or after iterations
+        :param extended_state_vector: if true, then the input vector is added to the state vector
         """
+        self.extended_state_vector = extended_state_vector
         self.encoder = encoder
         self.reservoir = reservoir
         self.estimator = estimator
@@ -31,19 +39,23 @@ class Computer:
         :param sets: a list of training sets, each containing a list of their chronological input vectors
         :param labels: a list/array with the same shape as sets, so that it corresponds
         :return: x, the values of the output nodes
+        :rtype: python list
         """
         time_checkpoint = time.time()
 
         x = distribute_and_collect(self, sets)
-        x = post_process(x)
+        # sequence_lengths = [len(m) for m in x]
+        if self.extended_state_vector:
+            x = extend_state_vectors(x, sets)
+        x = flatten(x)
 
-        # labels = post_process(labels)
+        labels = flatten(labels)
 
         if self.verbose > 0:
             print "Transforming time:      %.1f" % (time.time() - time_checkpoint)
             time_checkpoint = time.time()
 
-        # self.estimator.fit(x, labels)
+        self.estimator.fit(x, labels)
 
         if self.verbose > 0:
             print "Estimator fitting time: %.1f" % (time.time() - time_checkpoint)
@@ -53,6 +65,8 @@ class Computer:
     def test(self, sets, x=None):
         if x is None:
             x = distribute_and_collect(self, sets)
-            x = post_process(x)
+            if self.extended_state_vector:
+                x = extend_state_vectors(x, sets)
+            x = flatten(x)
         predictions = self.estimator.predict(x)
-        return x, predictions
+        return predictions, x
