@@ -2,18 +2,31 @@
 
 from encoders.classic import ClassicEncoder
 
-quantize_l = 3
 
-
-def quantize(value):
+def quantize_japvow(value):
     if value < -0.2501245:
-        return [1, 1, 1]
+        return [0, 0, 0]
     elif value < -0.066513:
-        return [0, 1, 1]
+        return [0, 0, 1]
     elif value < 0.14068925:
+        return [0, 1, 1]
+    else:
+        return [1, 1, 1]
+
+
+def quantize_cifar(value):
+    if value < 70:
+        return [1, 1, 1]
+    elif value < 117:
+        return [0, 1, 1]
+    elif value < 167:
         return [0, 0, 1]
     else:
         return [0, 0, 0]
+
+quantize = quantize_japvow
+
+quantize_l = len(quantize(1))
 
 
 class RealEncoder(ClassicEncoder):
@@ -24,6 +37,14 @@ class RealEncoder(ClassicEncoder):
     however, it must binarize or quantize input elements before mapping them onto automata
 
     """
+
+    def __init__(self, n_random_mappings, input_size, input_area, automaton_area, input_offset=0, verbose=0):
+        super(RealEncoder, self).__init__(n_random_mappings,
+                                          input_size,
+                                          input_area,
+                                          quantize_l * automaton_area,
+                                          input_offset,
+                                          verbose)
 
     def _overwrite(self, master, second):
         automaton_offset = 0  # Offset index

@@ -1,28 +1,29 @@
 from itertools import count, izip
 
 from sklearn import svm
+from sklearn import linear_model
 
 from ca.eca import ECA
 from compute.computer import Computer
 from compute.distribute import flatten, distribute_and_collect, extend_state_vectors
-from encoders.real import RealEncoder
+from encoders.real import RealEncoder, quantize_l
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
-from encoders.real import quantize_l
 
-n_random_mappings = 32
-n_iterations = 1
+n_random_mappings = 16
+n_iterations = 16
 input_size = 12
 rule = 90
 
 encoder = RealEncoder(n_random_mappings,
                       input_size,
                       0,
-                      quantize_l * input_size,
+                      input_size,
                       verbose=0)
 
 estimator = svm.SVC()
+# estimator = linear_model.SGDClassifier()
 
 automaton = ECA(rule)
 
@@ -38,12 +39,6 @@ computer = Computer(encoder,
 
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
 
-# all_values = []
-# for m in training_sets:
-#     for n in m:
-#         all_values.extend(n)
-# print "[%.1f,%.1f]" % (min(all_values), max(all_values))
-# print "Avg.: %.3f" % (sum(all_values) / len(all_values))
 # q = (25, 50, 75)
 # print "Quantiles:", np.percentile(all_values, q)
 
@@ -69,7 +64,6 @@ training_x = extend_state_vectors(training_x, training_sets)
 jaeger_x, jaeger_y = jaeger_method(training_x, training_labels)
 estimator.fit(jaeger_x, jaeger_y)
 
-# TODO: CONTINUE HERE, MR. MOLUND
 testing_x = distribute_and_collect(computer, testing_sets)
 testing_x = extend_state_vectors(testing_x, testing_sets)
 jaeger_testing_x, jaeger_testing_y = jaeger_method(testing_x, testing_labels)
@@ -101,11 +95,11 @@ print "Correct:", n_correct
 print "Incorrect:", n_incorrect_predictions
 print "%d percent" % (100*n_correct / (n_correct + n_incorrect_predictions))
 
-# sample_nr = 0
-# time_steps = len(testing_sets[sample_nr])
-# plot_temporal(x,
-#               encoder.n_random_mappings,
-#               encoder.automaton_area,
-#               time_steps,
-#               n_iterations,
-#               sample_nr=sample_nr)
+sample_nr = 0
+time_steps = len(testing_sets[sample_nr])
+plot_temporal(testing_x[sample_nr],
+              encoder.n_random_mappings,
+              encoder.automaton_area,
+              time_steps,
+              n_iterations,
+              sample_nr=sample_nr)
