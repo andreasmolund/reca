@@ -16,7 +16,7 @@ class Computer:
                  reservoir,
                  estimator,
                  concat_before=True,
-                 extended_state_vector=True,
+                 extended_state_vector=False,
                  verbose=1):
         """
 

@@ -4,7 +4,7 @@ import getopt
 import logging
 import sys
 import time
-from datetime import datetime
+import DateTime.DateTime as datetime
 
 import numpy as np
 from numpy.linalg.linalg import LinAlgError

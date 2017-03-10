@@ -131,7 +131,7 @@ def extend_state_vectors(state_vectors, appendices):
     for appendix_sequence, state_sequence in zip(appendices, state_vectors):
         sequence = []
         for appendix, state_vector in zip(appendix_sequence, state_sequence):
-            extended = []  # appendix.tolist()
+            extended = appendix.tolist()
             extended.extend(state_vector)
             sequence.append(extended)
         extends.append(sequence)
