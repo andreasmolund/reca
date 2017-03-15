@@ -14,8 +14,8 @@ from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
 
-n_iterations = '4,4,4'
-n_random_mappings = '4,4,4'
+n_iterations =      '4,4,4'
+n_random_mappings = '20,20,20'
 
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
@@ -111,12 +111,14 @@ for layer_i in xrange(n_layers):  # Testing
 
     o, _ = computers[layer_i].test(testing_sets if o is None else o)
 
-    n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels, d, 3 if layer_i == 0 else 4)))
+    n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels,
+                                                                  d,
+                                                                  3 if layer_i < n_layers - 1 else 4)))
 
     if layer_i < n_layers - 1:
         o = classes_to_bits(o, len(testing_sets), 9, d)
 
-    print "Correct,incorrect,percent:", n_correct, n_incorrect, (100 * n_correct / (n_correct + n_incorrect))
+    print "Correct, incorrect, percent: %d, %d, %.1f" % (n_correct, n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
 # sample_nr = 0
 # time_steps = len(testing_sets[sample_nr])
