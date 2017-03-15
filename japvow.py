@@ -7,127 +7,122 @@ from sklearn import linear_model
 from ca.eca import ECA
 from compute.computer import Computer
 from compute.distribute import flatten, distribute_and_collect, extend_state_vectors
+from compute.jaegercomputer import JaegerComputer, jaeger_labels
 from encoders.real import RealEncoder, quantize_l
 from encoders.classic import ClassicEncoder
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
 
-n_random_mappings = 4
-n_iterations = 4
-input_size = 12
+n_iterations = '4,4,4'
+n_random_mappings = '4,4,4'
+
+n_iterations = [int(value) for value in n_iterations.split(',')]
+n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
+n_layers = len(n_random_mappings)
+initial_input_size = 12
 rule = 90
 
-encoder = RealEncoder(n_random_mappings,
-                      input_size,
-                      0,
-                      input_size,
-                      verbose=0)
-
-estimator1 = svm.SVC()
-# estimator = linear_model.SGDClassifier()
+d = 3  # Jaeger's proposed D
+training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
+subsequent_training_labels = jaeger_labels(training_labels, d, 3)
+subsequent_testing_labels = jaeger_labels(testing_labels, d, 3)
 
 automaton = ECA(rule)
+encoders = []
+computers = []
 
-reservoir = Reservoir(automaton,
-                      n_iterations,
-                      verbose=0)
+for layer_i in xrange(n_layers):  # Setup
 
-computer = Computer(encoder,
-                    reservoir,
-                    estimator1,
-                    concat_before=True,
-                    verbose=0)
-
-training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
-
-# q = (25, 50, 75)
-# print "Quantiles:", np.percentile(all_values, q)
-
-d = 3  # Jaeger's proposed D
-
-
-def jaeger_method(x1, y1):
-    subtle_x = []
-    subtle_y = []
-    for m_i, m in enumerate(x1):
-        l_i = len(m)
-        snapshots = []
-        for j in xrange(d):
-            n_j = float((j + 1) * l_i) / d
-            n_j = int(n_j + 0.5)  # Rounding off
-            snapshots.append(m[n_j - 1])  # Jaeger's method 4
-        subtle_x.append(snapshots)
-        subtle_y.append([y1[m_i][0]] * d)
-    return subtle_x, subtle_y
-
-training_x_1 = distribute_and_collect(computer, training_sets)
-# training_x_1 = extend_state_vectors(training_x_1, training_sets)
-jaeger_x, jaeger_y = jaeger_method(training_x_1, training_labels)
-jaeger_x = np.array(jaeger_x).reshape((len(training_sets) * d, len(jaeger_x[0][0])))
-jaeger_y = np.array(jaeger_y).reshape((len(training_labels) * d))
-estimator1.fit(jaeger_x, jaeger_y)
-
-predictions = estimator1.predict(jaeger_x)
-
-translated_predictions = []
-man_shift = -1
-for i, prediction in enumerate(predictions):
-    if i % d == 0:
-        man_shift += 1
-    translated_prediction = [0b0] * 9
-    translated_prediction[prediction - 1] = 0b1
-    translated_predictions.append(translated_prediction)
-translated_predictions = np.array(translated_predictions).reshape((len(training_sets), d, 9))
-subsequent_labels = np.array(jaeger_y).reshape((len(training_sets), d))
-
-n_random_mappings = 4
-n_iterations = 4
-encoder2 = ClassicEncoder(n_random_mappings, 9, 0, 9)
-reservoir2 = Reservoir(automaton, n_iterations)
-estimator2 = svm.SVC()
-computer2 = Computer(encoder2, reservoir2, estimator2, True)
-
-training_x_2 = computer2.train(translated_predictions, subsequent_labels)
-testing_x_2 = computer2.test(translated_predictions)
-
-# Test...
-testing_x_1 = distribute_and_collect(computer, testing_sets)
-jaeger_x, jaeger_y = jaeger_method(testing_x_1, testing_labels)
-jaeger_x
-
-
-n_correct = 0
-n_incorrect_predictions = 0
-
-# fasit = flatten(testing_labels)
-
-# print predictions[0]
-# print predictions[1]
-
-# classified_prediction = classify_output(predictions)
-
-for i, prediction, fasit_element in izip(count(), predictions, jaeger_testing_y):
-    if fasit_element == prediction:
-        n_correct += 1
+    if layer_i == 0:
+        encoder = RealEncoder(n_random_mappings[layer_i],
+                              initial_input_size,
+                              initial_input_size,
+                              initial_input_size)
     else:
-        n_incorrect_predictions += 1
+        encoder = ClassicEncoder(n_random_mappings[layer_i],
+                                 9,
+                                 9,
+                                 9)
 
-    # if np.array_equal(prediction, fasit_element):
-    #     n_correct += 1
-    #     print predictions[i]
-    # else:
-    #     n_incorrect_predictions += 1
+    estimator = svm.SVC(kernel='linear')
+    # estimator = linear_model.SGDClassifier()
 
-print "Correct:", n_correct
-print "Incorrect:", n_incorrect_predictions
-print "%d percent" % (100*n_correct / (n_correct + n_incorrect_predictions))
+    reservoir = Reservoir(automaton,
+                          n_iterations[layer_i],
+                          verbose=0)
 
-sample_nr = 0
-time_steps = len(testing_sets[sample_nr])
-plot_temporal(testing_x_1[sample_nr],
-              encoder.n_random_mappings,
-              encoder.automaton_area,
-              time_steps,
-              n_iterations,
-              sample_nr=sample_nr)
+    if layer_i == n_layers - 1:  # Last layer
+        computer = JaegerComputer(encoder, reservoir, estimator, True, verbose=0, d=d, method=4)
+    elif layer_i == 0:  # First layer
+        computer = JaegerComputer(encoder, reservoir, estimator, True, verbose=0, d=d, method=3)
+    else:  # Inter-layers
+        computer = Computer(encoder, reservoir, estimator, True, verbose=0)
+
+    encoders.append(encoder)
+    computers.append(computer)
+
+
+def classes_to_bits(predictions, n_elements, n_classes, d):
+    """
+    Assumes equal sequence length, e.g., from Jaeger's method 3
+    """
+    r = []
+    man_shift = -1
+    for total_i, p in enumerate(predictions):
+        if total_i % d == 0:
+            man_shift += 1
+        translated_prediction = [0b0] * n_classes
+        translated_prediction[p - 1] = 0b1
+        r.append(translated_prediction)
+    r = np.array(r).reshape((n_elements, d, n_classes))
+    return r
+
+
+o = None  # Output of one estimator
+
+for layer_i in xrange(n_layers):  # Training
+
+    x = computers[layer_i].train(training_sets if o is None else o,
+                                 training_labels if layer_i == 0 else subsequent_training_labels)
+
+    if layer_i < n_layers - 1:  # No need to test the last layer
+        o, _ = computers[layer_i].test(training_sets, x)
+        o = classes_to_bits(o, len(training_sets), 9, d)
+
+correct = []
+incorrect = []
+
+
+def correctness(predicted, actual):
+    n_correct = 0
+    n_incorrect = 0
+
+    for i, prediction, fasit_element in izip(count(), predicted, actual):
+        if fasit_element == prediction:
+            n_correct += 1
+        else:
+            n_incorrect += 1
+    return n_correct, n_incorrect
+
+o = None
+
+for layer_i in xrange(n_layers):  # Testing
+
+    o, _ = computers[layer_i].test(testing_sets if o is None else o)
+
+    n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels, d, 3 if layer_i == 0 else 4)))
+
+    if layer_i < n_layers - 1:
+        o = classes_to_bits(o, len(testing_sets), 9, d)
+
+    print "Correct,incorrect,percent:", n_correct, n_incorrect, (100 * n_correct / (n_correct + n_incorrect))
+
+# sample_nr = 0
+# time_steps = len(testing_sets[sample_nr])
+# plot_temporal(testing_x_1[sample_nr],
+#               encoder.n_random_mappings,
+#               encoder.automaton_area,
+#               time_steps,
+#               n_iterations,
+#               sample_nr=sample_nr)
