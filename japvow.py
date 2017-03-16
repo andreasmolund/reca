@@ -14,16 +14,15 @@ from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
 
-n_iterations =      '4,4,4'
-n_random_mappings = '20,20,20'
-
+n_iterations =      '8,4,4,4'
+n_random_mappings = '8,4,4,4'
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
-n_layers = len(n_random_mappings)
+n_layers = min(len(n_random_mappings), len(n_iterations))
 initial_input_size = 12
 rule = 90
 
-d = 3  # Jaeger's proposed D
+d = 6  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
 subsequent_training_labels = jaeger_labels(training_labels, d, 3)
 subsequent_testing_labels = jaeger_labels(testing_labels, d, 3)
@@ -109,7 +108,7 @@ o = None
 
 for layer_i in xrange(n_layers):  # Testing
 
-    o, _ = computers[layer_i].test(testing_sets if o is None else o)
+    o, x = computers[layer_i].test(testing_sets if o is None else o)
 
     n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels,
                                                                   d,
@@ -120,11 +119,14 @@ for layer_i in xrange(n_layers):  # Testing
 
     print "Correct, incorrect, percent: %d, %d, %.1f" % (n_correct, n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
-# sample_nr = 0
-# time_steps = len(testing_sets[sample_nr])
-# plot_temporal(testing_x_1[sample_nr],
-#               encoder.n_random_mappings,
-#               encoder.automaton_area,
-#               time_steps,
-#               n_iterations,
-#               sample_nr=sample_nr)
+    sample_nr = 0
+    if layer_i < n_layers - 1:
+        time_steps = d
+    else:
+        time_steps = 1
+    plot_temporal(x,
+                  encoders[layer_i].n_random_mappings,
+                  encoders[layer_i].automaton_area,
+                  time_steps,
+                  n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
+                  sample_nr=sample_nr)

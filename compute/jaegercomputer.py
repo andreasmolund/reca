@@ -60,13 +60,13 @@ def jaeger_method(x, d, method):
         l_i = len(sequence)
         snapshots = []
         for j in xrange(d):
-            n_j = int((float((j + 1) * l_i) / d) + 0.5)
+            n_j = int(((j + 1.0) * l_i / d) + 0.5)
             if method == 4:
                 snapshots.extend(sequence[n_j - 1])
             elif method == 3:
                 snapshots.append(sequence[n_j - 1])
             else:
-                raise ValueError("No Jaeger method with that number. Must be in {3,4}")
+                raise ValueError("No Jaeger method with that number. Must be element in {3,4}")
         j_x.append(snapshots)
     return j_x
 
