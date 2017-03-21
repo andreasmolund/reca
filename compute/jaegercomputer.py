@@ -1,5 +1,6 @@
-from distribute import flatten, distribute_and_collect, extend_state_vectors
+from distribute import flatten, distribute_and_collect
 from computer import Computer
+from reservoir.util import extend_state_vectors
 
 
 class JaegerComputer(Computer):

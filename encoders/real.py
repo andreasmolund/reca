@@ -56,3 +56,21 @@ class RealEncoder(ClassicEncoder):
             if master_i + 1 == self.input_size:
                 automaton_offset += self._automaton_area  # Adjusting offset
         return second
+
+    @staticmethod
+    def extend_state_vectors(state_vectors, appendices):
+        """
+        Extends (in the beginning) each of the state vectors with the corresponding appendix.
+        :param state_vectors:
+        :param appendices:
+        :return:
+        """
+        extends = []
+        for appendix_sequence, state_sequence in zip(appendices, state_vectors):
+            sequence = []
+            for appendix, state_vector in zip(appendix_sequence, state_sequence):
+                extended = appendix.tolist()
+                extended.extend(state_vector)
+                sequence.append(extended)
+            extends.append(sequence)
+        return extends

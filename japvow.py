@@ -6,7 +6,8 @@ from sklearn import linear_model
 
 from ca.eca import ECA
 from compute.computer import Computer
-from compute.distribute import flatten, distribute_and_collect, extend_state_vectors
+from compute.distribute import flatten, distribute_and_collect
+from reservoir.util import extend_state_vectors
 from compute.jaegercomputer import JaegerComputer, jaeger_labels
 from encoders.real import RealEncoder, quantize_l
 from encoders.classic import ClassicEncoder
@@ -14,8 +15,8 @@ from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
 
-n_iterations =      '128'
-n_random_mappings = '128'
+n_iterations =      '16,4,4,4'
+n_random_mappings = '20,15,15,15'
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 n_layers = min(len(n_random_mappings), len(n_iterations))
@@ -45,9 +46,9 @@ for layer_i in xrange(n_layers):  # Setup
                               initial_input_size + pad)
     else:
         encoder = ClassicEncoder(n_random_mappings[layer_i],
-                                 9,
-                                 9,
-                                 9)
+                                 9 + encoders[layer_i - 1].automaton_area,
+                                 9 + encoders[layer_i - 1].automaton_area,
+                                 9 + encoders[layer_i - 1].automaton_area)
 
     estimator = svm.SVC(kernel='linear')
     # estimator = linear_model.SGDClassifier()
@@ -65,15 +66,6 @@ for layer_i in xrange(n_layers):  # Setup
 
     encoders.append(encoder)
     computers.append(computer)
-
-
-def unflatten(flattened, sequence_lengths):
-    reshaped = []
-    offset = 0
-    for sequence_len in sequence_lengths:
-        reshaped.append(np.array(flattened[offset:offset + sequence_len]))
-        offset += sequence_len
-    return reshaped
 
 
 def classes_to_bits(predictions, n_elements, n_classes, d):
@@ -103,6 +95,10 @@ for layer_i in xrange(n_layers):  # Training
         o, _ = computers[layer_i].test(training_sets, x)
         o = classes_to_bits(o, len(training_sets), 9, d)
 
+        x = np.array(x).reshape((270, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
+        o = np.append(x, o, axis=2)
+
+
 correct = []
 incorrect = []
 
@@ -128,10 +124,12 @@ for layer_i in xrange(n_layers):  # Testing
                                                                   d,
                                                                   3 if layer_i < n_layers - 1 else 4)))
 
+    print "Correct, incorrect, percent: %d, %d, %.1f" % (n_correct, n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
+
     if layer_i < n_layers - 1:
         o = classes_to_bits(o, len(testing_sets), 9, d)
-
-    print "Correct, incorrect, percent: %d, %d, %.1f" % (n_correct, n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
+        x = np.array(x).reshape((370, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
+        o = np.append(x, o, axis=2)
 
     # sample_nr = 0
     # if layer_i < n_layers - 1:
@@ -144,3 +142,12 @@ for layer_i in xrange(n_layers):  # Testing
     #               time_steps,
     #               n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
     #               sample_nr=sample_nr)
+
+
+def unflatten(flattened, sequence_lengths):
+    reshaped = []
+    offset = 0
+    for sequence_len in sequence_lengths:
+        reshaped.append(np.array(flattened[offset:offset + sequence_len]))
+        offset += sequence_len
+    return reshaped

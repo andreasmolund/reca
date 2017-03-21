@@ -1,6 +1,7 @@
 import time
 
-from distribute import flatten, distribute_and_collect, extend_state_vectors
+from distribute import flatten, distribute_and_collect
+from reservoir.util import extend_state_vectors
 
 
 class Computer:

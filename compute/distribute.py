@@ -120,24 +120,6 @@ def flatten(unflattened):
     return processed
 
 
-def extend_state_vectors(state_vectors, appendices):
-    """
-    Extends (in the beginning) each of the state vectors with the corresponding appendix.
-    :param state_vectors:
-    :param appendices:
-    :return:
-    """
-    extends = []
-    for appendix_sequence, state_sequence in zip(appendices, state_vectors):
-        sequence = []
-        for appendix, state_vector in zip(appendix_sequence, state_sequence):
-            extended = appendix.tolist()
-            extended.extend(state_vector)
-            sequence.append(extended)
-        extends.append(sequence)
-    return extends
-
-
 def custom_range(sets, part, n_parts):
     """Calculates a start index and an end index from the arguments.
     Used in multithreading.
