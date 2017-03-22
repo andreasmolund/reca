@@ -120,6 +120,23 @@ class ClassicEncoder(object):
         """The area of all automata"""
         return self._automaton_area * self.n_random_mappings
 
+    def encode_input(self, sequences):
+        """
+        Encode some input, for example to use as additional input to a subsequent layer
+        :param sequences:
+        :return:
+        """
+        encoded_inputs = []
+        for sequence in sequences:
+            sequence_len = len(sequence)
+            encoded_coeffs = np.empty((sequence_len, self.automaton_area), dtype='int8')
+            for t in xrange(sequence_len):
+                # We only want one R, really, but this is for simplicity
+                encoded_coeffs[t] = self._overwrite(sequence[t], [0b0] * self.total_area)[:self.automaton_area]
+            encoded_inputs.append(encoded_coeffs)
+
+        return encoded_inputs
+
 
 def make_random_mapping(input_size, input_area, input_offset=0):
     """Generates a pseudo-random mapping from inputs to outputs.

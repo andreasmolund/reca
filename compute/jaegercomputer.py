@@ -1,3 +1,5 @@
+import numpy as np
+
 from distribute import flatten, distribute_and_collect
 from computer import Computer
 from reservoir.util import extend_state_vectors
@@ -37,8 +39,7 @@ class JaegerComputer(Computer):
             x = extend_state_vectors(x, sets)
         x = jaeger_method(x, self.d, self.method)
         labels = jaeger_labels(labels, self.d, self.method)
-        if self.method == 3:
-            x = flatten(x)
+        x = flatten(x)
         labels = flatten(labels)
         self.estimator.fit(x, labels)
         return x
@@ -49,14 +50,17 @@ class JaegerComputer(Computer):
             if self.extended_state_vector:
                 x = extend_state_vectors(x, sets)
             x = jaeger_method(x, self.d, self.method)
-            if self.method == 3:
-                x = flatten(x)
+            x = flatten(x)
         predictions = self.estimator.predict(x)
         return predictions, x
 
 
 def jaeger_method(x, d, method):
-    j_x = []
+    state_vector_len = len(x[0][0])
+    n = d if method == 3 else 1
+    o = state_vector_len if method == 3 else d * state_vector_len
+
+    j_x = np.empty((len(x), n, o), dtype='int8')
     for i, sequence in enumerate(x):
         l_i = len(sequence)
         snapshots = []
@@ -68,7 +72,7 @@ def jaeger_method(x, d, method):
                 snapshots.append(sequence[n_j - 1])
             else:
                 raise ValueError("No Jaeger method with that number. Must be element in {3,4}")
-        j_x.append(snapshots)
+        j_x[i] = snapshots
     return j_x
 
 

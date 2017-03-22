@@ -2,21 +2,18 @@ from itertools import count, izip
 
 import numpy as np
 from sklearn import svm
-from sklearn import linear_model
 
 from ca.eca import ECA
 from compute.computer import Computer
-from compute.distribute import flatten, distribute_and_collect
-from reservoir.util import extend_state_vectors
-from compute.jaegercomputer import JaegerComputer, jaeger_labels
-from encoders.real import RealEncoder, quantize_l
+from compute.distribute import flatten
+from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
 from encoders.classic import ClassicEncoder
+from encoders.real import RealEncoder
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
-from statistics.plotter import plot_temporal
 
-n_iterations =      '16,4,4,4'
-n_random_mappings = '20,15,15,15'
+n_iterations =      '20'
+n_random_mappings = '20'
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 n_layers = min(len(n_random_mappings), len(n_iterations))
@@ -24,12 +21,15 @@ initial_input_size = 12
 pad = 0
 rule = 90
 
-d = 3  # Jaeger's proposed D
+d = 2  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
 sequence_len_training = [len(sequence) for sequence in training_sets]
 sequence_len_testing = [len(sequence) for sequence in testing_sets]
 subsequent_training_labels = jaeger_labels(training_labels, d, 3)
 subsequent_testing_labels = jaeger_labels(testing_labels, d, 3)
+tmpencoder = RealEncoder(0, 12, 12, 12)
+encoded_training_sets = jaeger_method(tmpencoder.encode_input(training_sets), d, 3)
+encoded_testing_sets = jaeger_method(tmpencoder.encode_input(testing_sets), d, 3)
 
 automaton = ECA(rule)
 encoders = []
@@ -46,9 +46,9 @@ for layer_i in xrange(n_layers):  # Setup
                               initial_input_size + pad)
     else:
         encoder = ClassicEncoder(n_random_mappings[layer_i],
-                                 9 + encoders[layer_i - 1].automaton_area,
-                                 9 + encoders[layer_i - 1].automaton_area,
-                                 9 + encoders[layer_i - 1].automaton_area)
+                                 9 + tmpencoder.automaton_area,
+                                 9 + tmpencoder.automaton_area,
+                                 9 + tmpencoder.automaton_area)
 
     estimator = svm.SVC(kernel='linear')
     # estimator = linear_model.SGDClassifier()
@@ -88,19 +88,16 @@ o = None  # Output of one estimator
 
 for layer_i in xrange(n_layers):  # Training
 
-    x = computers[layer_i].train(training_sets if o is None else o,
+    l_inputs = training_sets if o is None else o
+    x = computers[layer_i].train(l_inputs,
                                  training_labels if layer_i == 0 else subsequent_training_labels)
 
     if layer_i < n_layers - 1:  # No need to test the last layer
-        o, _ = computers[layer_i].test(training_sets, x)
+        o, _ = computers[layer_i].test(None, x)
         o = classes_to_bits(o, len(training_sets), 9, d)
 
-        x = np.array(x).reshape((270, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
-        o = np.append(x, o, axis=2)
-
-
-correct = []
-incorrect = []
+        # x = np.array(x).reshape((270, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
+        o = np.append(encoded_training_sets, o, axis=2)
 
 
 def correctness(predicted, actual):
@@ -128,8 +125,11 @@ for layer_i in xrange(n_layers):  # Testing
 
     if layer_i < n_layers - 1:
         o = classes_to_bits(o, len(testing_sets), 9, d)
-        x = np.array(x).reshape((370, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
-        o = np.append(x, o, axis=2)
+
+        # x = np.array(x).reshape((370, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
+        # o = np.append(x, o, axis=2)
+
+        o = np.append(encoded_testing_sets, o, axis=2)
 
     # sample_nr = 0
     # if layer_i < n_layers - 1:
