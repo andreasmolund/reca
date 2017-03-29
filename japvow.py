@@ -2,18 +2,20 @@ from itertools import count, izip
 
 import numpy as np
 from sklearn import svm
+from sklearn import linear_model
 
 from ca.eca import ECA
 from compute.computer import Computer
 from compute.distribute import flatten
 from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
 from encoders.classic import ClassicEncoder
-from encoders.real import RealEncoder
+from encoders.real import RealEncoder, quantize_japvow
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
+from statistics.plotter import plot_temporal
 
-n_iterations =      '20'
-n_random_mappings = '20'
+n_iterations = '2,2,2'
+n_random_mappings = '8,8,8'
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 n_layers = min(len(n_random_mappings), len(n_iterations))
@@ -21,13 +23,13 @@ initial_input_size = 12
 pad = 0
 rule = 90
 
-d = 2  # Jaeger's proposed D
+d = 6  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
 sequence_len_training = [len(sequence) for sequence in training_sets]
 sequence_len_testing = [len(sequence) for sequence in testing_sets]
 subsequent_training_labels = jaeger_labels(training_labels, d, 3)
 subsequent_testing_labels = jaeger_labels(testing_labels, d, 3)
-tmpencoder = RealEncoder(0, 12, 12, 12)
+tmpencoder = RealEncoder(0, 12, 12, 12, quantize=quantize_japvow)
 encoded_training_sets = jaeger_method(tmpencoder.encode_input(training_sets), d, 3)
 encoded_testing_sets = jaeger_method(tmpencoder.encode_input(testing_sets), d, 3)
 
@@ -43,15 +45,19 @@ for layer_i in xrange(n_layers):  # Setup
         encoder = RealEncoder(n_random_mappings[layer_i],
                               initial_input_size,
                               initial_input_size,
-                              initial_input_size + pad)
+                              initial_input_size + pad,
+                              quantize=quantize_japvow)
     else:
-        encoder = ClassicEncoder(n_random_mappings[layer_i],
-                                 9 + tmpencoder.automaton_area,
-                                 9 + tmpencoder.automaton_area,
-                                 9 + tmpencoder.automaton_area)
+        encoder = RealEncoder(n_random_mappings[layer_i],
+                              9,
+                              9,
+                              9)
 
-    estimator = svm.SVC(kernel='linear')
+    # estimator = svm.SVC(kernel='linear')
     # estimator = linear_model.SGDClassifier()
+    # estimator = linear_model.Perceptron()
+    estimator = linear_model.LinearRegression()
+    # estimator = linear_model.SGDRegressor(loss='squared_loss')
 
     reservoir = Reservoir(automaton,
                           n_iterations[layer_i],
@@ -71,6 +77,7 @@ for layer_i in xrange(n_layers):  # Setup
 def classes_to_bits(predictions, n_elements, n_classes, d):
     """
     Assumes equal sequence length, e.g., from Jaeger's method 3
+    Use sklearn.preprocessing.LabelBinarizer?
     """
     r = []
     man_shift = -1
@@ -78,8 +85,9 @@ def classes_to_bits(predictions, n_elements, n_classes, d):
         if total_i % d == 0:
             man_shift += 1
         translated_prediction = [0b0] * n_classes
-        translated_prediction[p - 1] = 0b1
-        r.append(translated_prediction)
+        # translated_prediction[p - 1] = 0b1
+        translated_prediction[p.argmax()] = 0b1
+        r.append(p)
     r = np.array(r).reshape((n_elements, d, n_classes))
     return r
 
@@ -88,16 +96,19 @@ o = None  # Output of one estimator
 
 for layer_i in xrange(n_layers):  # Training
 
-    l_inputs = training_sets if o is None else o
-    x = computers[layer_i].train(l_inputs,
-                                 training_labels if layer_i == 0 else subsequent_training_labels)
+    layer_inputs = training_sets if o is None else o
+    layer_labels = training_labels if layer_i == 0 else subsequent_training_labels
+    x = computers[layer_i].train(layer_inputs,
+                                 layer_labels)
 
-    if layer_i < n_layers - 1:  # No need to test the last layer
-        o, _ = computers[layer_i].test(None, x)
+    if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
+        o, _ = computers[layer_i].test(layer_inputs)
+        q = (50, 75, 90)
+        print "Prediction quantiles (tr):", np.percentile(o, q)
         o = classes_to_bits(o, len(training_sets), 9, d)
 
         # x = np.array(x).reshape((270, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
-        o = np.append(encoded_training_sets, o, axis=2)
+        # o = np.append(encoded_training_sets, o, axis=2)
 
 
 def correctness(predicted, actual):
@@ -105,23 +116,27 @@ def correctness(predicted, actual):
     n_incorrect = 0
 
     for i, prediction, fasit_element in izip(count(), predicted, actual):
-        if fasit_element == prediction:
+        if fasit_element.argmax() == prediction.argmax():
+            # if fasit_element == prediction:
             n_correct += 1
         else:
             n_incorrect += 1
     return n_correct, n_incorrect
+
 
 o = None
 
 for layer_i in xrange(n_layers):  # Testing
 
     o, x = computers[layer_i].test(testing_sets if o is None else o)
+    q = (25, 50, 75)
+    print "Prediction quantiles (te):", np.percentile(o, q)
 
     n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels,
                                                                   d,
                                                                   3 if layer_i < n_layers - 1 else 4)))
 
-    print "Correct, incorrect, percent: %d, %d, %.1f" % (n_correct, n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
+    print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
     if layer_i < n_layers - 1:
         o = classes_to_bits(o, len(testing_sets), 9, d)
@@ -129,19 +144,19 @@ for layer_i in xrange(n_layers):  # Testing
         # x = np.array(x).reshape((370, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
         # o = np.append(x, o, axis=2)
 
-        o = np.append(encoded_testing_sets, o, axis=2)
+        # o = np.append(encoded_testing_sets, o, axis=2)
 
-    # sample_nr = 0
-    # if layer_i < n_layers - 1:
-    #     time_steps = d
-    # else:
-    #     time_steps = 1
-    # plot_temporal(x,
-    #               encoders[layer_i].n_random_mappings,
-    #               encoders[layer_i].automaton_area,
-    #               time_steps,
-    #               n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
-    #               sample_nr=sample_nr)
+        # sample_nr = 0
+        # if layer_i < n_layers - 1:
+        #     time_steps = d
+        # else:
+        #     time_steps = 1
+        # plot_temporal(x,
+        #               encoders[layer_i].n_random_mappings,
+        #               encoders[layer_i].automaton_area,
+        #               time_steps,
+        #               n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
+        #               sample_nr=sample_nr)
 
 
 def unflatten(flattened, sequence_lengths):

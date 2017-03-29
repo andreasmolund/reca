@@ -12,7 +12,7 @@ from encoders.real import RealEncoder
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
-from encoders.real import quantize_l
+from encoders.real import quantize_len
 
 
 def unpickle(cifar_file):

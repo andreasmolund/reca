@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.utils import shuffle
 
 from distribute import flatten, distribute_and_collect
 from computer import Computer
@@ -32,17 +33,38 @@ class JaegerComputer(Computer):
         Computer.__init__(self, encoder, reservoir, estimator, concat_before, extended_state_vector, verbose)
         self.d = d
         self.method = method
+        self.n_pieces = 1
 
     def train(self, sets, labels):
         x = distribute_and_collect(self, sets)
         if self.extended_state_vector:
             x = extend_state_vectors(x, sets)
+
         x = jaeger_method(x, self.d, self.method)
         labels = jaeger_labels(labels, self.d, self.method)
+
         x = flatten(x)
-        labels = flatten(labels)
-        self.estimator.fit(x, labels)
+        self.estimator.fit(x, flatten(labels))
         return x
+
+        # len_x = len(x)
+        # x, labels = shuffle(x, labels)
+        # piece_len = float(len_x) / self.n_pieces
+        # pieces = np.empty((len_x, self.d), dtype='int8')
+        # classes = np.unique(labels)
+        # for i in xrange(self.n_pieces):
+        #     training_start_i = int(round(i * piece_len))
+        #     training_end_i = int(round(i * piece_len + piece_len))
+        #     testing_start_i = training_end_i % len_x
+        #     testing_end_i = (int(round(i * piece_len + piece_len + piece_len)) - 1) % len_x + 1
+        #     x_piece = flatten(x[training_start_i:training_end_i])
+        #     y_piece = flatten(labels[training_start_i:training_end_i])
+        #     self.estimator.partial_fit(x_piece,
+        #                                y_piece,
+        #                                classes)
+        #     computed = self.estimator.predict(flatten(x[testing_start_i:testing_end_i]))
+        #     pieces[testing_start_i:testing_end_i] = computed.reshape((testing_end_i - testing_start_i, self.d))
+        # return pieces
 
     def test(self, sets, x=None):
         if x is None:
@@ -56,8 +78,8 @@ class JaegerComputer(Computer):
 
 
 def jaeger_method(x, d, method):
-    state_vector_len = len(x[0][0])
     n = d if method == 3 else 1
+    state_vector_len = len(x[0][0])
     o = state_vector_len if method == 3 else d * state_vector_len
 
     j_x = np.empty((len(x), n, o), dtype='int8')
@@ -77,9 +99,15 @@ def jaeger_method(x, d, method):
 
 
 def jaeger_labels(y, d, method):
-    j_y = []
-    n_labels = d if method == 3 else 1
-    for sequence in y:
-        j_y.append([sequence[0]] * n_labels)
+    m = len(y)
+    n = d if method == 3 else 1  # How many labels per sequence
+    o = 1  # Label length
+    if len(y[0].shape) > 1:
+        new_y_shape = (m, n, y[0].shape[1])
+    else:
+        new_y_shape = (m, n)
+    j_y = np.empty(new_y_shape, dtype='int8')
+    for i in xrange(m):
+        j_y[i] = [y[i][0]] * n
     return j_y
 

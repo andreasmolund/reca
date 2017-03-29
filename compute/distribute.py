@@ -109,15 +109,16 @@ def translate_and_transform(sets,
 
 def flatten(unflattened):
     """
-    From a (m,n,t) list to a (m,n*t) list.
+    From a (m,n,o) list to a (m*n,o) list.
     :param unflattened:
     :return:
     """
-    processed = []
-    for m in unflattened:
-        for n in m:
-            processed.append(n)
-    return processed
+    shape = unflattened.shape
+    if len(shape) > 2:
+        new_shape = (shape[0] * shape[1], shape[2])
+    else:
+        new_shape = (shape[0] * shape[1])
+    return unflattened.reshape(new_shape)
 
 
 def custom_range(sets, part, n_parts):

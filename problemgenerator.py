@@ -13,7 +13,7 @@ def japanese_vowels():
 
     # aetrain = np.zeros((9,  # Men
     #                     30,  # Blocks
-    #                     12))  # Coefficients
+    #                     12), dtype='int8')  # Coefficients
     aetrainblocks = [30, 30, 30, 30, 30, 30, 30, 30, 30]
     aetestblocks = [31, 35, 88, 44, 29, 24, 40, 50, 29]
 
@@ -59,13 +59,17 @@ def read_ae_file(aefile_name, block_sizes):
         else:
             coefficients = [float(feature) for feature in line.split(' ')]
             block.append(coefficients)
-            # label = [0] * 9
-            # label[man_i] = 1
-            label = man_i + 1
+
+            label = [0b0] * 9
+            label[man_i] = 1
+            # label = man_i + 1
+
             labelblock.append(label)
             consecutive_empty_lines = 0
     aefile.close()
     return ae, aelabels
+
+japanese_vowels_classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 def bit_memory_task(quantity, bits, distractor_period):
@@ -139,7 +143,7 @@ def temporal_parity(quantity, size, window_size=2, delay=0):
             task_element = bit_stream[from_i:to_i]
             if to_i > size:
                 # Adding zeros if we have moved beyond the original bit_stream
-                task_element = np.append(task_element, np.zeros(min(to_i - size, window_size), dtype='int'))
+                task_element = np.append(task_element, np.zeros(min(to_i - size, window_size), dtype='int8'))
 
             task.append(task_element.tolist())
             label_element = False if from_i < delay else sum(task[i - delay]) % 2 == 1
