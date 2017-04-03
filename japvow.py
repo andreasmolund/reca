@@ -9,13 +9,13 @@ from compute.computer import Computer
 from compute.distribute import flatten
 from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
 from encoders.classic import ClassicEncoder
-from encoders.real import RealEncoder, quantize_japvow
+from encoders.real import RealEncoder, quantize_japvow, quantize_activation
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
 
-n_iterations = '2,2,2'
-n_random_mappings = '8,8,8'
+n_iterations = '20,20,20,20'
+n_random_mappings = '80,60,60,60'
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 n_layers = min(len(n_random_mappings), len(n_iterations))
@@ -23,13 +23,11 @@ initial_input_size = 12
 pad = 0
 rule = 90
 
-d = 6  # Jaeger's proposed D
+d = 3  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
-sequence_len_training = [len(sequence) for sequence in training_sets]
-sequence_len_testing = [len(sequence) for sequence in testing_sets]
 subsequent_training_labels = jaeger_labels(training_labels, d, 3)
 subsequent_testing_labels = jaeger_labels(testing_labels, d, 3)
-tmpencoder = RealEncoder(0, 12, 12, 12, quantize=quantize_japvow)
+tmpencoder = RealEncoder(1, 12, 12, 12, quantize=quantize_japvow)
 encoded_training_sets = jaeger_method(tmpencoder.encode_input(training_sets), d, 3)
 encoded_testing_sets = jaeger_method(tmpencoder.encode_input(testing_sets), d, 3)
 
@@ -48,10 +46,11 @@ for layer_i in xrange(n_layers):  # Setup
                               initial_input_size + pad,
                               quantize=quantize_japvow)
     else:
-        encoder = RealEncoder(n_random_mappings[layer_i],
-                              9,
-                              9,
-                              9)
+        encoder = ClassicEncoder(n_random_mappings[layer_i],
+                                 9 * 3 + tmpencoder.automaton_area,
+                                 9 * 3 + tmpencoder.automaton_area,
+                                 9 * 3 + tmpencoder.automaton_area,
+                                 group_len=3)
 
     # estimator = svm.SVC(kernel='linear')
     # estimator = linear_model.SGDClassifier()
@@ -74,7 +73,7 @@ for layer_i in xrange(n_layers):  # Setup
     computers.append(computer)
 
 
-def classes_to_bits(predictions, n_elements, n_classes, d):
+def inter_process(predictions, n_elements, n_classes, d):
     """
     Assumes equal sequence length, e.g., from Jaeger's method 3
     Use sklearn.preprocessing.LabelBinarizer?
@@ -84,11 +83,11 @@ def classes_to_bits(predictions, n_elements, n_classes, d):
     for total_i, p in enumerate(predictions):
         if total_i % d == 0:
             man_shift += 1
-        translated_prediction = [0b0] * n_classes
+        translated_prediction = quantize_activation(p)
         # translated_prediction[p - 1] = 0b1
-        translated_prediction[p.argmax()] = 0b1
-        r.append(p)
-    r = np.array(r).reshape((n_elements, d, n_classes))
+        # translated_prediction[p.argmax()] = 0b1
+        r.append(translated_prediction)
+    r = np.array(r).reshape((n_elements, d, len(r[0])))
     return r
 
 
@@ -103,12 +102,12 @@ for layer_i in xrange(n_layers):  # Training
 
     if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
         o, _ = computers[layer_i].test(layer_inputs)
-        q = (50, 75, 90)
-        print "Prediction quantiles (tr):", np.percentile(o, q)
-        o = classes_to_bits(o, len(training_sets), 9, d)
+        q1 = (25, 50, 75, 85, 90, 95)
+        print "Prediction quantiles (tr):", np.percentile(o, q1)
+        o = inter_process(o, len(training_sets), 9, d)
 
         # x = np.array(x).reshape((270, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
-        # o = np.append(encoded_training_sets, o, axis=2)
+        o = np.append(encoded_training_sets, o, axis=2)
 
 
 def correctness(predicted, actual):
@@ -129,7 +128,7 @@ o = None
 for layer_i in xrange(n_layers):  # Testing
 
     o, x = computers[layer_i].test(testing_sets if o is None else o)
-    q = (25, 50, 75)
+    q = (25, 50, 75, 85, 90, 95)
     print "Prediction quantiles (te):", np.percentile(o, q)
 
     n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels,
@@ -139,12 +138,12 @@ for layer_i in xrange(n_layers):  # Testing
     print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
     if layer_i < n_layers - 1:
-        o = classes_to_bits(o, len(testing_sets), 9, d)
+        o = inter_process(o, len(testing_sets), 9, d)
 
         # x = np.array(x).reshape((370, d, len(x[0])))[:, :, -encoders[layer_i].automaton_area:]
         # o = np.append(x, o, axis=2)
 
-        # o = np.append(encoded_testing_sets, o, axis=2)
+        o = np.append(encoded_testing_sets, o, axis=2)
 
         # sample_nr = 0
         # if layer_i < n_layers - 1:

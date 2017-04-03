@@ -18,7 +18,14 @@ class ClassicEncoder(object):
     then translations of new size 4 configurations will be of size 3*4=12
     """
 
-    def __init__(self, n_random_mappings, input_size, input_area, automaton_area, input_offset=0, verbose=0):
+    def __init__(self,
+                 n_random_mappings,
+                 input_size,
+                 input_area,
+                 automaton_area,
+                 input_offset=0,
+                 verbose=0,
+                 group_len=1):
         """
 
         :param n_random_mappings: the number of random mappings (0 is none)
@@ -26,8 +33,13 @@ class ClassicEncoder(object):
         :param input_area: the area/size that the inputs are to be mapped to
         :param automaton_area: the size of the whole automaton
         :param input_offset: offset for the mapping
+        :param group_len: group elements in blocks
         """
-        self._n_random_mappings = n_random_mappings
+        if input_size % group_len == 0:
+            self.group_len = group_len
+        else:
+            self.group_len = 1
+        self.R = n_random_mappings
         self.input_size = input_size
         self.input_area = max([input_size, input_area])
         self._automaton_area = max([self.input_area, automaton_area])
@@ -36,12 +48,14 @@ class ClassicEncoder(object):
         self.random_mappings = []
         if n_random_mappings > 0:
             for _ in xrange(n_random_mappings):
-                self.random_mappings.extend(make_random_mapping(input_size, self.input_area, input_offset))
+                self.random_mappings.extend(make_random_mapping(input_size / group_len,
+                                                                self.input_area / group_len,
+                                                                input_offset))
         else:
-            self.random_mappings = [i for i in xrange(input_size)]
+            self.random_mappings = [i for i in xrange(input_size / group_len)]
             # Even though there is no random mapping,
             # we set the integer to 1 for the rest of the system to work
-            self._n_random_mappings = 1
+            self.R = 1
 
         if self.verbose > 1:
             print "Random mappings:"
@@ -63,7 +77,7 @@ class ClassicEncoder(object):
         :param second:
         :return:
         """
-        zero_vector = np.zeros(self._n_random_mappings * self._automaton_area, dtype='int8')
+        zero_vector = np.zeros(self.R * self._automaton_area, dtype='int8')
         mapped_master = self._overwrite(master, zero_vector)
         return self._separate(combine(mapped_master, second))
 
@@ -77,10 +91,11 @@ class ClassicEncoder(object):
         """
         automaton_offset = 0  # Offset index
         for i, r in enumerate(self.random_mappings):
-            master_i = i % self.input_size
-            second[automaton_offset + r] = master[master_i]
+            master_i = i * self.group_len % self.input_size
+            second_i = automaton_offset + r * self.group_len
+            second[second_i:second_i + self.group_len] = master[master_i:master_i + self.group_len]
 
-            if master_i + 1 == self.input_size:
+            if master_i + self.group_len == self.input_size:
                 automaton_offset += self._automaton_area  # Adjusting offset
         return second
 
@@ -90,7 +105,7 @@ class ClassicEncoder(object):
         :param vector: an already mapped vector
         :return:
         """
-        return vector.reshape((self._n_random_mappings, self._automaton_area))
+        return vector.reshape((self.R, self._automaton_area))
 
     def pos(self, element):
         """Get what positions an element has
@@ -113,7 +128,7 @@ class ClassicEncoder(object):
     @property
     def n_random_mappings(self):
         """The number of random mappings"""
-        return self._n_random_mappings
+        return self.R
 
     @property
     def total_area(self):

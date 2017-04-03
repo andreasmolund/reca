@@ -3,16 +3,18 @@
 from encoders.classic import ClassicEncoder
 
 
-def quantize_activation(value):
-    if value < 0.05:
-        representation = [0, 0, 0]
-    elif value < 0.1:
-        representation = [0, 0, 1]
-    elif value < 0.15:
-        representation = [0, 1, 1]
-    else:
-        representation = [1, 1, 1]
-    return representation
+def quantize_activation(vector):
+    q = []
+    for value in vector:
+        if value < 0.1:
+            q.extend([0, 0, 0])
+        elif value < 0.2:
+            q.extend([0, 1, 0])
+        elif value < 0.3:
+            q.extend([0, 1, 1])
+        else:
+            q.extend([1, 0, 1])
+    return q
 
 
 class RealEncoder(ClassicEncoder):
@@ -31,55 +33,33 @@ class RealEncoder(ClassicEncoder):
                  automaton_area,
                  input_offset=0,
                  verbose=0,
+                 group_len=1,
                  quantize=quantize_activation):
         self.quantize = quantize
-        self.quantize_len = len(quantize(1))
+        self.quantize_len = len(quantize([1]))
         super(RealEncoder, self).__init__(n_random_mappings,
-                                          input_size,
-                                          input_area,
+                                          self.quantize_len * input_size,
+                                          self.quantize_len * input_area,
                                           self.quantize_len * automaton_area,
                                           input_offset,
-                                          verbose)
+                                          verbose,
+                                          group_len=self.quantize_len)
 
     def _overwrite(self, master, second):
-        automaton_offset = 0  # Offset index
-        for i, r in enumerate(self.random_mappings):
-            master_i = i % self.input_size
-            second_i = automaton_offset + self.quantize_len * r
-            second[second_i:second_i + self.quantize_len] = self.quantize(master[master_i])
-
-            if master_i + 1 == self.input_size:
-                automaton_offset += self._automaton_area  # Adjusting offset
-        return second
-
-    @staticmethod
-    def extend_state_vectors(state_vectors, appendices):
-        """
-        Extends (in the beginning) each of the state vectors with the corresponding appendix.
-        :param state_vectors:
-        :param appendices:
-        :return:
-        """
-        extends = []
-        for appendix_sequence, state_sequence in zip(appendices, state_vectors):
-            sequence = []
-            for appendix, state_vector in zip(appendix_sequence, state_sequence):
-                extended = appendix.tolist()
-                extended.extend(state_vector)
-                sequence.append(extended)
-            extends.append(sequence)
-        return extends
+        return super(RealEncoder, self)._overwrite(self.quantize(master), second)
 
 
-def quantize_japvow(value):
-    if value < -0.2501245:
-        representation = [0, 0, 1]
-    elif value < -0.066513:
-        representation = [0, 0, 1]
-    elif value < 0.14068925:
-        representation = [0, 1, 1]
-    else:
-        representation = [1, 1, 1]
+def quantize_japvow(vector):
+    q = []
+    for value in vector:
+        if value < -0.2501245:
+            q.extend([0, 0, 1])
+        elif value < -0.066513:
+            q.extend([0, 1, 0])
+        elif value < 0.14068925:
+            q.extend([0, 1, 1])
+        else:
+            q.extend([1, 0, 1])
 
     # if value < -0.2984444:
     #     representation = [0, 0, 0, 1]
@@ -94,16 +74,18 @@ def quantize_japvow(value):
 
     # 14: [0, 0, 0, 1] [0, 1, 0, 1] [0, 1, 1, 0] [1, 0, 0, 1] [1, 0, 0, 0]
 
-    return representation
+    return q
 
 
-def quantize_cifar(value):
-    if value < 70:
-        representation = [1, 1, 1]
-    elif value < 117:
-        representation = [0, 1, 1]
-    elif value < 167:
-        representation = [0, 0, 1]
-    else:
-        representation = [0, 0, 0]
-    return representation
+def quantize_cifar(vector):
+    q = []
+    for value in vector:
+        if value < 70:
+            q.extend([1, 1, 1])
+        elif value < 117:
+            q.extend([0, 1, 1])
+        elif value < 167:
+            q.extend([0, 0, 1])
+        else:
+            q.extend([0, 0, 0])
+    return q
