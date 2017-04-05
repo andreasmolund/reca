@@ -3,17 +3,17 @@
 from encoders.classic import ClassicEncoder
 
 
-def quantize_activation(vector):
+def quantize_activation(vector, p1=0.25, p2=0.5, p3=0.75):
     q = []
     for value in vector:
-        if value < 0.1:
-            q.extend([0, 0, 0])
-        elif value < 0.2:
-            q.extend([0, 1, 0])
-        elif value < 0.3:
-            q.extend([0, 1, 1])
+        if value < p1:
+            q.extend([0, 0])
+        elif value < p2:
+            q.extend([0, 1])
+        elif value < p3:
+            q.extend([1, 1])
         else:
-            q.extend([1, 0, 1])
+            q.extend([1, 0])
     return q
 
 
@@ -51,26 +51,27 @@ class RealEncoder(ClassicEncoder):
 
 def quantize_japvow(vector):
     q = []
-    for value in vector:
-        if value < -0.2501245:
-            q.extend([0, 0, 1])
-        elif value < -0.066513:
-            q.extend([0, 1, 0])
-        elif value < 0.14068925:
-            q.extend([0, 1, 1])
-        else:
-            q.extend([1, 0, 1])
+    # for value in vector:
+    #     if value < -0.2501245:
+    #         q.extend([0, 0, 1])
+    #     elif value < -0.066513:
+    #         q.extend([0, 1, 0])
+    #     elif value < 0.14068925:
+    #         q.extend([0, 1, 1])
+    #     else:
+    #         q.extend([1, 0, 1])
 
-    # if value < -0.2984444:
-    #     representation = [0, 0, 0, 1]
-    # elif value < -0.1379516:
-    #     representation = [0, 1, 0, 1]
-    # elif value < 0.004259:
-    #     representation = [0, 1, 1, 0]
-    # elif value < 0.2079332:
-    #     representation = [1, 0, 0, 1]
-    # else:
-    #     representation = [1, 0, 0, 0]
+    for value in vector:
+        if value < -0.2984444:
+            q.extend([0, 0, 0, 1])
+        elif value < -0.1379516:
+            q.extend([0, 0, 1, 1])
+        elif value < 0.004259:
+            q.extend([0, 1, 1, 1])
+        elif value < 0.2079332:
+            q.extend([0, 1, 1, 0])
+        else:
+            q.extend([0, 1, 0, 0])
 
     # 14: [0, 0, 0, 1] [0, 1, 0, 1] [0, 1, 1, 0] [1, 0, 0, 1] [1, 0, 0, 0]
 

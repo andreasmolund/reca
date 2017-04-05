@@ -47,7 +47,7 @@ class Computer:
         time_checkpoint = time.time()
 
         x = distribute_and_collect(self, sets)
-        x = np.array(x, dtype='int8')
+        # x = np.array(x, dtype='int8')
         # sequence_lengths = [len(m) for m in x]
         if self.extended_state_vector:
             x = extend_state_vectors(x, sets)
@@ -69,7 +69,7 @@ class Computer:
     def test(self, sets, x=None):
         if x is None:
             x = distribute_and_collect(self, sets)
-            x = np.array(x, dtype='int8')
+            # x = np.array(x, dtype='int8')
             if self.extended_state_vector:
                 x = extend_state_vectors(x, sets)
             x = flatten(x)

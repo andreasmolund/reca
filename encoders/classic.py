@@ -66,9 +66,9 @@ class ClassicEncoder(object):
         return self._separate(self._overwrite(configuration, zero_vector))
 
     def add(self, master, second):
-        return self._separate(self._normalized_addition(master, second))
+        return self._separate(self._bitwise_add(master, second))
 
-    def _normalized_addition(self, master, second):
+    def _bitwise_add(self, master, second):
         """
         A method of adding vectors.
         Yilmaz' (2015) normalized addition.

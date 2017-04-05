@@ -4,7 +4,7 @@ import getopt
 import logging
 import sys
 import time
-import DateTime.DateTime as datetime
+from datetime import datetime
 
 import numpy as np
 from numpy.linalg.linalg import LinAlgError
@@ -13,6 +13,7 @@ from sklearn import linear_model
 import problemgenerator as problems
 from ca.eca import ECA
 from compute.computer import Computer
+from compute.distribute import unflatten
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
@@ -21,9 +22,9 @@ from statistics.plotter import plot_temporal
 start_time = datetime.now()
 logit = False
 
-n_whole_runs = 1
+n_whole_runs = 10
 n_sets = 32
-distractor_period = 199  # Because cue is within distr. period
+distractor_period = 200  # Because cue is within distr. period
 inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)
@@ -89,8 +90,9 @@ def main(raw_args):
             logging.error(linalgerrmessage)
             return
 
-        o = computers[layer_i].test(inputs, x)
+        o, _ = computers[layer_i].test(inputs, x)
         o = classify_output(o)
+        o = unflatten(o, [2 * 5 + distractor_period + 1] * n_sets)
 
         n_correct = 0
         n_incorrect_predictions = 0
@@ -104,8 +106,8 @@ def main(raw_args):
                 n_correct += 1
         correct.append(n_correct)
         incorrect_predictions.append(n_incorrect_predictions)
-        # print "%d. corr. pred.:         %d" % (layer_i, n_correct)
-        # print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
+        print "%d. corr. pred.:         %d" % (layer_i, n_correct)
+        print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
 
         if n_whole_runs < 1:
             time_steps = 2 * 5 + distractor_period + 1
@@ -183,9 +185,9 @@ if __name__ == '__main__':
             main(sys.argv)
         else:
             main(['bittask.py',
-                  '-I', '4',
+                  '-I', '2',
                   '-R', '8',
                   '--diffuse', '40',
                   '--pad', '0',
-                  '-r', '90'
+                  '-r', '102'
                   ])

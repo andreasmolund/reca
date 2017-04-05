@@ -113,12 +113,11 @@ def flatten(unflattened):
     :param unflattened:
     :return:
     """
-    shape = unflattened.shape
-    if len(shape) > 2:
-        new_shape = (shape[0] * shape[1], shape[2])
-    else:
-        new_shape = (shape[0] * shape[1])
-    return unflattened.reshape(new_shape)
+    processed = []
+    for m in unflattened:
+        for n in m:
+            processed.append(n)
+    return processed
 
 
 def custom_range(sets, part, n_parts):
@@ -181,3 +180,12 @@ def n_processes(sets):
 
 def file_name(identifier):
     return "%s%s%s.%s" % (dump_path, prefix, identifier, file_type)
+
+
+def unflatten(flattened, sequence_lengths):
+    reshaped = []
+    offset = 0
+    for sequence_len in sequence_lengths:
+        reshaped.append(np.array(flattened[offset:offset + sequence_len]))
+        offset += sequence_len
+    return reshaped
