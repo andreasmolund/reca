@@ -7,13 +7,13 @@ def quantize_activation(vector, p1=0.25, p2=0.5, p3=0.75):
     q = []
     for value in vector:
         if value < p1:
-            q.extend([0, 0])
+            q.extend([0, 0, 0])
         elif value < p2:
-            q.extend([0, 1])
+            q.extend([0, 0, 1])
         elif value < p3:
-            q.extend([1, 1])
+            q.extend([0, 1, 1])
         else:
-            q.extend([1, 0])
+            q.extend([0, 1, 0])
     return q
 
 
@@ -63,17 +63,18 @@ def quantize_japvow(vector):
 
     for value in vector:
         if value < -0.2984444:
-            q.extend([0, 0, 0, 1])
+            q.extend([0, 0, 0])
         elif value < -0.1379516:
-            q.extend([0, 0, 1, 1])
+            q.extend([0, 0, 1])
         elif value < 0.004259:
-            q.extend([0, 1, 1, 1])
+            q.extend([0, 1, 1])
         elif value < 0.2079332:
-            q.extend([0, 1, 1, 0])
+            q.extend([0, 1, 0])
         else:
-            q.extend([0, 1, 0, 0])
+            q.extend([1, 1, 0])
 
     # 14: [0, 0, 0, 1] [0, 1, 0, 1] [0, 1, 1, 0] [1, 0, 0, 1] [1, 0, 0, 0]
+    # 6:  [0, 0, 0, 1] [0, 0, 1, 1] [0, 1, 1, 1] [0, 1, 1, 0] [0, 1, 0, 0]
 
     return q
 

@@ -26,19 +26,18 @@ class JaegerComputer(Computer):
                  reservoir,
                  estimator,
                  concat_before=True,
-                 extended_state_vector=False,
                  verbose=1,
                  d=3,
                  method=4):
-        Computer.__init__(self, encoder, reservoir, estimator, concat_before, extended_state_vector, verbose)
+        Computer.__init__(self, encoder, reservoir, estimator, concat_before, verbose)
         self.d = d
         self.method = method
         self.n_pieces = 1
 
-    def train(self, sets, labels):
+    def train(self, sets, labels, extensions=None):
         x = distribute_and_collect(self, sets)
-        if self.extended_state_vector:
-            x = extend_state_vectors(x, sets)
+        if extensions is not None:
+            x = extend_state_vectors(x, extensions)
 
         x = jaeger_method(x, self.d, self.method)
         labels = jaeger_labels(labels, self.d, self.method)
@@ -66,23 +65,23 @@ class JaegerComputer(Computer):
         #     pieces[testing_start_i:testing_end_i] = computed.reshape((testing_end_i - testing_start_i, self.d))
         # return pieces
 
-    def test(self, sets, x=None):
+    def test(self, sets, x=None, extensions=None):
         if x is None:
             x = distribute_and_collect(self, sets)
-            if self.extended_state_vector:
-                x = extend_state_vectors(x, sets)
+            if extensions is not None:
+                x = extend_state_vectors(x, extensions)
             x = jaeger_method(x, self.d, self.method)
             x = flatten(x)
         predictions = self.estimator.predict(x)
         return predictions, x
 
 
-def jaeger_method(x, d, method):
+def jaeger_method(x, d, method, dtype='int8'):
     n = d if method == 3 else 1
     state_vector_len = len(x[0][0])
     o = state_vector_len if method == 3 else d * state_vector_len
 
-    j_x = np.empty((len(x), n, o), dtype='int8')
+    j_x = np.empty((len(x), n, o), dtype=dtype)
     for i, sequence in enumerate(x):
         l_i = len(sequence)
         snapshots = []

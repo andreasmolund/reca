@@ -60,9 +60,9 @@ def read_ae_file(aefile_name, block_sizes):
             coefficients = [float(feature) for feature in line.split(' ')]
             block.append(coefficients)
 
-            # label = [0b0] * 9
-            # label[man_i] = 1
-            label = man_i + 1
+            label = [0b0] * 9
+            label[man_i] = 1
+            # label = man_i + 1
 
             labelblock.append(label)
             consecutive_empty_lines = 0
