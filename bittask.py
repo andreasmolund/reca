@@ -24,7 +24,7 @@ logit = False
 
 n_whole_runs = 10
 n_sets = 32
-distractor_period = 200  # Because cue is within distr. period
+distractor_period = 199  # Because cue is within distr. period
 inputs, labels = problems.bit_memory_task(n_sets,
                                           5,
                                           distractor_period)
@@ -41,7 +41,7 @@ def main(raw_args):
     if not (len(n_iterations) == len(n_random_mappings)):
         return
 
-    size = 4  # The size of the input, or
+    size = len(inputs[0][0])  # The size of the input, or
     concat_before = True  # Concat the automata before or after iterating
     verbose = 0  # How much information to print to console
     n_layers = len(n_random_mappings)  # The number of layers including the first
