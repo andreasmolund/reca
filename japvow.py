@@ -6,7 +6,7 @@ from sklearn import linear_model
 
 from ca.eca import ECA
 from compute.computer import Computer
-from compute.distribute import flatten
+from compute.distribute import flatten, unflatten
 from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
 from encoders.classic import ClassicEncoder
 from encoders.real import RealEncoder, quantize_japvow, quantize_activation
@@ -14,8 +14,8 @@ from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
 from statistics.plotter import plot_temporal
 
-n_iterations =      '20,20,20,20,20'
-n_random_mappings = '32,32,32,32,32'
+n_iterations =      '10,10,10,10,10'
+n_random_mappings = '16,16,16,16,16'
 n_iterations = [int(value) for value in n_iterations.split(',')]
 n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 n_layers = min(len(n_random_mappings), len(n_iterations))
@@ -75,8 +75,8 @@ for layer_i in xrange(n_layers):  # Setup
 
     if layer_i == n_layers - 1:  # Last layer
         computer = JaegerComputer(encoder, reservoir, estimator, True, verbose=0, d=d, method=4)
-    elif layer_i == 0:  # First layer
-        computer = JaegerComputer(encoder, reservoir, estimator, True, verbose=0, d=d, method=3)
+    # elif layer_i == 0:  # First layer
+    #     computer = JaegerComputer(encoder, reservoir, estimator, True, verbose=0, d=d, method=3)
     else:  # Inter-layers
         computer = Computer(encoder, reservoir, estimator, True, verbose=0)
 
@@ -94,7 +94,7 @@ def inter_process(predictions, n_elements, n_classes, d, activation_percentiles)
         # translated_prediction[p - 1] = 0b1
         # translated_prediction[p.argmax()] = 0b1
         r.append(translated_prediction)
-    r = np.array(r).reshape((n_elements, d, len(r[0])))
+    # r = np.array(r).reshape((n_elements, d, len(r[0])))
     return r
 
 
@@ -105,8 +105,8 @@ q = (66, 77, 88)
 for layer_i in xrange(n_layers):  # Training
 
     layer_inputs = training_sets if o is None else o
-    layer_labels = training_labels if layer_i == 0 else subsequent_training_labels
-    raw_training_input = training_sets if layer_i == 0 else jaeger_training_sets
+    layer_labels = training_labels if layer_i < n_layers - 1 else final_layer_training_labels
+    raw_training_input = training_sets
     x = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
 
     if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
@@ -117,6 +117,7 @@ for layer_i in xrange(n_layers):  # Training
         o = inter_process(o, len(training_sets), 9, d, percentiles)
 
         # o = np.append(encoded_jaeger_training_sets, o, axis=2)
+        o = unflatten(o, sequence_len_training)
 
 
 def correctness(predicted, actual):
@@ -136,13 +137,11 @@ o = None
 
 for layer_i in xrange(n_layers):  # Testing
 
-    raw_training_input = testing_sets if layer_i == 0 else jaeger_testing_sets
+    raw_training_input = testing_sets
     o, x = computers[layer_i].test(testing_sets if o is None else o, extensions=raw_training_input)
     print q, "percent., new:   ", np.percentile(o, q)
 
-    n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels,
-                                                                  d,
-                                                                  3 if layer_i < n_layers - 1 else 4)))
+    n_correct, n_incorrect = correctness(o, flatten(testing_labels) if layer_i < n_layers - 1 else final_layer_testing_labels)
 
     print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
@@ -153,6 +152,7 @@ for layer_i in xrange(n_layers):  # Testing
         # o = np.append(x, o, axis=2)
 
         # o = np.append(encoded_jaeger_testing_sets, o, axis=2)
+        o = unflatten(o, sequence_len_testing)
 
         # sample_nr = 0
         # if layer_i < n_layers - 1:
