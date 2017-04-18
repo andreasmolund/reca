@@ -58,9 +58,9 @@ for layer_i in xrange(n_layers):  # Setup
     else:
         group_len = 3
         encoder = ClassicEncoder(n_random_mappings[layer_i],
-                                 9 * group_len + tmpencoder.automaton_area,
-                                 9 * group_len + tmpencoder.automaton_area,
-                                 9 * group_len + tmpencoder.automaton_area,
+                                 9 * group_len,
+                                 9 * group_len,
+                                 9 * group_len,
                                  group_len=group_len)
 
     # estimator = svm.SVC(kernel='linear')
@@ -106,16 +106,17 @@ for layer_i in xrange(n_layers):  # Training
 
     layer_inputs = training_sets if o is None else o
     layer_labels = training_labels if layer_i == 0 else subsequent_training_labels
-    x = computers[layer_i].train(layer_inputs, layer_labels, extensions=jaeger_training_sets)
+    raw_training_input = training_sets if layer_i == 0 else jaeger_training_sets
+    x = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
 
     if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
-        o, _ = computers[layer_i].test(layer_inputs, extensions=jaeger_training_sets)
+        o, _ = computers[layer_i].test(layer_inputs, extensions=raw_training_input)
         percentiles = np.percentile(o, q)
         activation_levels.append(percentiles)
         print q, "percentiles (tr):", percentiles
         o = inter_process(o, len(training_sets), 9, d, percentiles)
 
-        o = np.append(encoded_jaeger_training_sets, o, axis=2)
+        # o = np.append(encoded_jaeger_training_sets, o, axis=2)
 
 
 def correctness(predicted, actual):
@@ -135,7 +136,8 @@ o = None
 
 for layer_i in xrange(n_layers):  # Testing
 
-    o, x = computers[layer_i].test(testing_sets if o is None else o, extensions=jaeger_testing_sets)
+    raw_training_input = testing_sets if layer_i == 0 else jaeger_testing_sets
+    o, x = computers[layer_i].test(testing_sets if o is None else o, extensions=raw_training_input)
     print q, "percent., new:   ", np.percentile(o, q)
 
     n_correct, n_incorrect = correctness(o, flatten(jaeger_labels(testing_labels,
@@ -150,7 +152,7 @@ for layer_i in xrange(n_layers):  # Testing
 
         # o = np.append(x, o, axis=2)
 
-        o = np.append(encoded_jaeger_testing_sets, o, axis=2)
+        # o = np.append(encoded_jaeger_testing_sets, o, axis=2)
 
         # sample_nr = 0
         # if layer_i < n_layers - 1:

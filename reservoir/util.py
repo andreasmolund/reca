@@ -32,6 +32,9 @@ def extend_state_vectors(state_vectors, appendices):
     :param appendices:
     :return:
     """
+    if len(state_vectors[0]) != len(appendices[0]):
+        raise Exception("Not equal sequence lengths.")
+
     extends = []
     for appendix_sequence, state_sequence in zip(appendices, state_vectors):
         sequence = []
