@@ -49,7 +49,7 @@ computer = Computer(encoder,
                     verbose=verbose)
 
 # Preserve the state vectors
-x = computer.train(inputs, labels)
+x, _ = computer.train(inputs, labels)
 plot_temporal(x,
               encoder.n_random_mappings,
               encoder.automaton_area,

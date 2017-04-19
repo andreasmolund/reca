@@ -72,7 +72,7 @@ def read_ae_file(aefile_name, block_sizes):
 japanese_vowels_classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
-def bit_memory_task(quantity, bits, distractor_period):
+def memory_task_5_bit(quantity, distractor_period):
     """
 
     :param quantity: the number of tasks to generate
@@ -82,6 +82,7 @@ def bit_memory_task(quantity, bits, distractor_period):
     """
     tasks = []
     labels = []
+    bits = 5
 
     for i in xrange(quantity):
         y = 2  # y being 0, 1, 2 means which of the output nodes y1, y2, y3 that is activated, respectively

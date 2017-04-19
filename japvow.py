@@ -41,8 +41,6 @@ final_layer_testing_labels = jaeger_labels(testing_labels, d, 4)
 start_time = datetime.now()
 logit = True
 
-n_whole_runs = 10
-
 
 def main(raw_args):
     initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
@@ -110,13 +108,15 @@ def main(raw_args):
     activation_levels = []
     o = None  # Output of one estimator
     q = (25, 50, 75)
+    tot_fit_time = 0
 
     for layer_i in xrange(n_layers):  # Training
 
         layer_inputs = training_sets if o is None else o
         layer_labels = training_labels if layer_i == 0 else subsequent_training_labels
         raw_training_input = training_sets if layer_i == 0 else jaeger_training_sets
-        x = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
+        x, fit_time = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
+        tot_fit_time += fit_time
 
         if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
             o, _ = computers[layer_i].test(layer_inputs, extensions=raw_training_input)
@@ -179,7 +179,7 @@ def main(raw_args):
             #               sample_nr=sample_nr)
     if logit:
         result = [j for i in zip(out_of, misclassif) for j in i]
-        rep_string = "\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%d,%d" + ",%d" * n_layers * 2
+        rep_string = "\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%d,%.2f,%d" + ",%d" * n_layers * 2
         logging.info(rep_string,
                      ','.join(str(e) for e in n_iterations),
                      ','.join(str(e) for e in n_random_mappings),
@@ -190,6 +190,7 @@ def main(raw_args):
                      'True',
                      estimator.__class__.__name__,
                      d,
+                     tot_fit_time,
                      misclassif[-1],
                      *result)
 
@@ -201,15 +202,18 @@ if __name__ == '__main__':
                             level=logging.DEBUG)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "D,"
-                     "Final misclassif.,")
+                     "Tot. fit time,Final misclassif.,")
+
+    n_whole_runs = 2
+
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:
             main(sys.argv)
         else:
             main(['japvow.py',
-                  '-I', '2,2,2,2',
-                  '-R', '1,1,1,1',
-                  '-r', '102'
+                  '-I', '16,16,16,16',
+                  '-R', '32,19,19,19',
+                  '-r', '90'
                   ])
 

@@ -25,9 +25,8 @@ logit = False
 n_whole_runs = 10
 n_sets = 32
 distractor_period = 199  # Because cue is within distr. period
-inputs, labels = problems.bit_memory_task(n_sets,
-                                          5,
-                                          distractor_period)
+inputs, labels = problems.memory_task_5_bit(n_sets,
+                                            distractor_period)
 
 #  TODO: Handle LinAlgError better. Run one more time per error occurrence
 
@@ -85,7 +84,7 @@ def main(raw_args):
             # Preserving the values of the output nodes
             # For the first layer, we transform/train with the very input,
             # and for the subsequent layers, the output from the previous layer is used
-            x = computers[layer_i].train(inputs if o is None else o, labels)
+            x, _ = computers[layer_i].train(inputs if o is None else o, labels)
         except LinAlgError:
             logging.error(linalgerrmessage)
             return
