@@ -12,9 +12,9 @@ E.g. "2016-11-16T23:43:14-bitmem2res-i4-r4-rule-102": N-bit-memory task, 2 reser
 
 # Applications
 
-## Arguments
+Note: The directory reca/tmp/ may have to be created before run-time.
 
-reca/tmp-directory may have to be created before run-time.
+## Arguments
 
 Example: `python bittask.py -I 32 -R 16 -r 110 --pad 10`
 * `-I` iterations
