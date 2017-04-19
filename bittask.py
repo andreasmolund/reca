@@ -172,7 +172,7 @@ linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
 
 if __name__ == '__main__':
     if logit:
-        file_name = 'preresults/%s-bitmem2res.csv' % start_time.isoformat().replace(":", "")
+        file_name = 'rawresults/%s-bitmem2res.csv' % start_time.isoformat().replace(":", "")
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)

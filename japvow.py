@@ -39,9 +39,9 @@ final_layer_training_labels = jaeger_labels(training_labels, d, 4)
 final_layer_testing_labels = jaeger_labels(testing_labels, d, 4)
 
 start_time = datetime.now()
-logit = False
+logit = True
 
-n_whole_runs = 1
+n_whole_runs = 10
 
 
 def main(raw_args):
@@ -67,7 +67,7 @@ def main(raw_args):
                                   pad,
                                   quantize=quantize_japvow)
         else:
-            group_len = 3
+            group_len = len(quantize_activation([1]))
             encoder = ClassicEncoder(n_random_mappings[layer_i],
                                      9 * group_len + tmpencoder.automaton_area,
                                      9 * group_len + tmpencoder.automaton_area,
@@ -142,6 +142,9 @@ def main(raw_args):
 
     o = None
 
+    out_of = []
+    misclassif = []
+
     for layer_i in xrange(n_layers):  # Testing
 
         raw_training_input = testing_sets if layer_i == 0 else jaeger_testing_sets
@@ -149,6 +152,8 @@ def main(raw_args):
         print q, "percent., new:   ", np.percentile(o, q)
 
         n_correct, n_incorrect = correctness(o, flatten(subsequent_testing_labels if layer_i < n_layers - 1 else final_layer_testing_labels))
+        out_of.append(n_correct + n_incorrect)
+        misclassif.append(n_incorrect)
 
         print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
@@ -172,26 +177,39 @@ def main(raw_args):
             #               time_steps,
             #               n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
             #               sample_nr=sample_nr)
+    if logit:
+        result = [j for i in zip(out_of, misclassif) for j in i]
+        rep_string = "\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%d,%d" + ",%d" * n_layers * 2
+        logging.info(rep_string,
+                     ','.join(str(e) for e in n_iterations),
+                     ','.join(str(e) for e in n_random_mappings),
+                     rule,
+                     initial_input_size,
+                     diffuse,
+                     pad,
+                     'True',
+                     estimator.__class__.__name__,
+                     d,
+                     misclassif[-1],
+                     *result)
 
 if __name__ == '__main__':
     if logit:
-        file_name = 'preresults/%s-japvow.csv' % start_time.isoformat().replace(":", "")
+        file_name = 'rawresults/%s-japvow.csv' % start_time.isoformat().replace(":", "")
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
-        logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
-                     "Training sets,Testing sets,Distractor period,"
-                     "Point (success),First res. correct,First res. wrong bits,Last res. correct,Last res. wrong bits")
+        logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
+                     "D,"
+                     "Final misclassif.,")
     for r in xrange(n_whole_runs):
         # print "Run %d started" % r
         if len(sys.argv) > 1:
             main(sys.argv)
         else:
             main(['japvow.py',
-                  '-I', '2',
-                  '-R', '8',
-                  '--diffuse', '40',
-                  '--pad', '0',
+                  '-I', '2,2,2,2',
+                  '-R', '1,1,1,1',
                   '-r', '102'
                   ])
 

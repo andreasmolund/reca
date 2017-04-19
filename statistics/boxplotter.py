@@ -2,7 +2,7 @@ import csv
 
 import matplotlib.pyplot as plt
 import numpy as np
-path = '/home/andreas/Documents/GitHub/semester-project-code/project/preresults/'
+path = '/home/andreas/Documents/GitHub/semester-project-code/project/rawresults/'
 file_name = 'bitmemorytask-2016-11-16T01:18:21.027681.csv'
 
 flierprops = dict(marker='o', markerfacecolor='black', markersize=3,
