@@ -4,6 +4,7 @@
 import random as rn
 
 import numpy as np
+import random as rand
 
 
 # np.random.seed(20161112)
@@ -127,6 +128,59 @@ def memory_task_5_bit(quantity, distractor_period):
         tasks.append(task)
         labels.append(set_labels)
     return np.array(tasks), np.array(labels)
+
+
+def memory_task_n_bit(dimensions, n_memory_time_steps, quantity, distractor_period):
+    """
+    :param dimensions: e.g. 5 for 20 bit task
+    :param n_memory_time_steps: e.g. 10 for 2 bit task
+    :param quantity:
+    :param distractor_period:
+    :return:
+    """
+    done_hashes = []
+    tasks = []
+    labels = []
+    i = 0
+    n_bits_distr = n_memory_time_steps + distractor_period
+    while i < quantity:
+        n = 0
+        task = []
+        label = []
+        for t in xrange(2 * n_memory_time_steps + distractor_period):
+            if t < n_memory_time_steps:
+                position = rand.randint(0, dimensions - 1)
+                input_vector = [0] * (dimensions + 2)
+                input_vector[position] = 1
+                n += position * dimensions ** t
+                output_vector = [0] * dimensions + [1, 0]
+            elif t < n_bits_distr:
+                if t == n_bits_distr - 1:
+                    # Cue
+                    input_vector = [0] * dimensions + [0, 1]
+                else:
+                    input_vector = [0] * dimensions + [1, 0]
+                output_vector = [0] * dimensions + [1, 0]
+            else:
+                input_vector = [0] * dimensions + [1, 0]
+                output_vector = task[t - n_bits_distr]
+            task.append(input_vector)
+            label.append(output_vector)
+        if n in done_hashes:
+            # Already existing task
+            i -= 1
+        else:
+            tasks.append(task)
+            labels.append(label)
+            done_hashes.append(n)
+        i += 1
+    return tasks, labels
+
+# tmp_20_tasks, tmp_20_labels = memory_task_n_bit(5, 10, 3, 2)
+# for tsk, lbl in zip(tmp_20_tasks, tmp_20_labels):
+#     for input_v, output_v in zip(tsk, lbl):
+#         print "%s\t%s" % (input_v, output_v)
+#     print '\n'
 
 
 def temporal_parity(quantity, size, window_size=2, delay=0):
