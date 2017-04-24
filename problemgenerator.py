@@ -8,6 +8,7 @@ import random as rand
 
 
 # np.random.seed(20161112)
+import time
 
 
 def japanese_vowels():
@@ -92,7 +93,7 @@ def memory_task_5_bit(quantity, distractor_period):
         y3 = 1
         task = []
         set_labels = []
-        for t in xrange(bits + distractor_period + 1 + bits):
+        for t in xrange(bits + distractor_period + bits):
             if t < bits:
                 bit = (i & 2 ** t) / 2 ** t
                 a1 = - bit + 1
@@ -101,13 +102,13 @@ def memory_task_5_bit(quantity, distractor_period):
                 a1 = 0
                 a2 = 0
 
-            if bits <= t < bits + distractor_period or t > bits + distractor_period:
+            if bits <= t != bits + distractor_period - 1:
                 # Distractor signal
                 a3 = 1
             else:
                 a3 = 0
 
-            if bits + distractor_period == t:
+            if t == bits + distractor_period - 1:
                 # Cue signal
                 a4 = 1
             else:
@@ -115,8 +116,8 @@ def memory_task_5_bit(quantity, distractor_period):
 
             task.append(np.asarray([a1, a2, a3, a4]))
 
-            if t > bits + distractor_period:
-                y1 = task[t - (bits + distractor_period) - 1][0]
+            if t >= bits + distractor_period:
+                y1 = task[t - (bits + distractor_period)][0]
                 y2 = 1 - y1
                 y3 = 0
                 y = 0 if y1 == 1 else 1
@@ -127,6 +128,7 @@ def memory_task_5_bit(quantity, distractor_period):
             # set_labels.append(y)
         tasks.append(task)
         labels.append(set_labels)
+    print len(tasks), len(labels)
     return np.array(tasks), np.array(labels)
 
 

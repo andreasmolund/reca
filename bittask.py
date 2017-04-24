@@ -22,11 +22,12 @@ from statistics.plotter import plot_temporal
 start_time = datetime.now()
 logit = False
 
-n_whole_runs = 10
+n_whole_runs = 1
 n_sets = 32
-distractor_period = 199  # Because cue is within distr. period
+distractor_period = 201
 inputs, labels = problems.memory_task_5_bit(n_sets,
                                             distractor_period)
+
 
 #  TODO: Handle LinAlgError better. Run one more time per error occurrence
 
@@ -42,7 +43,7 @@ def main(raw_args):
 
     size = len(inputs[0][0])  # The size of the input, or
     concat_before = True  # Concat the automata before or after iterating
-    verbose = 0  # How much information to print to console
+    verbose = 0  # How much information to print to consol
     n_layers = len(n_random_mappings)  # The number of layers including the first
 
     automaton = ECA(rule)
@@ -86,36 +87,37 @@ def main(raw_args):
             # and for the subsequent layers, the output from the previous layer is used
             x, _ = computers[layer_i].train(inputs if o is None else o, labels)
         except LinAlgError:
-            logging.error(linalgerrmessage)
-            return
+            # logging.error(linalgerrmessage)
+            print "LinAlgError occured.", time.time()
+            return 1
 
         o, _ = computers[layer_i].test(inputs, x)
         o = classify_output(o)
-        o = unflatten(o, [2 * 5 + distractor_period + 1] * n_sets)
+        o = unflatten(o, [2 * 5 + distractor_period] * n_sets)
 
         n_correct = 0
-        n_incorrect_predictions = 0
+        n_mispredicted_bits = 0
         for prediction_set, label_set in zip(o, labels):
             success = True
             for prediction_element, label_element in zip(prediction_set, label_set):
                 if not np.array_equal(prediction_element, label_element):
                     success = False
-                    n_incorrect_predictions += 1
+                    n_mispredicted_bits += 1
             if success:
                 n_correct += 1
         correct.append(n_correct)
-        incorrect_predictions.append(n_incorrect_predictions)
+        incorrect_predictions.append(n_mispredicted_bits)
         print "%d. corr. pred.:         %d" % (layer_i, n_correct)
-        print "%d. incorr. pred.:       %d" % (layer_i, n_incorrect_predictions)
+        print "%d. incorr. pred.:       %d" % (layer_i, n_mispredicted_bits)
 
-        if n_whole_runs < 1:
-            time_steps = 2 * 5 + distractor_period + 1
+        if n_whole_runs == 1:
+            time_steps = 2 * 5 + distractor_period
             plot_temporal(x,
                           encoders[layer_i].n_random_mappings,
                           encoders[layer_i].automaton_area,
                           time_steps,
                           n_iterations[layer_i],
-                          sample_nr=12)
+                          sample_nr=2)
 
     # print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
@@ -137,6 +139,8 @@ def main(raw_args):
                      incorrect_predictions[0],
                      correct[-1],
                      incorrect_predictions[-1])
+
+    return 0  # The run went good
 
 
 def digest_args(args):
@@ -166,9 +170,6 @@ def digest_args(args):
     return size, rule, iterations, n_random_mappings, diffuse, pad
 
 
-linalgerrmessage = ",,,,,,,LinAlgError occured: Skipping this run,,,,,,,,"
-
-
 if __name__ == '__main__':
     if logit:
         file_name = 'rawresults/%s-bitmem2res.csv' % start_time.isoformat().replace(":", "")
@@ -178,15 +179,19 @@ if __name__ == '__main__':
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
                      "Point (success),First res. correct,First res. wrong bits,Last res. correct,Last res. wrong bits")
-    for r in xrange(n_whole_runs):
-        # print "Run %d started" % r
+    r = 0
+    while r < n_whole_runs:
         if len(sys.argv) > 1:
-            main(sys.argv)
+            response = main(sys.argv)
         else:
-            main(['bittask.py',
-                  '-I', '2',
-                  '-R', '8',
-                  '--diffuse', '40',
-                  '--pad', '0',
-                  '-r', '102'
-                  ])
+            response = main(['bittask.py',
+                             '-I', '1',
+                             '-R', '2',
+                             '--diffuse', '8',
+                             '--pad', '0',
+                             '-r', '90'
+                             ])
+        if response != 0:
+            r -= 1  # Something went wrong. We need to run one more time
+
+        r += 1
