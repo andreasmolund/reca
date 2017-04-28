@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N andrmolutestjob
+#PBS -N deepreca
 #PBS -A andrmolu
 #PBS -l select=1:ncpus=4:mem=10gb
 #PBS -l walltime=12:00:00

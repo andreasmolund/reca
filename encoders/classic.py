@@ -68,7 +68,7 @@ class ClassicEncoder(object):
     def add(self, master, second):
         # _overwrite: directly overwrites second, e.g. Bye
         # _bitwise_add: norm add, bitwise OR or bitwise XOR
-        return self._separate(self._overwrite(master, second))
+        return self._separate(self._bitwise_add(master, second))
 
     def _bitwise_add(self, master, second):
         """

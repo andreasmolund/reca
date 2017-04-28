@@ -19,8 +19,8 @@ def japanese_vowels():
     aetrainblocks = [30, 30, 30, 30, 30, 30, 30, 30, 30]
     aetestblocks = [31, 35, 88, 44, 29, 24, 40, 50, 29]
 
-    train_file_name = "datasets/japvowels/ae.train"
-    test_file_name = "datasets/japvowels/ae.test"
+    train_file_name = 'datasets/japvowels/ae.train'
+    test_file_name = 'datasets/japvowels/ae.test'
     training_sets, training_labels = read_ae_file(train_file_name, aetrainblocks)
     testing_sets, testing_labels = read_ae_file(test_file_name, aetestblocks)
 
@@ -28,7 +28,7 @@ def japanese_vowels():
 
 
 def read_ae_file(aefile_name, block_sizes):
-    aefile = open(aefile_name, "r")
+    aefile = open(aefile_name, 'r')
     ae = []
     aelabels = []
     eof = False
@@ -128,8 +128,7 @@ def memory_task_5_bit(quantity, distractor_period):
             # set_labels.append(y)
         tasks.append(task)
         labels.append(set_labels)
-    print len(tasks), len(labels)
-    return np.array(tasks), np.array(labels)
+    return np.array(tasks, dtype='int8'), np.array(labels, dtype='int8')
 
 
 def memory_task_n_bit(dimensions, n_memory_time_steps, quantity, distractor_period):
@@ -145,6 +144,8 @@ def memory_task_n_bit(dimensions, n_memory_time_steps, quantity, distractor_peri
     labels = []
     i = 0
     n_bits_distr = n_memory_time_steps + distractor_period
+    if quantity > dimensions**n_memory_time_steps:
+        raise ValueError("Illegal quantity. Must be <= %d" % dimensions**n_memory_time_steps)
     while i < quantity:
         n = 0
         task = []
@@ -176,7 +177,7 @@ def memory_task_n_bit(dimensions, n_memory_time_steps, quantity, distractor_peri
             labels.append(label)
             done_hashes.append(n)
         i += 1
-    return tasks, labels
+    return np.array(tasks, dtype='int8'), np.array(labels, dtype='int8')
 
 # tmp_20_tasks, tmp_20_labels = memory_task_n_bit(5, 10, 3, 2)
 # for tsk, lbl in zip(tmp_20_tasks, tmp_20_labels):

@@ -1,6 +1,7 @@
 # Runnable 5 bit memory task
+# In 5-bit, training and testing is on the same state vectors,
+# or at the least, the same input.
 
-import getopt
 import logging
 import sys
 import time
@@ -17,24 +18,21 @@ from compute.distribute import unflatten
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
-from statistics.plotter import plot_temporal
+from util import digest_args
 
 start_time = datetime.now()
 logit = False
 
-n_whole_runs = 1
-n_sets = 32
-distractor_period = 201
-inputs, labels = problems.memory_task_5_bit(n_sets,
+dimensions = 2
+n_memory_time_steps = 5
+n_train = 32
+n_test = 32
+distractor_period = 50
+inputs, labels = problems.memory_task_5_bit(n_train,
                                             distractor_period)
 
 
-#  TODO: Handle LinAlgError better. Run one more time per error occurrence
-
-
-def main(raw_args):
-    size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
-
+def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
     n_iterations = [int(value) for value in n_iterations.split(',')]
     n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 
@@ -58,7 +56,7 @@ def main(raw_args):
                                  pad,
                                  verbose=verbose)
 
-        estimator = linear_model.LinearRegression()
+        estimator = linear_model.LinearRegression(n_jobs=4)
 
         reservoir = Reservoir(automaton,
                               n_iterations[layer_i],
@@ -72,8 +70,6 @@ def main(raw_args):
 
         encoders.append(encoder)
         computers.append(computer)
-
-    time_checkpoint = time.time()
 
     o = None  # Output of one estimator
     correct = []
@@ -91,9 +87,9 @@ def main(raw_args):
             print "LinAlgError occured.", time.time()
             return 1
 
-        o, _ = computers[layer_i].test(inputs, x)
+        o, _ = computers[layer_i].test(None, x)
         o = classify_output(o)
-        o = unflatten(o, [2 * 5 + distractor_period] * n_sets)
+        o = unflatten(o, [2 * n_memory_time_steps + distractor_period] * n_train)
 
         n_correct = 0
         n_mispredicted_bits = 0
@@ -110,16 +106,15 @@ def main(raw_args):
         print "%d. corr. pred.:         %d" % (layer_i, n_correct)
         print "%d. incorr. pred.:       %d" % (layer_i, n_mispredicted_bits)
 
-        if n_whole_runs == 1:
-            time_steps = 2 * 5 + distractor_period
-            plot_temporal(x,
-                          encoders[layer_i].n_random_mappings,
-                          encoders[layer_i].automaton_area,
-                          time_steps,
-                          n_iterations[layer_i],
-                          sample_nr=2)
-
-    # print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
+        # if n_whole_runs == 1:
+        #     time_steps = 2 * n_memory_time_steps + distractor_period
+        #     from statistics.plotter import plot_temporal
+        #     plot_temporal(x,
+        #                   encoders[layer_i].n_random_mappings,
+        #                   encoders[layer_i].automaton_area,
+        #                   time_steps,
+        #                   n_iterations[layer_i],
+        #                   sample_nr=2)
 
     if logit:
         logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d",
@@ -131,10 +126,10 @@ def main(raw_args):
                      encoders[0].automaton_area,
                      concat_before,
                      linear_model.LinearRegression().__class__.__name__,
-                     n_sets,
-                     n_sets,
+                     n_train,
+                     n_train,
                      distractor_period,
-                     1 if correct[-1] == n_sets else 0,
+                     1 if correct[-1] == n_train else 0,
                      correct[0],
                      incorrect_predictions[0],
                      correct[-1],
@@ -143,54 +138,43 @@ def main(raw_args):
     return 0  # The run went good
 
 
-def digest_args(args):
-    size = 5
-    rule = 1
-    iterations = '1'
-    n_random_mappings = '1'
-    diffuse = 0
-    pad = 0
-    opts, args = getopt.getopt(args[1:],
-                               's:r:I:R:h?',
-                               ['diffuse=', 'pad='])
-    for o, a in opts:
-        if o == '-s':
-            size = int(a)
-        elif o == '-r':
-            rule = int(a)
-        elif o == '-I':
-            iterations = a
-        elif o == '-R':
-            n_random_mappings = a
-        elif o == '--diffuse':
-            diffuse = int(a)
-        elif o == '--pad':
-            pad = int(a)
+def init():
+    if len(sys.argv) > 1:
+        args = sys.argv
+    else:
+        args = ['bittask.py',
+                '-I', '32',
+                '-R', '30',
+                '--diffuse', '0',
+                '--pad', '0',
+                '-r', '110'
+                ]
+    identifier, size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
 
-    return size, rule, iterations, n_random_mappings, diffuse, pad
-
-
-if __name__ == '__main__':
     if logit:
-        file_name = 'rawresults/%s-bitmem2res.csv' % start_time.isoformat().replace(":", "")
+        file_name = 'rawresults/bittask-%d-%s-%s-part%s.csv' % (rule,
+                                                                n_iterations,
+                                                                n_random_mappings,
+                                                                identifier)
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Training sets,Testing sets,Distractor period,"
-                     "Point (success),First res. correct,First res. wrong bits,Last res. correct,Last res. wrong bits")
+                     "Point (success),First res. correct,First res. wrong bits,"
+                     "Last res. correct,Last res. wrong bits")
+    return size, rule, n_iterations, n_random_mappings, diffuse, pad
+
+
+if __name__ == '__main__':
+
+    n_whole_runs = 1
+
+    main_args = init()
+
     r = 0
     while r < n_whole_runs:
-        if len(sys.argv) > 1:
-            response = main(sys.argv)
-        else:
-            response = main(['bittask.py',
-                             '-I', '1',
-                             '-R', '2',
-                             '--diffuse', '8',
-                             '--pad', '0',
-                             '-r', '90'
-                             ])
+        response = main(*main_args)
         if response != 0:
             r -= 1  # Something went wrong. We need to run one more time
 

@@ -1,6 +1,5 @@
+import marshal as dumper
 import time
-
-import numpy as np
 
 from distribute import flatten, distribute_and_collect
 from reservoir.util import extend_state_vectors
@@ -43,9 +42,9 @@ class Computer:
         :return: state vectors, fitting time
         :rtype: python list
         """
-        time_checkpoint = time.time()
 
         x = distribute_and_collect(self, sets)
+
         # x = np.array(x, dtype='int8')
         # sequence_lengths = [len(m) for m in x]
         if extensions is not None:
@@ -54,8 +53,6 @@ class Computer:
 
         labels = flatten(labels)
 
-        if self.verbose > 0:
-            print "Transforming time:      %.1f" % (time.time() - time_checkpoint)
         time_checkpoint = time.time()
 
         self.estimator.fit(x, labels)

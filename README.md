@@ -41,7 +41,6 @@ Non-temporal density classification task
 
 * scikit-learn
 * numpy
-* scipy
 * matplotlib
 
 Developed on Linux. For windows, see branch `windows`.

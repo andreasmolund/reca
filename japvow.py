@@ -1,27 +1,22 @@
-from itertools import count, izip
-
-import getopt
 import logging
 import sys
-import time
 from datetime import datetime
+from itertools import count, izip
+
 import numpy as np
-from sklearn import svm
 from sklearn import linear_model
 
-from bittask import digest_args
 from ca.eca import ECA
 from compute.computer import Computer
-from compute.distribute import flatten, unflatten
+from compute.distribute import flatten
 from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
 from encoders.classic import ClassicEncoder
 from encoders.real import RealEncoder, quantize_japvow, quantize_activation
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
-from statistics.plotter import plot_temporal
+from util import digest_args
 
-
-d = 5  # Jaeger's proposed D
+d = 4  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
 jaeger_training_sets = jaeger_method(training_sets, d, 3, dtype=float)
 jaeger_testing_sets = jaeger_method(testing_sets, d, 3, dtype=float)
@@ -41,9 +36,10 @@ final_layer_testing_labels = jaeger_labels(testing_labels, d, 4)
 start_time = datetime.now()
 logit = True
 
+q = (25, 50, 75)  # Activation quantiles
 
-def main(raw_args):
-    initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
+
+def main(initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad):
     initial_input_size = 12
     diffuse = initial_input_size
     pad = initial_input_size
@@ -75,7 +71,7 @@ def main(raw_args):
         # estimator = svm.SVC(kernel='linear')
         # estimator = linear_model.SGDClassifier()
         # estimator = linear_model.Perceptron()
-        estimator = linear_model.LinearRegression()
+        estimator = linear_model.LinearRegression(n_jobs=4)
         # estimator = linear_model.SGDRegressor(loss='squared_loss')
 
         reservoir = Reservoir(automaton,
@@ -107,14 +103,14 @@ def main(raw_args):
 
     activation_levels = []
     o = None  # Output of one estimator
-    q = (25, 50, 75)
     tot_fit_time = 0
 
     for layer_i in xrange(n_layers):  # Training
 
         layer_inputs = training_sets if o is None else o
         layer_labels = training_labels if layer_i == 0 else subsequent_training_labels
-        raw_training_input = training_sets if layer_i == 0 else jaeger_training_sets
+        raw_training_input = None  # training_sets if layer_i == 0 else jaeger_training_sets
+
         x, fit_time = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
         tot_fit_time += fit_time
 
@@ -134,7 +130,7 @@ def main(raw_args):
 
         for i, prediction, fasit_element in izip(count(), predicted, actual):
             if fasit_element.argmax() == prediction.argmax():
-            # if fasit_element == prediction:
+                # if fasit_element == prediction:
                 n_correct += 1
             else:
                 n_incorrect += 1
@@ -147,15 +143,16 @@ def main(raw_args):
 
     for layer_i in xrange(n_layers):  # Testing
 
-        raw_training_input = testing_sets if layer_i == 0 else jaeger_testing_sets
+        raw_training_input = None  # testing_sets if layer_i == 0 else jaeger_testing_sets
         o, x = computers[layer_i].test(testing_sets if o is None else o, extensions=raw_training_input)
         print q, "percent., new:   ", np.percentile(o, q)
 
-        n_correct, n_incorrect = correctness(o, flatten(subsequent_testing_labels if layer_i < n_layers - 1 else final_layer_testing_labels))
+        n_correct, n_incorrect = correctness(o, flatten(
+            subsequent_testing_labels if layer_i < n_layers - 1 else final_layer_testing_labels))
         out_of.append(n_correct + n_incorrect)
         misclassif.append(n_incorrect)
 
-        print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
+        # print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
         if layer_i < n_layers - 1:
             percentiles = activation_levels[layer_i]
@@ -193,27 +190,45 @@ def main(raw_args):
                      tot_fit_time,
                      misclassif[-1],
                      *result)
+    return 0
 
-if __name__ == '__main__':
+
+def init():
+    if len(sys.argv) > 1:
+        args = sys.argv
+    else:
+        args = ['japvow.py',
+                '-I', '16,16,16,16',
+                '-R', '32,19,19,19',
+                '-r', '90'
+                ]
+    identifier, initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
+
     if logit:
-        file_name = 'rawresults/%s-japvow.csv' % start_time.isoformat().replace(":", "")
+        file_name = 'rawresults/japvow-%d-%s-%s-part%s.csv' % (rule,
+                                                               n_iterations,
+                                                               n_random_mappings,
+                                                               identifier)
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "D,"
                      "Tot. fit time,Final misclassif.,")
+    return initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
 
-    n_whole_runs = 2
+if __name__ == '__main__':
 
-    for r in xrange(n_whole_runs):
-        # print "Run %d started" % r
-        if len(sys.argv) > 1:
-            main(sys.argv)
-        else:
-            main(['japvow.py',
-                  '-I', '16,16,16,16',
-                  '-R', '32,19,19,19',
-                  '-r', '90'
-                  ])
+    n_whole_runs = 25
+
+    main_args = init()
+
+    r = 0
+    while r < n_whole_runs:
+        print "Started run %d/%d" % (r, n_whole_runs)
+        response = main(*main_args)
+        if response != 0:
+            r -= 1  # Something went wrong. We need to run one more time
+
+        r += 1
 

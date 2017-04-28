@@ -36,7 +36,9 @@ class JaegerComputer(Computer):
         self.n_pieces = 1
 
     def train(self, sets, labels, extensions=None):
+
         x = distribute_and_collect(self, sets)
+
         if extensions is not None:
             x = extend_state_vectors(x, extensions)
 
