@@ -50,8 +50,6 @@ def main(initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
     encoders = []
     computers = []
 
-    print "(I,R,D)=(%s,%s,%d)" % (n_iterations, n_random_mappings, d)
-
     for layer_i in xrange(n_layers):  # Setup
 
         if layer_i == 0:
@@ -174,8 +172,9 @@ def main(initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
             #               time_steps,
             #               n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
             #               sample_nr=sample_nr)
+    result = [j for i in zip(out_of, misclassif) for j in i]
+    print ["%.1f" % (100 * float(result[i]) / result[i - 1]) for i in xrange(1, len(result), 2)], "% error"
     if logit:
-        result = [j for i in zip(out_of, misclassif) for j in i]
         rep_string = "\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%d,%.2f,%d" + ",%d" * n_layers * 2
         logging.info(rep_string,
                      ','.join(str(e) for e in n_iterations),
@@ -225,7 +224,7 @@ if __name__ == '__main__':
 
     r = 0
     while r < n_whole_runs:
-        print "Started run %d/%d" % (r, n_whole_runs)
+        print "Started run %d of %d" % (r + 1, n_whole_runs)
         response = main(*main_args)
         if response != 0:
             r -= 1  # Something went wrong. We need to run one more time
