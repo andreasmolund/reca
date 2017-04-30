@@ -6,7 +6,7 @@ from itertools import count, izip
 import numpy as np
 from sklearn import linear_model
 
-from ca.eca import ECA
+from ca.eca import make_step
 from compute.computer import Computer
 from compute.distribute import flatten
 from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
@@ -46,7 +46,7 @@ def main(initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
     n_iterations = [int(value) for value in n_iterations.split(',')]
     n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
     n_layers = min(len(n_random_mappings), len(n_iterations))
-    automaton = ECA(rule)
+    automaton = make_step(rule)
     encoders = []
     computers = []
 
@@ -218,7 +218,7 @@ def init():
 
 if __name__ == '__main__':
 
-    n_whole_runs = 25
+    n_whole_runs = 1
 
     main_args = init()
 

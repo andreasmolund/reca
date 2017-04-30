@@ -1,6 +1,29 @@
 import util
 
 
+def make_step(rule):
+    transition = util.get_elementary_rule(rule)
+
+    def step(config):
+        """Applying the transition function one time,
+        and returning the next state vector.
+
+        :param config:
+        :return:
+        """
+        size = len(config)
+        next_config = [0b0] * size
+
+        for c in xrange(size):
+            next_config[c] = transition[(config[(c - 1) % size],
+                                         config[c % size],
+                                         config[(c + 1) % size])]
+
+        return next_config
+
+    return step
+
+
 class ECA:
     """The class that holds the elementary cellular automaton."""
 

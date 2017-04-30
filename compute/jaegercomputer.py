@@ -36,8 +36,9 @@ class JaegerComputer(Computer):
         self.n_pieces = 1
 
     def train(self, sets, labels, extensions=None):
-
+        time_checkpoint = time.time()
         x = distribute_and_collect(self, sets)
+        print "transf time", (time.time() - time_checkpoint)
 
         if extensions is not None:
             x = extend_state_vectors(x, extensions)

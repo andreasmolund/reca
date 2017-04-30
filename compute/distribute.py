@@ -4,7 +4,8 @@ import copy
 import marshal as dumper
 import os
 import random
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Pool
+from reservoir.reservoir import transform
 
 import numpy as np
 
@@ -29,6 +30,8 @@ def distribute_and_collect(computer, sets):
     out_q = Queue()
     processes = []
     n_parts = n_processes(sets)
+    pool = Pool(processes=n_parts)
+    args = []
 
     for n in xrange(n_parts):
         start, end = custom_range(sets, n, n_parts)
@@ -41,26 +44,25 @@ def distribute_and_collect(computer, sets):
                                 out_q))
         processes.append(process)
         process.start()
-
-    # Collecting data from the different processes
-    outputs = [None] * len(sets)
-    for _ in xrange(n_parts):
-        identifier = out_q.get()  # Process identifier
-        in_file = open(file_name(identifier), 'rb')
-
-        outputs[identifier[0]:identifier[1]] = dumper.load(in_file)
-
-        in_file.close()
-        os.remove(file_name(identifier))
-
-    for process in processes:
-        process.join()
+    outputs = pool.map()
 
     return outputs
 
 
+def make_f(computer):
+
+    step_function = computer.reservoir.matter
+    reservoir = copy.deepcopy(computer.reservoir)
+    encoder = copy.deepcopy(computer.encoder)
+
+    def f(set):
+        translate_and_transform(sets=set,
+                                )
+
+
 def translate_and_transform(sets,
-                            reservoir,
+                            step,
+                            iterations,
                             encoder,
                             concat_before,
                             identifier,
@@ -73,7 +75,7 @@ def translate_and_transform(sets,
 
     for i, a_set in enumerate(sets):
         n_time_steps = a_set.shape[0]
-        output = np.empty((n_time_steps, total_area * reservoir.iterations), dtype='int8')
+        output = np.empty((n_time_steps, total_area * iterations), dtype='int8')
         for t in xrange(n_time_steps):  # Time steps
             if t == 0:
                 # Translating the initial input
@@ -88,7 +90,7 @@ def translate_and_transform(sets,
                 a_set_at_t = concat.before(a_set_at_t, n_random_mappings)
 
             # Transforming in the reservoir
-            output_at_t = reservoir.transform(a_set_at_t)
+            output_at_t = transform(a_set_at_t, iterations, step)
 
             # Concatenating after if it wasn't done before
             if not concat_before:
