@@ -20,13 +20,14 @@ from reservoir.util import classify_output
 from util import digest_args
 
 start_time = datetime.now()
-logit = False
+logit = True
 
 dimensions = 5
 n_memory_time_steps = 10
+distractor_period = 50
+n_time_steps = 2 * n_memory_time_steps + distractor_period
 n_train = 500
 n_test = 100
-distractor_period = 20
 inputs, labels = problems.memory_task_n_bit(dimensions, n_memory_time_steps, n_train + n_test, distractor_period)
 
 
@@ -38,6 +39,8 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
         return
 
     size = len(inputs[0][0])  # The size of the input, or
+    diffuse = size
+    pad = size
     concat_before = True  # Concat the automata before or after iterating
     verbose = 0  # How much information to print to consol
     n_layers = len(n_random_mappings)  # The number of layers including the first
@@ -73,7 +76,8 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
 
     o = None  # Output of one estimator
     correct = []
-    incorrect_predictions = []
+    incorrect_time_steps = []
+    tot_fit_time = 0
 
     for layer_i in xrange(n_layers):
         # Training/fitting
@@ -81,61 +85,67 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
             # Preserving the values of the output nodes
             # For the first layer, we transform/train with the very input,
             # and for the subsequent layers, the output from the previous layer is used
-            x, _ = computers[layer_i].train(inputs[:n_train] if o is None else o, labels[:n_train])
+            x, fit_time = computers[layer_i].train(inputs[:n_train] if o is None else o, labels[:n_train])
+            tot_fit_time += fit_time
         except LinAlgError:
             # logging.error(linalgerrmessage)
             print "LinAlgError occured.", time.time()
             return 1
 
-        o, _ = computers[layer_i].test(inputs[n_train:])
+        # Predicting with test data to get the very results
+        o = computers[layer_i].test(inputs[n_train:])[0]
         o = classify_output(o)
-        o = unflatten(o, [2 * n_memory_time_steps + distractor_period] * n_test)
+        o = unflatten(o, [n_time_steps] * n_test)
 
         n_correct = 0
-        n_mispredicted_bits = 0
-        for prediction_set, label_set in zip(o, labels[n_train:]):
+        n_mispredicted_time_steps = 0
+        for predicted_seq, desired_seq in zip(o, labels[n_train:]):
             success = True
-            for prediction_element, label_element in zip(prediction_set, label_set):
+            for prediction_element, label_element in zip(predicted_seq, desired_seq):
                 if not np.array_equal(prediction_element, label_element):
                     success = False
-                    n_mispredicted_bits += 1
+                    n_mispredicted_time_steps += 1
             if success:
                 n_correct += 1
         correct.append(n_correct)
-        incorrect_predictions.append(n_mispredicted_bits)
-        print "%d. corr. pred.:         %d" % (layer_i, n_correct)
-        print "%d. incorr. pred.:       %d" % (layer_i, n_mispredicted_bits)
+        incorrect_time_steps.append(n_mispredicted_time_steps)
+        if not logit:
+            print "Layer %d:\t%d correct seq.s\t%d mispred. time steps" % (layer_i, n_correct, n_mispredicted_time_steps)
+
+        if layer_i < n_layers - 1:
+            # Predicting with train data set in order to get input to the next layer
+            o = computers[layer_i].test(inputs[:n_train])[0]
+            o = classify_output(o)
+            o = unflatten(o, [n_time_steps] * n_train)
 
         # if n_whole_runs == 1:
-        #     time_steps = 2 * n_memory_time_steps + distractor_period
         #     from statistics.plotter import plot_temporal
         #     plot_temporal(x,
         #                   encoders[layer_i].n_random_mappings,
         #                   encoders[layer_i].automaton_area,
-        #                   time_steps,
+        #                   n_time_steps,
         #                   n_iterations[layer_i],
         #                   sample_nr=2)
 
     # print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
     if logit:
-        logging.info("%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d",
-                     n_iterations[0],
-                     encoders[0].n_random_mappings,
+        result = [j for i in zip(correct, incorrect_time_steps) for j in i]
+        logging.info("\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%.2f,%d,%d,%d,%d" + ",%d" * n_layers * 2,
+                     ','.join(str(e) for e in n_iterations),
+                     ','.join(str(e) for e in n_random_mappings),
                      rule,
                      size,
-                     encoders[0].input_area,
-                     encoders[0].automaton_area,
+                     diffuse,
+                     pad,
                      concat_before,
-                     linear_model.LinearRegression().__class__.__name__,
+                     estimator.__class__.__name__,
+                     tot_fit_time,
                      n_train,
-                     n_train,
+                     n_test,
                      distractor_period,
-                     1 if correct[-1] == n_train else 0,
-                     correct[0],
-                     incorrect_predictions[0],
-                     correct[-1],
-                     incorrect_predictions[-1])
+                     1 if correct[-1] == n_test else 0,
+                     *result)
 
     return 0  # The run went good
 
@@ -144,35 +154,33 @@ def init():
     if len(sys.argv) > 1:
         args = sys.argv
     else:
-        args = ['bittask.py',
-                '-I', '10',
-                '-R', '16',
+        args = ['20bittask.py',
+                '-I', '1,1,1',
+                '-R', '0,0,0',
                 '--diffuse', '0',
                 '--pad', '0',
-                '-r', '90'
+                '-r', '0'
                 ]
     identifier, size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
 
     if logit:
-        file_name = 'rawresults/bittask-%d-%s-%s-part%s.csv' % (rule,
-                                                                n_iterations,
-                                                                n_random_mappings,
-                                                                identifier)
+        file_name = 'rawresults/20bittask-%d-%s-%s-part%s.csv' % (rule,
+                                                                  n_iterations,
+                                                                  n_random_mappings,
+                                                                  identifier)
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
-        if not os.path.isfile(file_name):
-            # If file does not exist, we need to write headers
-            logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
-                         "Training sets,Testing sets,Distractor period,"
-                         "Point (success),First res. correct,First res. wrong bits,"
-                         "Last res. correct,Last res. wrong bits")
+        # If file does not exist, we need to write headers
+        logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
+                     "Tot. fit time,Training sets,Testing sets,Distractor period,"
+                     "Point (success),Fully correct seq.,Mispredicted time steps,")
     return size, rule, n_iterations, n_random_mappings, diffuse, pad
 
 
 if __name__ == '__main__':
 
-    n_whole_runs = 1
+    n_whole_runs = 25
 
     main_args = init()
 

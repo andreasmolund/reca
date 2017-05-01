@@ -87,7 +87,7 @@ def main(initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
         computers.append(computer)
 
     def inter_process(predictions, n_elements, n_classes, d, activation_percentiles):
-        r = []
+        encoded = []
         man_shift = -1
         for total_i, p in enumerate(predictions):
             if total_i % d == 0:
@@ -95,9 +95,9 @@ def main(initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
             translated_prediction = quantize_activation(p, *activation_percentiles)
             # translated_prediction[p - 1] = 0b1
             # translated_prediction[p.argmax()] = 0b1
-            r.append(translated_prediction)
-        r = np.array(r).reshape((n_elements, d, len(r[0])))
-        return r
+            encoded.append(translated_prediction)
+        encoded = np.array(encoded).reshape((n_elements, d, len(encoded[0])))
+        return encoded
 
     activation_levels = []
     o = None  # Output of one estimator
@@ -213,7 +213,7 @@ def init():
                             level=logging.DEBUG)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "D,"
-                     "Tot. fit time,Final misclassif.,")
+                     "Tot. fit time,Final misclassif.,Out of,Misclassif.")
     return initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
 
 if __name__ == '__main__':
