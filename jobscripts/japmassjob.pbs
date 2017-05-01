@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -N deeprecajap
+#PBS -A andrmolu
+#PBS -l select=1:ncpus=4:mem=10gb
+#PBS -l walltime=18:00:00
+#PBS -o /home/andrmolu/reca/jobscripts/pbs
+#PBS -e /home/andrmolu/reca/jobscripts/pbs
+#PBS -J 1-4
+
+cd /home/andrmolu/reca/
+module load python
+
+python japvow.py --id $PBS_ARRAY_INDEX -r 16 -I '20,20,20' -R '20,20,20'
+python japvow.py --id $PBS_ARRAY_INDEX -r 45 -I '20,20,20' -R '20,20,20'
+python japvow.py --id $PBS_ARRAY_INDEX -r 2 -I '20,20,20' -R '20,20,20'
+python japvow.py --id $PBS_ARRAY_INDEX -r 36 -I '20,20,20' -R '20,20,20'
