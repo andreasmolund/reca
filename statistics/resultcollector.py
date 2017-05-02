@@ -1,76 +1,54 @@
 import csv
 import getopt
 import sys
+import os
 
-from numpy.linalg.linalg import LinAlgError
+import numpy as np
 
 
 def main(args):
     opts, args = getopt.getopt(args[1:],
                                'f:')
-    filename = ''
+    prefix = '/home/andreas/Documents/GitHub/reca/results/japvow-110-20,20,20-20,20,20-part'
 
     for o, a in opts:
         if o == '-f':
-            filename = a
+            prefix = a
+    index = prefix.rfind('/') + 1
+    path = prefix[0:index]
+    prefix = prefix[index:]
 
-    with open(filename) as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
+    prefixed = [filename for filename in os.listdir(path) if filename.startswith(prefix)]
 
-        rule = -1
-        iterations = -1
-        permutations = -1
+    headers = ["Tot. fit time",
+               "Fully correct seq.",
+               "Mispredicted time steps","2 Fully correct seq.",
+               "2 Mispredicted time steps",
+               "3 Fully correct seq.",
+               "3 Mispredicted time steps",
+               "4 Fully correct seq.",
+               "4 Mispredicted time steps"]
+    row_values = [0] * len(headers)
 
-        count = 0
+    count = 0
 
-        res1max = 0
-        res1min = 32
-        res1 = 0
-        res1misbits = 0
+    for filename in prefixed:
+        with open(path + filename) as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
 
-        res2max = 0
-        res2min = 32
-        res2 = 0
-        res2misbits = 0
+            for row in reader:
+                try:
+                    for i, header_name in enumerate(headers):
+                        row_values[i] += float(row[header_name])
 
-        for row in reader:
-            try:
-                value = int(row['R1 correct'])
-                if value == 32:
-                    res1 += 1
-                if value > res1max:
-                    res1max = value
-                if value < res1min:
-                    res1min = value
+                    count += 1
+                except (TypeError, ValueError):
+                    print "Yo!"
 
-                res2 += int(row['Point (success)'])
-                res1misbits += int(row['R1 wrong bits'])
+    for i in xrange(len(row_values)):
+        row_values[i] = row_values[i] / count
 
-                value = int(row['R2 correct'])
-                res2misbits += int(row['R2 wrong bits'])
-                if value > res2max:
-                    res2max = value
-                if value < res2min:
-                    res2min = value
-
-                if rule == -1:
-                    rule = int(row['Rule'])
-                if iterations == -1:
-                    iterations = int(row['I'])
-                if permutations == -1:
-                    permutations = int(row['R'])
-
-                count += 1
-            except (TypeError, ValueError):
-                taiesvjewijvgf = 0
-
-        print "(%d,%d,%d)\t\t1:%s,%d\t\t2:%s,%d" % (iterations,
-                                                    permutations,
-                                                    rule,
-                                                    "%s/%s" % (res1, count),
-                                                    res1misbits,
-                                                    "%s/%s" % (res2, count),
-                                                    res2misbits)
+    print row_values, len(prefixed), "a", count
 
 
 if __name__ == '__main__':

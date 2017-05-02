@@ -213,7 +213,7 @@ def init():
                             level=logging.DEBUG)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "D,"
-                     "Tot. fit time,Final misclassif.,Out of,Misclassif.")
+                     "Tot. fit time,Final misclassif.,1 Out of,1 Misclassif.")
     return initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad
 
 if __name__ == '__main__':
