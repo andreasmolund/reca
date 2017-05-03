@@ -36,7 +36,7 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
     n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 
     if not (len(n_iterations) == len(n_random_mappings)):
-        return
+        raise ValueError("The number of iterations and random mappings do not match.")
 
     size = len(inputs[0][0])  # The size of the input, or
     diffuse = size
@@ -110,7 +110,10 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
         correct.append(n_correct)
         incorrect_time_steps.append(n_mispredicted_time_steps)
         if not logit:
-            print "Layer %d:\t%d correct seq.s\t%d mispred. time steps" % (layer_i, n_correct, n_mispredicted_time_steps)
+            print "Layer %d:\t%d correct seq.s\t%d mispred. time steps\t%.2fs" % (layer_i,
+                                                                                  n_correct,
+                                                                                  n_mispredicted_time_steps,
+                                                                                  tot_fit_time)
 
         if layer_i < n_layers - 1:
             # Predicting with train data set in order to get input to the next layer
@@ -118,14 +121,14 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
             o = classify_output(o)
             o = unflatten(o, [n_time_steps] * n_train)
 
-        # if n_whole_runs == 1:
-        #     from statistics.plotter import plot_temporal
-        #     plot_temporal(x,
-        #                   encoders[layer_i].n_random_mappings,
-        #                   encoders[layer_i].automaton_area,
-        #                   n_time_steps,
-        #                   n_iterations[layer_i],
-        #                   sample_nr=2)
+            # if n_whole_runs == 1:
+            #     from statistics.plotter import plot_temporal
+            #     plot_temporal(x,
+            #                   encoders[layer_i].n_random_mappings,
+            #                   encoders[layer_i].automaton_area,
+            #                   n_time_steps,
+            #                   n_iterations[layer_i],
+            #                   sample_nr=2)
 
     # print "Time:                   %.1f (training, testing, binarizing)" % (time.time() - time_checkpoint)
 
@@ -171,10 +174,12 @@ def init():
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
-        # If file does not exist, we need to write headers
+        deep_spesific = ""
+        for l in xrange(len([int(value) for value in n_iterations.split(',')])):
+            deep_spesific += ",%d fully correct seq.,%d mispredicted time steps" % (l + 1, l + 1)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Tot. fit time,Training sets,Testing sets,Distractor period,"
-                     "Point (success),Fully correct seq.,Mispredicted time steps,")
+                     "Point (success)" + deep_spesific)
     return size, rule, n_iterations, n_random_mappings, diffuse, pad
 
 

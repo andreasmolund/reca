@@ -37,7 +37,7 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
     n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
 
     if not (len(n_iterations) == len(n_random_mappings)):
-        return
+        raise ValueError("The number of iterations and random mappings do not match.")
 
     size = len(inputs[0][0])  # The size of the input, or
     concat_before = True  # Concat the automata before or after iterating
@@ -106,7 +106,10 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
         correct.append(n_correct)
         incorrect_time_steps.append(n_mispredicted_time_steps)
         if not logit:
-            print "Layer %d:\t%d correct seq.s\t%d mispred. time steps" % (layer_i, n_correct, n_mispredicted_time_steps)
+            print "Layer %d: %d correct seq.s\t%d mispred. time steps\t%.2fs" % (layer_i,
+                                                                                 n_correct,
+                                                                                 n_mispredicted_time_steps,
+                                                                                 tot_fit_time)
 
         # if n_whole_runs == 1:
         #     time_steps = 2 * n_memory_time_steps + distractor_period
@@ -144,8 +147,8 @@ def init():
         args = sys.argv
     else:
         args = ['bittask.py',
-                '-I', '32',
-                '-R', '30',
+                '-I', '32,32,32,32',
+                '-R', '20,25,30,35,40',
                 '--diffuse', '0',
                 '--pad', '0',
                 '-r', '110'
@@ -160,9 +163,12 @@ def init():
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
+        deep_spesific = ""
+        for l in xrange(len([int(value) for value in n_iterations.split(',')])):
+            deep_spesific += ",%d fully correct seq.,%d mispredicted time steps" % (l + 1, l + 1)
         logging.info("I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Tot. fit time,Training sets,Testing sets,Distractor period,"
-                     "Point (success),Fully correct seq.,Mispredicted time steps,")
+                     "Point (success)" + deep_spesific)
     return size, rule, n_iterations, n_random_mappings, diffuse, pad
 
 

@@ -34,7 +34,7 @@ final_layer_training_labels = jaeger_labels(training_labels, d, 4)
 final_layer_testing_labels = jaeger_labels(testing_labels, d, 4)
 
 start_time = datetime.now()
-logit = True
+logit = False
 
 q = (25, 50, 75)  # Activation quantiles
 
@@ -218,7 +218,7 @@ def init():
 
 if __name__ == '__main__':
 
-    n_whole_runs = 25
+    n_whole_runs = 1
 
     main_args = init()
 
