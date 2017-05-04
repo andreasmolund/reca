@@ -10,9 +10,7 @@
 cd /home/andrmolu/reca/
 module load python
 
-python japvow.py --id $PBS_ARRAY_INDEX -r 60 -I '20,20,20,20' -R '50,50,50,50'
-python japvow.py --id $PBS_ARRAY_INDEX -r 102 -I '20,20,20,20' -R '50,50,50,50'
-python japvow.py --id $PBS_ARRAY_INDEX -r 90 -I '20,20,20,20' -R '50,50,50,50'
-python japvow.py --id $PBS_ARRAY_INDEX -r 106 -I '20,20,20,20' -R '50,50,50,50'
+python japvow.py --id $PBS_ARRAY_INDEX -r 90 -I '20,20,20' -R '50,50,50'
+python japvow.py --id $PBS_ARRAY_INDEX -r 106 -I '20,20,20' -R '50,50,50'
 
 
