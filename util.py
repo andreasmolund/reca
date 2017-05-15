@@ -4,7 +4,7 @@ import getopt
 def digest_args(args):
     identifier = ''
     size = 5
-    rule = 0
+    rules = 0
     iterations = '1'
     n_random_mappings = '0'
     diffuse = 0
@@ -16,7 +16,7 @@ def digest_args(args):
         if o == '-s':
             size = int(a)
         elif o == '-r':
-            rule = int(a)
+            rules = a
         elif o == '-I':
             iterations = a
         elif o == '-R':
@@ -28,4 +28,4 @@ def digest_args(args):
         elif o == '--id':
             identifier = a
 
-    return identifier, size, rule, iterations, n_random_mappings, diffuse, pad
+    return identifier, size, rules, iterations, n_random_mappings, diffuse, pad

@@ -31,9 +31,10 @@ n_test = 100
 inputs, labels = problems.memory_task_n_bit(dimensions, n_memory_time_steps, n_train + n_test, distractor_period)
 
 
-def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
+def main(size, rules, n_iterations, n_random_mappings, diffuse, pad):
     n_iterations = [int(value) for value in n_iterations.split(',')]
     n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
+    rules = [int(value) for value in rules.split(',')]
 
     if not (len(n_iterations) == len(n_random_mappings)):
         raise ValueError("The number of iterations and random mappings do not match.")
@@ -45,12 +46,11 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
     verbose = 0  # How much information to print to consol
     n_layers = len(n_random_mappings)  # The number of layers including the first
 
-    automaton = ECA(rule)
-
     encoders = []
     computers = []
 
     for layer_i in xrange(n_layers):
+        automaton = ECA(rules[layer_i])
         encoder = ClassicEncoder(n_random_mappings[layer_i],
                                  size if layer_i == 0 else labels.shape[2],  # Input size if it's the first layer
                                  diffuse,
@@ -134,10 +134,10 @@ def main(size, rule, n_iterations, n_random_mappings, diffuse, pad):
 
     if logit:
         result = [j for i in zip(correct, incorrect_time_steps) for j in i]
-        logging.info("\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%.2f,%d,%d,%d,%d" + ",%d" * n_layers * 2,
+        logging.info("\"%s\",\"%s\",\"%s\",%d,%d,%d,%s,%s,%.2f,%d,%d,%d,%d" + ",%d" * n_layers * 2,
                      ','.join(str(e) for e in n_iterations),
                      ','.join(str(e) for e in n_random_mappings),
-                     rule,
+                     ','.join(str(e) for e in rules),
                      size,
                      diffuse,
                      pad,
@@ -164,10 +164,10 @@ def init():
                 '--pad', '0',
                 '-r', '0'
                 ]
-    identifier, size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
+    identifier, size, rules, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
 
     if logit:
-        file_name = 'rawresults/20bittask-%d-%s-%s-part%s.csv' % (rule,
+        file_name = 'rawresults/20bittask-%d-%s-%s-part%s.csv' % (rules,
                                                                   n_iterations,
                                                                   n_random_mappings,
                                                                   identifier)
@@ -175,12 +175,12 @@ def init():
                             filename=file_name,
                             level=logging.DEBUG)
         deep_spesific = ""
-        for l in xrange(len([int(value) for value in n_iterations.split(',')])):
+        for l in xrange(len([value for value in n_iterations.split(',')])):
             deep_spesific += ",%d fully correct seq.,%d mispredicted time steps" % (l + 1, l + 1)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "Tot. fit time,Training sets,Testing sets,Distractor period,"
                      "Point (success)" + deep_spesific)
-    return size, rule, n_iterations, n_random_mappings, diffuse, pad
+    return size, rules, n_iterations, n_random_mappings, diffuse, pad
 
 
 if __name__ == '__main__':
