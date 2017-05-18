@@ -162,12 +162,13 @@ def init():
                 '-R', '0,0,0',
                 '--diffuse', '0',
                 '--pad', '0',
-                '-r', '0'
+                '-r', '0,0,0',
+                '--id', 'ID'
                 ]
     identifier, size, rules, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
 
     if logit:
-        file_name = 'rawresults/20bittask-%d-%s-%s-part%s.csv' % (rules,
+        file_name = 'rawresults/20bittask-%s-%s-%s-part%s.csv' % (rules,
                                                                   n_iterations,
                                                                   n_random_mappings,
                                                                   identifier)
