@@ -1,33 +1,20 @@
 import csv
-import getopt
-import sys
 import os
 
 import numpy as np
 
-
-new_file_name = "/home/andreas/Documents/GitHub/reca/results/2017/bittask-30,30,30,30,30-30,30,30,30,30.csv"
+new_file_name = "/home/andreas/Documents/GitHub/reca/results/2017/collected/20bittask-16,16,16-100,100,100.csv"
 
 filenames = [
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-54-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-62-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-102-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-110-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-146-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-165-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-195-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-54i-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-102i-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-110i-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-146i-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-165i-30,30,30,30,30-30,30,30,30,30-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/bittask-195i-30,30,30,30,30-30,30,30,30,30-parts.csv"]
+    "/home/andreas/Documents/GitHub/reca/results/2017/20bittask-54,54,54-16,16,16-100,100,100-parts.csv",
+    "/home/andreas/Documents/GitHub/reca/results/2017/20bittask-62,62,62-16,16,16-100,100,100-parts.csv",
+]
 
 bit_headers = ["Fully correct seq.", "Mispredicted time steps"
     , "2 fully correct seq.", "2 mispredicted time steps"
     , "3 fully correct seq.", "3 mispredicted time steps"
-    , "4 fully correct seq.", "4 mispredicted time steps"
-    , "5 fully correct seq.", "5 mispredicted time steps"
+               # , "4 fully correct seq.", "4 mispredicted time steps"
+               # , "5 fully correct seq.", "5 mispredicted time steps"
                ]
 jap_headers = ["1 out of", "1 misclassif"
     , "2 out of", "2 misclassif"
@@ -106,5 +93,6 @@ if not os.path.isfile(new_file_name):
         fout.write("%d," % (i + 1) + ",".join(map(str, layer_data)) + "\n")
 
     fout.close()
+    print "Wrote to file."
 else:
     print "File existed already:", new_file_name

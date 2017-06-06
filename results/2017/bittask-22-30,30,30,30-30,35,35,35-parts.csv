@@ -1,4 +1,4 @@
-"2017-05-01 19:59:19,031",I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,Tot. fit time,Training sets,Testing sets,Distractor period,Point (success),Fully correct seq.,Mispredicted time steps,2 Fully correct seq.,2 Mispredicted time steps,3 Fully correct seq.,3 Mispredicted time steps,4 Fully correct seq.,4 Mispredicted time steps,
+"2017-05-02 04:24:13,765",I,R,Rule,Input size,Input area,Automaton size,Concat before,Estimator,Tot. fit time,Training sets,Testing sets,Distractor period,Point (success),1 fully correct seq.,1 mispredicted time steps,2 fully correct seq.,2 mispredicted time steps,3 fully correct seq.,3 mispredicted time steps,4 fully correct seq.,4 mispredicted time steps,
 "2017-05-01 20:00:26,220","30,30,30,30","30,35,35,35",22,4,0,0,True,LinearRegression,40.40,32,32,200,0,1,55,5,41,10,34,9,38
 "2017-05-01 20:01:34,034","30,30,30,30","30,35,35,35",22,4,0,0,True,LinearRegression,40.73,32,32,200,0,7,56,8,37,9,38,11,33
 "2017-05-01 20:02:41,449","30,30,30,30","30,35,35,35",22,4,0,0,True,LinearRegression,40.39,32,32,200,0,4,58,6,44,6,50,6,48
