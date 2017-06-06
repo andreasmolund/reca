@@ -1,7 +1,7 @@
 Rule,Layer 1,Layer 2,Layer 3
-Fullycorrectseq-2-mean,$0.00\pm0.00$,$0.00\pm0.00$,$0.00\pm0.00$
-Fullycorrectseq-16-mean,$0.00\pm0.00$,$0.00\pm0.00$,$0.00\pm0.00$
-Fullycorrectseq-22-mean,$0.00\pm0.00$,$0.00\pm0.00$,$0.00\pm0.00$
-Fullycorrectseq-54-mean,$0.00\pm0.00$,$0.00\pm0.00$,$0.00\pm0.00$
-Fullycorrectseq-90-mean,$0.00\pm0.00$,$0.00\pm0.00$,$0.00\pm0.00$
-Fullycorrectseq-110-mean,$0.00\pm0.00$,$0.00\pm0.00$,$0.00\pm0.00$
+Mispredictedtimesteps-2-mean,$1000.00\pm0.00$,$1000.00\pm0.00$,$1000.00\pm0.00$
+Mispredictedtimesteps-16-mean,$1000.00\pm0.00$,$1000.00\pm0.00$,$1000.00\pm0.00$
+Mispredictedtimesteps-22-mean,$1000.00\pm0.00$,$1000.00\pm0.00$,$1000.00\pm0.00$
+Mispredictedtimesteps-54-mean,$1000.00\pm0.00$,$1000.00\pm0.00$,$1000.00\pm0.00$
+Mispredictedtimesteps-90-mean,$1000.00\pm0.00$,$1000.00\pm0.00$,$1000.00\pm0.00$
+Mispredictedtimesteps-110-mean,$1000.00\pm0.00$,$1000.00\pm0.00$,$1000.00\pm0.00$

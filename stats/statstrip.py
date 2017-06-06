@@ -9,7 +9,7 @@ import numpy as np
 def main(args):
     opts, args = getopt.getopt(args[1:],
                                'f:c')
-    file_name = '/home/andreas/Documents/GitHub/reca/results/2017/collected/bittask-30,30,30-30,20,20.csv'
+    file_name = '/home/andreas/Documents/GitHub/reca/results/2017/collected/20bittask-1,1,1-0,0,0.csv'
 
     for o, a in opts:
         if o == '-f':
@@ -20,9 +20,9 @@ def main(args):
     new_file_name = path + file_name + "-stripped.csv"
 
     header_substring = "mean"
-    header_substring2 = "correct"
+    header_substring2 = "isclassif"
     header_substring_postfix = "stddevneg"
-    header_substring_postfix2 = "correct"
+    header_substring_postfix2 = header_substring2
     lines = []
     n_rows = 0
 
