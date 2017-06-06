@@ -1,21 +1,31 @@
 #!/usr/bin/env bash
 
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20-50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20-50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20-50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20-50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20,20-50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20,20-50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20,20-50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20,20-50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20,20,20-50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20,20,20-50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20,20,20-50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20,20,20-50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20,20,20,20-50,50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20,20,20,20-50,50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20,20,20,20-50,50,50,50-part
-python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20,20,20,20-50,50,50,50-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-54-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-62-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-90-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-102-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-110-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-146-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-150-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-165-32-40-part
+python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/bittask-195-32-40-part
+
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20-50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20-50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20-50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20-50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20,20-50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20,20-50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20,20-50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20,20-50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20,20,20-50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20,20,20-50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20,20,20-50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20,20,20-50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-60-20,20,20,20-50,50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90-20,20,20,20-50,50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-102-20,20,20,20-50,50,50,50-part
+#python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-106-20,20,20,20-50,50,50,50-part
 #
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90,90,90-20,20,20-10,10,10-part
 ##python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-90,90,90-20,20,20-20,20,20-part
@@ -41,7 +51,6 @@ python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/b
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-146,146,146-20,20,20-20,20,20-part
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-150,150,150-20,20,20-20,20,20-part
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-182,182,182-20,20,20-20,20,20-part
-#
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-153,153,153-20,20,20-20,20,20-part
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-165,165,165-20,20,20-20,20,20-part
 #python stats/resultcollector.py -f /home/andreas/Documents/resultsfromlillenew/backup/japvow-195,195,195-20,20,20-20,20,20-part

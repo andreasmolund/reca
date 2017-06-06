@@ -3,25 +3,33 @@ import os
 
 import numpy as np
 
-new_file_name = "/home/andreas/Documents/GitHub/reca/results/2017/collected/20bittask-16,16,16-100,100,100.csv"
+new_file_name = "/home/andreas/Documents/GitHub/reca/results/2017/collected/bittask-32-40.csv"
 
-filenames = [
-    "/home/andreas/Documents/GitHub/reca/results/2017/20bittask-54,54,54-16,16,16-100,100,100-parts.csv",
-    "/home/andreas/Documents/GitHub/reca/results/2017/20bittask-62,62,62-16,16,16-100,100,100-parts.csv",
-]
+filenames = ["/home/andreas/Documents/GitHub/reca/results/2017/bittask-54-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-62-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-90-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-102-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-110-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-146-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-150-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-165-32-40-parts.csv",
+             "/home/andreas/Documents/GitHub/reca/results/2017/bittask-195-32-40-parts.csv"
+             ]
 
-bit_headers = ["Fully correct seq.", "Mispredicted time steps"
-    , "2 fully correct seq.", "2 mispredicted time steps"
-    , "3 fully correct seq.", "3 mispredicted time steps"
+bit_headers = ["1 fully correct seq.", "1 mispredicted time steps"
+               # , "2 fully correct seq.", "2 mispredicted time steps"
+               # , "3 fully correct seq.", "3 mispredicted time steps"
                # , "4 fully correct seq.", "4 mispredicted time steps"
                # , "5 fully correct seq.", "5 mispredicted time steps"
                ]
-jap_headers = ["1 out of", "1 misclassif"
-    , "2 out of", "2 misclassif"
-    , "3 out of", "3 misclassif"
-    , "4 out of", "4 misclassif"
-    , "5 out of", "5 misclassif"
+jap_headers = ["1 misclassif"
+    , "2 misclassif"
+    , "3 misclassif"
+    , "4 misclassif"
+               # , "5 misclassif"
                ]
+
+# outof_headers = [1480, 1480, 1480, 1480, 370]
 
 headers = bit_headers
 headers_per_layer = 2
@@ -45,6 +53,7 @@ for filename in filenames:
             try:
                 for header_name in headers:
                     row_values.append(float(row[header_name]))
+                    # row_values.append(100.0 - 100 * float(row[header_name]) / outof_headers[i])
                 count += 1
             except (TypeError, ValueError):
                 print "Yo! Halt!"
@@ -93,6 +102,6 @@ if not os.path.isfile(new_file_name):
         fout.write("%d," % (i + 1) + ",".join(map(str, layer_data)) + "\n")
 
     fout.close()
-    print "Wrote to file."
+    print "Success. Wrote to file."
 else:
     print "File existed already:", new_file_name

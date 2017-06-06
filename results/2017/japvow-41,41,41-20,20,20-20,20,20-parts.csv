@@ -1,4 +1,4 @@
-"2017-04-28 01:20:04,945",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,
+"2017-04-28 01:20:04,945",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,1 out of,1 misclassif,2 out of,2 misclassif,3 out of,3 misclassif
 "2017-04-28 01:22:00,280","20,20,20","20,20,20",41,12,12,12,True,LinearRegression,4,12.01,124,1480,1011,1480,909,370,124
 "2017-04-28 01:23:55,048","20,20,20","20,20,20",41,12,12,12,True,LinearRegression,4,12.94,122,1480,982,1480,904,370,122
 "2017-04-28 01:25:52,987","20,20,20","20,20,20",41,12,12,12,True,LinearRegression,4,12.92,110,1480,1016,1480,910,370,110
