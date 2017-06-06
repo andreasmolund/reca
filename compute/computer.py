@@ -1,5 +1,5 @@
-import marshal as dumper
 import time
+import numpy as np
 
 from distribute import flatten, distribute_and_collect
 from reservoir.util import extend_state_vectors
@@ -49,15 +49,14 @@ class Computer:
         # sequence_lengths = [len(m) for m in x]
         if extensions is not None:
             x = extend_state_vectors(x, extensions)
-        x = flatten(x)
 
+        x = np.array(flatten(x), dtype='int8')
         labels = flatten(labels)
 
         time_checkpoint = time.time()
-
         self.estimator.fit(x, labels)
-
         fit_time = time.time() - time_checkpoint
+
         if self.verbose > 0:
             print "Estimator fitting time: %.1f" % fit_time
 

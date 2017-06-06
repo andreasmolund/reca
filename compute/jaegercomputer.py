@@ -46,11 +46,10 @@ class JaegerComputer(Computer):
         labels = jaeger_labels(labels, self.d, self.method)
 
         x = flatten(x)
+        labels = flatten(labels)
 
         time_checkpoint = time.time()
-
-        self.estimator.fit(x, flatten(labels))
-
+        self.estimator.fit(x, labels)
         fit_time = time.time() - time_checkpoint
 
         return x, fit_time

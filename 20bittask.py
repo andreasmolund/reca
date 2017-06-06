@@ -122,7 +122,7 @@ def main(size, rules, n_iterations, n_random_mappings, diffuse, pad):
             o = unflatten(o, [n_time_steps] * n_train)
 
             # if n_whole_runs == 1:
-            #     from statistics.plotter import plot_temporal
+            #     from stats.plotter import plot_temporal
             #     plot_temporal(x,
             #                   encoders[layer_i].n_random_mappings,
             #                   encoders[layer_i].automaton_area,

@@ -19,13 +19,6 @@ from util import digest_args
 d = 4  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
 
-abdaf = []
-for q in training_sets:
-    abdaf.extend(q)
-
-percentil = (20, 40, 60, 80)
-print np.percentile([abda[11] for abda in abdaf], percentil).tolist()
-
 jaeger_training_sets = jaeger_method(training_sets, d, 3, dtype=float)
 jaeger_testing_sets = jaeger_method(testing_sets, d, 3, dtype=float)
 
@@ -42,7 +35,7 @@ final_layer_training_labels = jaeger_labels(training_labels, d, 4)
 final_layer_testing_labels = jaeger_labels(testing_labels, d, 4)
 
 start_time = datetime.now()
-logit = True
+logit = False
 
 q = (25, 50, 75)  # Activation quantiles
 
@@ -110,6 +103,7 @@ def main(initial_input_size, rules, n_iterations, n_random_mappings, diffuse, pa
 
         x, fit_time = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
         tot_fit_time += fit_time
+        print fit_time, " fit time"
 
         if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
             o, _ = computers[layer_i].test(layer_inputs, extensions=raw_training_input)
@@ -211,14 +205,14 @@ def init():
         args = sys.argv
     else:
         args = ['japvow.py',
-                '-I', '16,16,16,16',
-                '-R', '32,19,19,19',
-                '-r', '90'
+                '-I', '20,20,20',
+                '-R', '20,20,20',
+                '-r', '54,54,54'
                 ]
     identifier, initial_input_size, rules, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
 
     if logit:
-        file_name = 'rawresults/japvow-%d-%s-%s-part%s.csv' % (rules,
+        file_name = 'rawresults/japvow-%s-%s-%s-part%s.csv' % (rules,
                                                                n_iterations,
                                                                n_random_mappings,
                                                                identifier)
@@ -235,7 +229,7 @@ def init():
 
 if __name__ == '__main__':
 
-    n_whole_runs = 25
+    n_whole_runs = 1
 
     main_args = init()
 

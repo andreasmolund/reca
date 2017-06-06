@@ -21,13 +21,13 @@ from reservoir.util import classify_output
 from util import digest_args
 
 start_time = datetime.now()
-logit = True
+logit = False
 
 dimensions = 2
 n_memory_time_steps = 5
 n_train = 32
 n_test = n_train
-distractor_period = 200
+distractor_period = 1
 inputs, labels = problems.memory_task_5_bit(n_train,
                                             distractor_period)
 
@@ -89,7 +89,7 @@ def main(size, rules, n_iterations, n_random_mappings, diffuse, pad):
             print "LinAlgError occured.", time.time()
             return 1
 
-        o, _ = computers[layer_i].test(None, x)
+        o = computers[layer_i].test(None, x)[0]
         o = classify_output(o)
         o = unflatten(o, [2 * n_memory_time_steps + distractor_period] * n_train)
 
@@ -111,15 +111,15 @@ def main(size, rules, n_iterations, n_random_mappings, diffuse, pad):
                                                                                  n_mispredicted_time_steps,
                                                                                  fit_time)
 
-        # if n_whole_runs == 1:
-        #     time_steps = 2 * n_memory_time_steps + distractor_period
-        #     from statistics.plotter import plot_temporal
-        #     plot_temporal(x,
-        #                   encoders[layer_i].n_random_mappings,
-        #                   encoders[layer_i].automaton_area,
-        #                   time_steps,
-        #                   n_iterations[layer_i],
-        #                   sample_nr=2)
+        if n_whole_runs == 1:
+            time_steps = 2 * n_memory_time_steps + distractor_period
+            from stats.plotter import plot_temporal
+            plot_temporal(x,
+                          encoders[layer_i].n_random_mappings,
+                          encoders[layer_i].automaton_area,
+                          time_steps,
+                          n_iterations[layer_i],
+                          sample_nr=2)
 
     if logit:
         result = [j for i in zip(correct, incorrect_time_steps) for j in i]
@@ -147,11 +147,11 @@ def init():
         args = sys.argv
     else:
         args = ['bittask.py',
-                '-I', '32,32,32,32',
-                '-R', '20,20,20,20',
+                '-I', '16',
+                '-R', '32',
                 '--diffuse', '0',
                 '--pad', '0',
-                '-r', '110,62,62,62'
+                '-r', '90'
                 ]
     identifier, size, rules, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
 
@@ -174,7 +174,7 @@ def init():
 
 if __name__ == '__main__':
 
-    n_whole_runs = 25
+    n_whole_runs = 1
 
     main_args = init()
 

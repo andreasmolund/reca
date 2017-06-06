@@ -10,7 +10,7 @@ from compute.computer import Computer
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
-from statistics.plotter import plot_temporal
+from stats.plotter import plot_temporal
 
 
 def main(raw_args):

@@ -6,7 +6,7 @@ import sys
 
 import ca.util as cutil
 from ca.eca import ECA
-from statistics.plotter import plot_temporal
+from stats.plotter import plot_temporal
 
 
 def sim(raw_args):
