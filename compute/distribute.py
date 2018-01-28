@@ -169,7 +169,7 @@ def n_processes(sets):
     n_sets = len(sets)
     n = 1
 
-    if n_sets >= 16:
+    if n_sets >= 32:
         n = 8
     elif n_sets >= 4:
         n = 4

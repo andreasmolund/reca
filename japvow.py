@@ -1,28 +1,24 @@
-from itertools import count, izip
-
-import getopt
 import logging
 import sys
-import time
 from datetime import datetime
+from itertools import count, izip
+
 import numpy as np
-from sklearn import svm
 from sklearn import linear_model
 
-from bittask import digest_args
 from ca.eca import ECA
 from compute.computer import Computer
-from compute.distribute import flatten, unflatten
+from compute.distribute import flatten
 from compute.jaegercomputer import JaegerComputer, jaeger_labels, jaeger_method
 from encoders.classic import ClassicEncoder
 from encoders.real import RealEncoder, quantize_japvow, quantize_activation
 from problemgenerator import japanese_vowels
 from reservoir.reservoir import Reservoir
-from statistics.plotter import plot_temporal
+from util import digest_args
 
-
-d = 5  # Jaeger's proposed D
+d = 4  # Jaeger's proposed D
 training_sets, training_labels, testing_sets, testing_labels = japanese_vowels()
+
 jaeger_training_sets = jaeger_method(training_sets, d, 3, dtype=float)
 jaeger_testing_sets = jaeger_method(testing_sets, d, 3, dtype=float)
 
@@ -39,26 +35,27 @@ final_layer_training_labels = jaeger_labels(training_labels, d, 4)
 final_layer_testing_labels = jaeger_labels(testing_labels, d, 4)
 
 start_time = datetime.now()
-logit = True
+logit = False
 
-n_whole_runs = 10
+q = (25, 50, 75)  # Activation quantiles
 
 
-def main(raw_args):
-    initial_input_size, rule, n_iterations, n_random_mappings, diffuse, pad = digest_args(raw_args)
+def main(initial_input_size, rules, n_iterations, n_random_mappings, diffuse, pad):
     initial_input_size = 12
     diffuse = initial_input_size
     pad = initial_input_size
     n_iterations = [int(value) for value in n_iterations.split(',')]
     n_random_mappings = [int(value) for value in n_random_mappings.split(',')]
-    n_layers = min(len(n_random_mappings), len(n_iterations))
-    automaton = ECA(rule)
+    rules = [int(value) for value in rules.split(',')]
     encoders = []
     computers = []
 
-    print "(I,R,D)=(%s,%s,%d)" % (n_iterations, n_random_mappings, d)
+    if not (len(n_iterations) == len(n_random_mappings)):
+        raise ValueError("The number of iterations and random mappings do not match.")
+    n_layers = len(n_random_mappings)  # The number of layers including the first
 
     for layer_i in xrange(n_layers):  # Setup
+        automaton = ECA(rules[layer_i])
 
         if layer_i == 0:
             encoder = RealEncoder(n_random_mappings[layer_i],
@@ -77,7 +74,7 @@ def main(raw_args):
         # estimator = svm.SVC(kernel='linear')
         # estimator = linear_model.SGDClassifier()
         # estimator = linear_model.Perceptron()
-        estimator = linear_model.LinearRegression()
+        estimator = linear_model.LinearRegression(n_jobs=4)
         # estimator = linear_model.SGDRegressor(loss='squared_loss')
 
         reservoir = Reservoir(automaton,
@@ -94,29 +91,19 @@ def main(raw_args):
         encoders.append(encoder)
         computers.append(computer)
 
-    def inter_process(predictions, n_elements, n_classes, d, activation_percentiles):
-        r = []
-        man_shift = -1
-        for total_i, p in enumerate(predictions):
-            if total_i % d == 0:
-                man_shift += 1
-            translated_prediction = quantize_activation(p, *activation_percentiles)
-            # translated_prediction[p - 1] = 0b1
-            # translated_prediction[p.argmax()] = 0b1
-            r.append(translated_prediction)
-        r = np.array(r).reshape((n_elements, d, len(r[0])))
-        return r
-
     activation_levels = []
     o = None  # Output of one estimator
-    q = (25, 50, 75)
+    tot_fit_time = 0
 
     for layer_i in xrange(n_layers):  # Training
 
         layer_inputs = training_sets if o is None else o
         layer_labels = training_labels if layer_i == 0 else subsequent_training_labels
-        raw_training_input = training_sets if layer_i == 0 else jaeger_training_sets
-        x = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
+        raw_training_input = None  # training_sets if layer_i == 0 else jaeger_training_sets
+
+        x, fit_time = computers[layer_i].train(layer_inputs, layer_labels, extensions=raw_training_input)
+        tot_fit_time += fit_time
+        print fit_time, " fit time"
 
         if layer_i < n_layers - 1:  # No need to test the last layer before the very real test
             o, _ = computers[layer_i].test(layer_inputs, extensions=raw_training_input)
@@ -128,18 +115,6 @@ def main(raw_args):
             o = np.append(encoded_jaeger_training_sets, o, axis=2)
             # o = unflatten(o, sequence_len_training)
 
-    def correctness(predicted, actual):
-        n_correct = 0
-        n_incorrect = 0
-
-        for i, prediction, fasit_element in izip(count(), predicted, actual):
-            if fasit_element.argmax() == prediction.argmax():
-            # if fasit_element == prediction:
-                n_correct += 1
-            else:
-                n_incorrect += 1
-        return n_correct, n_incorrect
-
     o = None
 
     out_of = []
@@ -147,15 +122,16 @@ def main(raw_args):
 
     for layer_i in xrange(n_layers):  # Testing
 
-        raw_training_input = testing_sets if layer_i == 0 else jaeger_testing_sets
+        raw_training_input = None  # testing_sets if layer_i == 0 else jaeger_testing_sets
         o, x = computers[layer_i].test(testing_sets if o is None else o, extensions=raw_training_input)
         print q, "percent., new:   ", np.percentile(o, q)
 
-        n_correct, n_incorrect = correctness(o, flatten(subsequent_testing_labels if layer_i < n_layers - 1 else final_layer_testing_labels))
+        n_correct, n_incorrect = correctness(o, flatten(
+            subsequent_testing_labels if layer_i < n_layers - 1 else final_layer_testing_labels))
         out_of.append(n_correct + n_incorrect)
         misclassif.append(n_incorrect)
 
-        print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
+        # print "Misprecictions, percent: %d, %.1f" % (n_incorrect, (100.0 * n_correct / (n_correct + n_incorrect)))
 
         if layer_i < n_layers - 1:
             percentiles = activation_levels[layer_i]
@@ -177,39 +153,92 @@ def main(raw_args):
             #               time_steps,
             #               n_iterations[layer_i] * (1 if layer_i < n_layers - 1 else d),
             #               sample_nr=sample_nr)
+    result = [j for i in zip(out_of, misclassif) for j in i]
+    print ["%.1f" % (100 * float(result[i]) / result[i - 1]) for i in xrange(1, len(result), 2)], "% error"
     if logit:
-        result = [j for i in zip(out_of, misclassif) for j in i]
-        rep_string = "\"%s\",\"%s\",%d,%d,%d,%d,%s,%s,%d,%d" + ",%d" * n_layers * 2
+        rep_string = "\"%s\",\"%s\",\"%s\",%d,%d,%d,%s,%s,%d,%.2f,%d" + ",%d" * n_layers * 2
         logging.info(rep_string,
                      ','.join(str(e) for e in n_iterations),
                      ','.join(str(e) for e in n_random_mappings),
-                     rule,
+                     ','.join(str(e) for e in rules),
                      initial_input_size,
                      diffuse,
                      pad,
                      'True',
                      estimator.__class__.__name__,
                      d,
+                     tot_fit_time,
                      misclassif[-1],
                      *result)
+    return 0
 
-if __name__ == '__main__':
+
+def inter_process(predictions, n_elements, n_classes, d, activation_percentiles):
+    encoded = []
+    man_shift = -1
+    for total_i, p in enumerate(predictions):
+        if total_i % d == 0:
+            man_shift += 1
+        translated_prediction = quantize_activation(p, *activation_percentiles)
+        # translated_prediction[p - 1] = 0b1
+        # translated_prediction[p.argmax()] = 0b1
+        encoded.append(translated_prediction)
+    encoded = np.array(encoded).reshape((n_elements, d, len(encoded[0])))
+    return encoded
+
+
+def correctness(predicted, actual):
+    n_correct = 0
+    n_incorrect = 0
+
+    for i, prediction, fasit_element in izip(count(), predicted, actual):
+        if fasit_element.argmax() == prediction.argmax():
+            # if fasit_element == prediction:
+            n_correct += 1
+        else:
+            n_incorrect += 1
+    return n_correct, n_incorrect
+
+
+def init():
+    if len(sys.argv) > 1:
+        args = sys.argv
+    else:
+        args = ['japvow.py',
+                '-I', '20,20,20',
+                '-R', '20,20,20',
+                '-r', '54,54,54'
+                ]
+    identifier, initial_input_size, rules, n_iterations, n_random_mappings, diffuse, pad = digest_args(args)
+
     if logit:
-        file_name = 'rawresults/%s-japvow.csv' % start_time.isoformat().replace(":", "")
+        file_name = 'rawresults/japvow-%s-%s-%s-part%s.csv' % (rules,
+                                                               n_iterations,
+                                                               n_random_mappings,
+                                                               identifier)
         logging.basicConfig(format='"%(asctime)s",%(message)s',
                             filename=file_name,
                             level=logging.DEBUG)
+        deep_spesific = ""
+        for l in xrange(len([value for value in n_iterations.split(',')])):
+            deep_spesific += ",%d out of,%d misclassif" % (l + 1, l + 1)
         logging.info("Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,"
                      "D,"
-                     "Final misclassif.,")
-    for r in xrange(n_whole_runs):
-        # print "Run %d started" % r
-        if len(sys.argv) > 1:
-            main(sys.argv)
-        else:
-            main(['japvow.py',
-                  '-I', '2,2,2,2',
-                  '-R', '1,1,1,1',
-                  '-r', '102'
-                  ])
+                     "Tot. fit time,Final misclassif." + deep_spesific)
+    return initial_input_size, rules, n_iterations, n_random_mappings, diffuse, pad
+
+if __name__ == '__main__':
+
+    n_whole_runs = 2
+
+    main_args = init()
+
+    r = 0
+    while r < n_whole_runs:
+        print "Started run %d of %d" % (r + 1, n_whole_runs)
+        response = main(*main_args)
+        if response != 0:
+            r -= 1  # Something went wrong. We need to run one more time
+
+        r += 1
 

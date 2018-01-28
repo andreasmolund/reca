@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from sklearn.utils import shuffle
 
 from distribute import flatten, distribute_and_collect
@@ -35,7 +36,9 @@ class JaegerComputer(Computer):
         self.n_pieces = 1
 
     def train(self, sets, labels, extensions=None):
+
         x = distribute_and_collect(self, sets)
+
         if extensions is not None:
             x = extend_state_vectors(x, extensions)
 
@@ -43,8 +46,13 @@ class JaegerComputer(Computer):
         labels = jaeger_labels(labels, self.d, self.method)
 
         x = flatten(x)
-        self.estimator.fit(x, flatten(labels))
-        return x
+        labels = flatten(labels)
+
+        time_checkpoint = time.time()
+        self.estimator.fit(x, labels)
+        fit_time = time.time() - time_checkpoint
+
+        return x, fit_time
 
         # len_x = len(x)
         # x, labels = shuffle(x, labels)

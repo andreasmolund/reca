@@ -1,0 +1,17 @@
+"2017-04-28 10:25:38,791",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,
+"2017-04-28 10:48:39,842",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,
+"2017-04-28 10:51:54,139","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,25.73,129,1480,719,1480,651,370,129
+"2017-04-28 10:55:05,125","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,22.92,120,1480,728,1480,669,370,120
+"2017-04-28 10:58:20,651","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,23.28,111,1480,753,1480,680,370,111
+"2017-04-28 11:01:36,580","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,22.92,120,1480,723,1480,660,370,120
+"2017-04-28 11:04:57,016","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,23.24,120,1480,738,1480,655,370,120
+"2017-04-28 11:08:21,762","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,27.81,118,1480,743,1480,689,370,118
+"2017-04-28 11:11:40,958","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,23.46,126,1480,699,1480,696,370,126
+"2017-04-28 11:15:03,996","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,23.91,118,1480,732,1480,675,370,118
+"2017-04-28 11:18:25,935","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,23.66,118,1480,725,1480,680,370,118
+"2017-04-28 11:21:45,102","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,23.73,102,1480,736,1480,685,370,102
+"2017-04-28 11:25:50,767",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,
+"2017-04-28 11:29:06,166","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,24.38,107,1480,723,1480,696,370,107
+"2017-04-28 11:32:33,289",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,
+"2017-04-28 11:48:32,377",Is,Rs,Rule,Input size,Input area,Automaton size,Concat before,Estimator,D,Tot. fit time,Final misclassif.,
+"2017-04-28 11:52:38,541","30,30,30","30,30,30",90,12,12,12,True,LinearRegression,4,43.55,110,1480,706,1480,683,370,110

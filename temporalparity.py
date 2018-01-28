@@ -10,11 +10,11 @@ from compute.computer import Computer
 from encoders.classic import ClassicEncoder
 from reservoir.reservoir import Reservoir
 from reservoir.util import classify_output
-from statistics.plotter import plot_temporal
+from stats.plotter import plot_temporal
 
 
 def main(raw_args):
-    size, rule, n_iterations, n_random_mappings, input_area, automaton_area = digest_args(raw_args)
+    _, size, rule, n_iterations, n_random_mappings, input_area, automaton_area = digest_args(raw_args)
 
     n_training_sets = 30
     n_testing_sets = 20

@@ -63,7 +63,7 @@ def main(raw_args):
     time_checkpoint = time.time()
 
     # Testing
-    y_pred = computer.test(raw_inputs[n_training_sets:])
+    y_pred, _ = computer.test(raw_inputs[n_training_sets:])
 
     step = 50
     print "Testing time: ", (time.time() - time_checkpoint)

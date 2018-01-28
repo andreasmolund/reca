@@ -1,0 +1,19 @@
+Rule,Layer 1,Layer 2,Layer 3
+Mispredictedtimesteps-2-mean,$1000.63\pm1.02$,$2058.74\pm162.90$,$1018.17\pm35.32$
+Mispredictedtimesteps-16-mean,$1000.56\pm0.88$,$2049.70\pm185.06$,$1016.42\pm21.98$
+Mispredictedtimesteps-22-mean,$1000.55\pm0.74$,$1001.30\pm2.51$,$1001.10\pm1.01$
+Mispredictedtimesteps-30-mean,$1000.77\pm0.98$,$1000.57\pm0.75$,$1000.57\pm0.79$
+Mispredictedtimesteps-36-mean,$1037.20\pm11.81$,$2090.04\pm199.22$,$1159.97\pm99.65$
+Mispredictedtimesteps-41-mean,$1001.28\pm1.25$,$1002.40\pm1.71$,$1002.21\pm1.52$
+Mispredictedtimesteps-45-mean,$1000.72\pm0.88$,$1000.58\pm0.83$,$1000.58\pm0.83$
+Mispredictedtimesteps-54-mean,$1005.85\pm9.71$,$1063.02\pm94.23$,$1033.32\pm47.30$
+Mispredictedtimesteps-60-mean,$1080.48\pm21.70$,$2538.23\pm267.36$,$1252.39\pm165.95$
+Mispredictedtimesteps-62-mean,$1001.10\pm1.15$,$1002.74\pm3.14$,$1002.78\pm3.93$
+Mispredictedtimesteps-90-mean,$1036.63\pm22.21$,$1821.63\pm501.25$,$1317.83\pm508.83$
+Mispredictedtimesteps-102-mean,$1086.89\pm21.47$,$2572.22\pm270.32$,$1283.78\pm192.78$
+Mispredictedtimesteps-106-mean,$1033.04\pm9.25$,$1187.58\pm87.14$,$1137.31\pm87.48$
+Mispredictedtimesteps-110-mean,$1000.64\pm0.71$,$1000.87\pm0.90$,$1000.87\pm0.88$
+Mispredictedtimesteps-126-mean,$1000.56\pm0.77$,$1000.65\pm0.82$,$1000.85\pm1.00$
+Mispredictedtimesteps-146-mean,$1002.42\pm2.83$,$1169.30\pm324.35$,$1115.97\pm237.19$
+Mispredictedtimesteps-150-mean,$1026.47\pm29.78$,$1242.75\pm514.14$,$1158.52\pm329.06$
+Mispredictedtimesteps-182-mean,$1000.70\pm0.89$,$1000.83\pm1.06$,$1000.71\pm0.85$

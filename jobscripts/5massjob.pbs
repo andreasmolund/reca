@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N deepreca5bit
+#PBS -A andrmolu
+#PBS -l select=1:ncpus=4:mem=18gb
+#PBS -l walltime=24:00:00
+#PBS -o /home/andrmolu/reca/jobscripts/pbs
+#PBS -e /home/andrmolu/reca/jobscripts/pbs
+#PBS -J 1-4
+
+cd /home/andrmolu/reca/
+module load python
+
+python bittask.py --id $PBS_ARRAY_INDEX -r '146,146,146' -I '30,30,30' -R '30,20,20'
+python bittask.py --id $PBS_ARRAY_INDEX -r '146,146,146,146,146' -I '30,30,30,30,30' -R '30,30,30,30,30'
+
+python bittask.py --id $PBS_ARRAY_INDEX -r '195,195,195' -I '30,30,30' -R '30,20,20'
+python bittask.py --id $PBS_ARRAY_INDEX -r '195,195,195,195,195' -I '30,30,30,30,30' -R '30,30,30,30,30'
+
+python bittask.py --id $PBS_ARRAY_INDEX -r '146' -I '32' -R '40'
+python bittask.py --id $PBS_ARRAY_INDEX -r '195' -I '32' -R '40'
+
+python bittask.py --id $PBS_ARRAY_INDEX -r '146,62,62,62,62' -I '30,30,30,30,30' -R '30,30,30,30,30'
+python bittask.py --id $PBS_ARRAY_INDEX -r '195,62,62,62,62' -I '30,30,30,30,30' -R '30,30,30,30,30'

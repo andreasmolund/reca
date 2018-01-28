@@ -1,0 +1,5 @@
+Rule,Layer 1,Layer 2,Layer 3,Layer 4
+1misclassif-60-mean,$85.40\pm1.36$,$73.05\pm1.51$,$75.38\pm1.57$,$75.83\pm1.89$
+1misclassif-90-mean,$84.89\pm1.26$,$72.38\pm1.72$,$73.88\pm1.66$,$76.19\pm1.81$
+1misclassif-102-mean,$84.97\pm1.12$,$72.91\pm1.75$,$75.03\pm1.55$,$75.06\pm2.47$
+1misclassif-106-mean,$84.20\pm1.26$,$78.92\pm1.28$,$78.02\pm1.97$,$77.14\pm2.41$
