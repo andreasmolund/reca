@@ -229,7 +229,7 @@ def init():
 
 if __name__ == '__main__':
 
-    n_whole_runs = 1
+    n_whole_runs = 2
 
     main_args = init()
 

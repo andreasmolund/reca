@@ -43,4 +43,5 @@ def bitwise_left(a, b):
 def bitwise_right(a, b):
     return b
 
-combine = np.vectorize(normalized_addition)
+
+combine = np.vectorize(bitwise_or)

@@ -20,11 +20,11 @@ from reservoir.util import classify_output
 from util import digest_args
 
 start_time = datetime.now()
-logit = True
+logit = False
 
 dimensions = 5
 n_memory_time_steps = 10
-distractor_period = 50
+distractor_period = 10
 n_time_steps = 2 * n_memory_time_steps + distractor_period
 n_train = 500
 n_test = 100
@@ -57,7 +57,7 @@ def main(size, rules, n_iterations, n_random_mappings, diffuse, pad):
                                  pad,
                                  verbose=verbose)
 
-        estimator = linear_model.LinearRegression(n_jobs=4)
+        estimator = linear_model.LinearRegression(n_jobs=12)
 
         reservoir = Reservoir(automaton,
                               n_iterations[layer_i],
@@ -186,10 +186,9 @@ def init():
 
 if __name__ == '__main__':
 
-    n_whole_runs = 25
+    n_whole_runs = 4
 
     main_args = init()
-
     r = 0
     while r < n_whole_runs:
         response = main(*main_args)
