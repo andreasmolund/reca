@@ -40,17 +40,25 @@ Example: `python bittask.py -I 32 -R 16 -r 110 --pad 10`
 
 You can omit diffuse and automaton-area.
 
+## japvow.py
+
+The japanese vowels time series classification task.
+
+## 20bittask.py
+
+The 20-bit memory task.
+
 ## bittask.py
 
-The 5-bit memory task with 2 reservoirs. This really handles 1 reservoir as well, it logs the output and results of that one too.
+The 5-bit memory task.
 
 ## parity.py
 
-Not maintained. Non-temporal parity problem
+Not maintained. Non-temporal parity problem.
 
 ## density.py
 
-Not maintained. Non-temporal density classification task
+Not maintained. Non-temporal density classification task.
 
 # Dependencies
 
